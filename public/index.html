@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#090a0c">
 <meta name="description" content="Private TEDDY-XMD Heroku deployment and management panel.">
 <title>TEDDY-XMD DEPLOYER | Teddy Tech</title>
@@ -26,98 +26,95 @@
   --yellow:#e7b85f;
 }
 
-* {box-sizing:border-box}
+* {
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html {
+  width:100%;
+  min-height:100%;
+  overflow-x:hidden;
+  scroll-behavior:smooth;
+}
 
 body {
   margin:0;
+  width:100%;
+  min-width:320px;
+  min-height:100vh;
+  overflow-x:hidden;
   background:radial-gradient(ellipse at 80% -10%,#292114 0,transparent 35%),var(--bg);
   color:var(--text);
   font-family:'DM Sans',sans-serif;
-  min-height:100vh;
+  font-size:15px;
+  -webkit-font-smoothing:antialiased;
 }
 
-button,input {font:inherit}
-button {cursor:pointer;border:0}
-.hidden {display:none!important}
-
-.login-wrap {
-  min-height:100vh;
-  display:grid;
-  place-items:center;
-  padding:22px;
+button,input {
+  font:inherit;
 }
 
-.login-card {
-  width:min(420px,100%);
-  padding:34px;
-  background:rgba(17,19,24,.96);
-  border:1px solid var(--line);
-  border-radius:22px;
-  box-shadow:0 25px 90px #0008;
+button {
+  cursor:pointer;
+  border:0;
+  touch-action:manipulation;
 }
 
-.brand {
-  font:700 20px 'Space Grotesk';
-  letter-spacing:.04em;
+a {
+  color:inherit;
 }
 
-.brand span {color:var(--gold)}
-
-.mark {
-  width:48px;
-  height:48px;
-  border-radius:15px;
-  background:linear-gradient(135deg,#f1d18a,#9c702c);
-  display:grid;
-  place-items:center;
-  color:#17120a;
-  font-size:25px;
-  margin-bottom:22px;
+.hidden {
+  display:none!important;
 }
 
-.muted {color:var(--muted)}
+.muted {
+  color:var(--muted);
+}
 
 .eyebrow {
   color:var(--gold);
-  font-size:11px;
-  letter-spacing:.19em;
+  font-size:12px;
+  letter-spacing:.16em;
   font-weight:700;
   text-transform:uppercase;
 }
 
-.login-card h1 {
-  font:700 28px 'Space Grotesk';
-  margin:10px 0;
+.brand {
+  font:700 21px 'Space Grotesk',sans-serif;
+  letter-spacing:.035em;
+  white-space:nowrap;
 }
 
-.field {
+.brand span {
+  color:var(--gold);
+}
+
+.mark {
+  width:54px;
+  height:54px;
+  border-radius:16px;
+  background:linear-gradient(135deg,#f1d18a,#9c702c);
   display:grid;
-  gap:8px;
-  margin:17px 0;
+  place-items:center;
+  color:#17120a;
+  font-size:27px;
+  margin-bottom:23px;
 }
-
-.field label {
-  font-size:13px;
-  color:#c5c7cd;
-}
-
-.field input {
-  width:100%;
-  background:#0b0d11;
-  color:var(--text);
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:13px 14px;
-  outline:none;
-}
-
-.field input:focus {border-color:var(--gold)}
 
 .btn {
-  padding:11px 15px;
-  border-radius:10px;
+  min-height:46px;
+  padding:12px 17px;
+  border-radius:11px;
   font-weight:700;
+  font-size:14px;
   transition:.2s;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  text-align:center;
 }
 
 .primary {
@@ -142,7 +139,75 @@ button {cursor:pointer;border:0}
   border:1px solid #69353a;
 }
 
-.full {width:100%}
+.full {
+  width:100%;
+}
+
+.btn:disabled {
+  opacity:.6;
+  cursor:not-allowed;
+  transform:none;
+}
+
+/* LOGIN */
+
+.login-wrap {
+  min-height:100vh;
+  min-height:100dvh;
+  display:grid;
+  place-items:center;
+  padding:24px;
+}
+
+.login-card {
+  width:min(440px,100%);
+  padding:clamp(22px,5vw,36px);
+  background:rgba(17,19,24,.97);
+  border:1px solid var(--line);
+  border-radius:23px;
+  box-shadow:0 25px 90px #0008;
+}
+
+.login-card h1 {
+  font:700 clamp(26px,5vw,32px) 'Space Grotesk',sans-serif;
+  margin:10px 0;
+}
+
+.login-card p {
+  font-size:14px;
+  line-height:1.7;
+}
+
+.field {
+  display:grid;
+  gap:9px;
+  margin:19px 0;
+  min-width:0;
+}
+
+.field label {
+  font-size:14px;
+  font-weight:600;
+  color:#d0d2d8;
+}
+
+.field input {
+  width:100%;
+  min-width:0;
+  min-height:49px;
+  background:#0b0d11;
+  color:var(--text);
+  border:1px solid var(--line);
+  border-radius:11px;
+  padding:13px 15px;
+  outline:none;
+  font-size:16px;
+}
+
+.field input:focus {
+  border-color:var(--gold);
+  box-shadow:0 0 0 3px #d6ad5818;
+}
 
 .error {
   color:#ff9999;
@@ -151,24 +216,39 @@ button {cursor:pointer;border:0}
   margin-top:10px;
 }
 
+.hint {
+  font-size:13px;
+  color:var(--muted);
+  line-height:1.65;
+  overflow-wrap:anywhere;
+}
+
+/* DASHBOARD */
+
 .layout {
   display:grid;
-  grid-template-columns:250px 1fr;
+  grid-template-columns:260px minmax(0,1fr);
   min-height:100vh;
 }
 
 .side {
+  position:sticky;
+  top:0;
+  height:100vh;
   border-right:1px solid var(--line);
   padding:25px 17px;
   background:#0d0f13;
   display:flex;
   flex-direction:column;
+  z-index:4;
 }
 
-.side .brand {padding:5px 10px 30px}
+.side .brand {
+  padding:5px 10px 30px;
+}
 
 .navlabel {
-  font-size:10px;
+  font-size:11px;
   color:#707682;
   letter-spacing:.17em;
   font-weight:700;
@@ -179,23 +259,27 @@ button {cursor:pointer;border:0}
   display:flex;
   align-items:center;
   gap:12px;
+  min-height:47px;
   padding:12px;
-  border-radius:10px;
+  border-radius:11px;
   color:#aeb2bc;
   text-decoration:none;
   margin:3px 0;
   font-size:14px;
+  font-weight:600;
   cursor:pointer;
+  white-space:nowrap;
 }
 
-.nav.active,.nav:hover {
+.nav.active,
+.nav:hover {
   background:#252117;
   color:var(--gold2);
 }
 
 .nav b {
-  font-size:17px;
-  width:20px;
+  font-size:19px;
+  width:22px;
   text-align:center;
 }
 
@@ -203,34 +287,38 @@ button {cursor:pointer;border:0}
   margin-top:auto;
   border-top:1px solid var(--line);
   padding:18px 10px 0;
-  font-size:12px;
+  font-size:13px;
+  line-height:1.8;
   color:var(--muted);
 }
 
 .main {
-  padding:30px clamp(18px,4vw,52px);
-  max-width:1500px;
+  padding:32px clamp(18px,4vw,52px);
+  max-width:1550px;
   width:100%;
-  margin:auto;
+  min-width:0;
+  margin:0 auto;
 }
 
 .top {
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:15px;
+  gap:18px;
   margin-bottom:30px;
 }
 
 .top h1 {
-  font:700 clamp(24px,3vw,32px) 'Space Grotesk';
-  margin:4px 0;
+  font:700 clamp(26px,3vw,35px) 'Space Grotesk',sans-serif;
+  margin:7px 0;
+  overflow-wrap:anywhere;
 }
 
 .top p {
   margin:0;
   color:var(--muted);
-  font-size:13px;
+  font-size:14px;
+  line-height:1.6;
 }
 
 .admin {
@@ -239,14 +327,15 @@ button {cursor:pointer;border:0}
   gap:10px;
   background:var(--panel);
   border:1px solid var(--line);
-  padding:9px 13px;
+  padding:11px 15px;
   border-radius:12px;
-  font-size:12px;
+  font-size:13px;
+  white-space:nowrap;
 }
 
 .dot {
-  width:8px;
-  height:8px;
+  width:9px;
+  height:9px;
   border-radius:50%;
   background:var(--green);
   box-shadow:0 0 12px #55c98b88;
@@ -254,116 +343,144 @@ button {cursor:pointer;border:0}
 
 .stats {
   display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:14px;
-  margin-bottom:22px;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px;
+  margin-bottom:24px;
 }
 
-.stat,.card {
+.stat,
+.card {
   background:linear-gradient(145deg,#15181e,#101217);
   border:1px solid var(--line);
-  border-radius:16px;
-  padding:19px;
+  border-radius:17px;
+  padding:21px;
+  min-width:0;
 }
 
 .stat small {
   color:var(--muted);
-  font-size:12px;
+  font-size:13px;
+  line-height:1.5;
 }
 
 .stat strong {
   display:block;
-  font:700 27px 'Space Grotesk';
-  margin-top:8px;
+  font:700 clamp(25px,3vw,32px) 'Space Grotesk',sans-serif;
+  margin-top:10px;
+  overflow-wrap:anywhere;
 }
 
 .section-head {
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:12px;
+  gap:14px;
   margin-bottom:16px;
 }
 
 .section-head h2 {
-  font:600 18px 'Space Grotesk';
+  font:600 20px 'Space Grotesk',sans-serif;
   margin:0;
 }
 
-.card {margin-bottom:18px}
+.card {
+  margin-bottom:19px;
+}
 
 .repo {
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:15px;
+  gap:16px;
   flex-wrap:wrap;
 }
 
 .repo strong {
   display:block;
-  margin-bottom:5px;
+  margin:9px 0 6px;
+  font-size:16px;
+  overflow-wrap:anywhere;
 }
 
-.repo small {color:var(--muted)}
+.repo small {
+  color:var(--muted);
+  font-size:13px;
+  overflow-wrap:anywhere;
+}
 
 .tag {
-  font-size:11px;
-  padding:6px 9px;
+  font-size:12px;
+  padding:8px 11px;
   border-radius:30px;
   background:#292317;
   color:var(--gold2);
   border:1px solid #514124;
+  white-space:nowrap;
 }
 
-.table-wrap {overflow:auto}
+/* APPLICATION TABLE */
+
+.table-wrap {
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:10px 15px;
+}
 
 table {
   width:100%;
   border-collapse:collapse;
-  min-width:650px;
+  min-width:720px;
 }
 
 th {
   text-align:left;
-  color:#828894;
-  font-size:11px;
+  color:#9297a2;
+  font-size:12px;
   text-transform:uppercase;
-  letter-spacing:.1em;
-  padding:12px;
+  letter-spacing:.08em;
+  padding:15px 12px;
   border-bottom:1px solid var(--line);
 }
 
 td {
-  padding:15px 12px;
+  padding:17px 12px;
   border-bottom:1px solid #242830;
-  font-size:13px;
+  font-size:14px;
+  vertical-align:middle;
 }
 
-tr:last-child td {border:0}
+tr:last-child td {
+  border:0;
+}
 
-.appname {font-weight:700}
+.appname {
+  font-weight:700;
+  font-size:15px;
+  overflow-wrap:anywhere;
+}
 
 .sub {
   color:var(--muted);
-  font-size:11px;
-  margin-top:4px;
+  font-size:12px;
+  margin-top:6px;
+  overflow-wrap:anywhere;
 }
 
 .status {
   display:inline-flex;
   align-items:center;
-  gap:7px;
-  font-size:12px;
+  gap:8px;
+  font-size:13px;
   font-weight:700;
   white-space:nowrap;
 }
 
 .status-dot {
-  width:7px;
-  height:7px;
+  width:8px;
+  height:8px;
   display:inline-block;
   border-radius:50%;
+  flex-shrink:0;
 }
 
 .actions {
@@ -373,75 +490,179 @@ tr:last-child td {border:0}
 }
 
 .mini {
-  padding:7px 9px;
+  min-height:35px;
+  padding:8px 11px;
   border-radius:8px;
   background:#242831;
   color:#e7e8eb;
-  font-size:11px;
+  font-size:12px;
   font-weight:700;
+  white-space:nowrap;
 }
 
-.mini:hover {background:#353b46}
+.mini:hover {
+  background:#353b46;
+}
 
 .empty {
   text-align:center;
   color:var(--muted);
-  padding:35px;
+  padding:35px 15px;
+  line-height:1.6;
 }
+
+/* MOBILE APPLICATION CARDS */
+
+.mobile-app-list {
+  display:none;
+  gap:13px;
+}
+
+.mobile-app {
+  background:#15181e;
+  border:1px solid var(--line);
+  border-radius:15px;
+  padding:17px;
+  min-width:0;
+}
+
+.mobile-app-head {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.mobile-app-name {
+  font-size:16px;
+  font-weight:700;
+  overflow-wrap:anywhere;
+}
+
+.mobile-app-info {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  padding:13px 0;
+  margin-bottom:14px;
+}
+
+.mobile-app-info small {
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:5px;
+}
+
+.mobile-app-info strong {
+  display:block;
+  font-size:14px;
+  overflow-wrap:anywhere;
+}
+
+.mobile-app .actions {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+}
+
+.mobile-app .mini {
+  min-height:42px;
+  font-size:13px;
+}
+
+/* PAIRING */
+
+.pairing-box {
+  border:1px solid #514124;
+  background:linear-gradient(145deg,#211b10,#15130f);
+  border-radius:15px;
+  padding:20px;
+  margin:22px 0;
+}
+
+.pairing-box h3 {
+  margin:0 0 9px;
+  font:600 18px 'Space Grotesk',sans-serif;
+  color:var(--gold2);
+}
+
+.pairing-box p {
+  margin:0 0 16px;
+  font-size:14px;
+  color:#b6b1a5;
+  line-height:1.7;
+}
+
+.session-input {
+  letter-spacing:.025em;
+}
+
+/* MODALS */
 
 .modal-bg {
   position:fixed;
   inset:0;
-  background:#000b;
+  background:#000c;
   display:grid;
   place-items:center;
-  padding:18px;
-  z-index:5;
+  padding:20px;
+  z-index:20;
 }
 
 .modal {
-  width:min(600px,100%);
+  width:min(650px,100%);
   max-height:90vh;
+  max-height:90dvh;
   overflow:auto;
   background:#13161c;
   border:1px solid #353a43;
-  border-radius:18px;
-  padding:24px;
+  border-radius:19px;
+  padding:clamp(18px,4vw,26px);
   box-shadow:0 20px 80px #000;
+  overscroll-behavior:contain;
 }
 
 .modal h2 {
-  font:700 21px 'Space Grotesk';
-  margin:0 0 7px;
+  font:700 22px 'Space Grotesk',sans-serif;
+  margin:0 0 15px;
+  overflow-wrap:anywhere;
 }
 
-.modal .field {margin:14px 0}
-.modal input {background:#0a0c10}
+.modal .field {
+  margin:15px 0;
+}
 
-.hint {
-  font-size:11px;
-  color:var(--muted);
-  line-height:1.5;
+.modal input {
+  background:#0a0c10;
 }
 
 .modal-actions {
   display:flex;
   justify-content:flex-end;
-  gap:9px;
+  flex-wrap:wrap;
+  gap:10px;
   margin-top:20px;
 }
 
 .logbox {
   white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  word-break:break-word;
   background:#080a0d;
   border:1px solid var(--line);
-  border-radius:10px;
-  padding:14px;
+  border-radius:11px;
+  padding:15px;
   max-height:55vh;
   overflow:auto;
-  font:12px/1.6 ui-monospace,monospace;
+  font:13px/1.7 ui-monospace,monospace;
   color:#cbd0d8;
 }
+
+/* NOTIFICATIONS */
 
 .toast {
   position:fixed;
@@ -449,80 +670,329 @@ tr:last-child td {border:0}
   bottom:20px;
   background:#20252c;
   border:1px solid #414854;
-  padding:13px 16px;
+  padding:15px 18px;
   border-radius:12px;
-  z-index:10;
-  font-size:13px;
-  max-width:90vw;
+  z-index:30;
+  font-size:14px;
+  max-width:min(420px,calc(100vw - 30px));
+  line-height:1.5;
+  box-shadow:0 10px 35px #0008;
 }
 
 .spinner {
   display:inline-block;
-  width:13px;
-  height:13px;
+  width:15px;
+  height:15px;
   border:2px solid #777;
   border-top-color:var(--gold);
   border-radius:50%;
   animation:spin .7s linear infinite;
   vertical-align:middle;
+  flex-shrink:0;
 }
 
-.pairing-box {
-  border:1px solid #514124;
-  background:linear-gradient(145deg,#211b10,#15130f);
-  border-radius:13px;
-  padding:16px;
-  margin:20px 0;
+@keyframes spin {
+  to {transform:rotate(360deg)}
 }
 
-.pairing-box h3 {
-  margin:0 0 7px;
-  font:600 16px 'Space Grotesk';
-  color:var(--gold2);
-}
+/* TABLET */
 
-.pairing-box p {
-  margin:0 0 13px;
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.6;
-}
+@media(max-width:1050px) {
+  .layout {
+    grid-template-columns:220px minmax(0,1fr);
+  }
 
-.session-input {
-  letter-spacing:.04em;
-}
-
-@keyframes spin {to{transform:rotate(360deg)}}
-
-@media(max-width:800px) {
-  .layout {grid-template-columns:1fr}
   .side {
-    position:static;
-    padding:13px;
+    padding:22px 12px;
+  }
+
+  .main {
+    padding:25px 22px;
+  }
+
+  .stats {
+    gap:11px;
+  }
+
+  .stat {
+    padding:17px;
+  }
+}
+
+/* PHONE AND SMALL TABLET */
+
+@media(max-width:760px) {
+  body {
+    font-size:15px;
+  }
+
+  .layout {
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+  }
+
+  .side {
+    position:sticky;
+    top:0;
+    width:100%;
+    height:auto;
+    min-height:0;
+    padding:12px 14px;
+    display:flex;
     flex-direction:row;
     align-items:center;
+    flex-wrap:wrap;
     gap:8px;
     border-right:0;
     border-bottom:1px solid var(--line);
+    background:#0d0f13f5;
+    backdrop-filter:blur(16px);
   }
-  .side .brand {padding:0 8px}
-  .navlabel,.side-foot {display:none}
-  .nav {padding:9px;font-size:12px}
-  .nav b {display:none}
-  .side .nav:last-of-type {margin-left:auto}
-  .main {padding:22px 15px}
-  .stats {gap:8px}
-  .stat {padding:13px}
-  .stat strong {font-size:22px}
-  .top {align-items:flex-start}
-  .admin {display:none}
+
+  .side .brand {
+    padding:4px 7px;
+    font-size:18px;
+    width:100%;
+  }
+
+  .navlabel,
+  .side-foot {
+    display:none;
+  }
+
+  .side .nav {
+    flex:1 1 auto;
+    justify-content:center;
+    gap:7px;
+    padding:10px 9px;
+    min-height:43px;
+    margin:0;
+    font-size:12px;
+    background:#171a20;
+    border:1px solid #272b33;
+  }
+
+  .side .nav.active {
+    background:#302719;
+    border-color:#65502c;
+  }
+
+  .nav b {
+    display:block;
+    width:auto;
+    font-size:15px;
+  }
+
+  .side #logout {
+    flex:0 0 auto;
+    padding:10px 13px;
+  }
+
+  .main {
+    padding:23px 16px 40px;
+    width:100%;
+  }
+
+  .top {
+    align-items:flex-start;
+    margin-bottom:23px;
+  }
+
+  .top h1 {
+    font-size:27px;
+  }
+
+  .top p {
+    font-size:14px;
+  }
+
+  .admin {
+    display:none;
+  }
+
+  .stats {
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:9px;
+  }
+
+  .stat {
+    padding:14px 12px;
+    border-radius:14px;
+  }
+
+  .stat small {
+    font-size:12px;
+  }
+
+  .stat strong {
+    font-size:24px;
+  }
+
+  .card {
+    padding:17px;
+    border-radius:15px;
+  }
+
+  .section-head h2 {
+    font-size:18px;
+  }
+
+  .table-wrap {
+    display:none;
+  }
+
+  .mobile-app-list {
+    display:grid;
+  }
+
+  .repo {
+    align-items:flex-start;
+  }
+
+  .repo .tag {
+    white-space:normal;
+  }
+
+  .pairing-box {
+    padding:17px;
+  }
+
+  .field input {
+    min-height:50px;
+  }
+
+  .btn {
+    min-height:47px;
+  }
 }
 
-@media(max-width:480px) {
-  .stats {grid-template-columns:1fr 1fr}
-  .stats .stat:last-child {grid-column:span 2}
-  .section-head {align-items:flex-start}
-  .repo .btn {width:100%}
+/* SMALL PHONES */
+
+@media(max-width:430px) {
+  .main {
+    padding:19px 12px 32px;
+  }
+
+  .side {
+    padding:10px;
+    gap:6px;
+  }
+
+  .side .brand {
+    font-size:17px;
+  }
+
+  .side .nav {
+    font-size:11px;
+    padding:9px 5px;
+    gap:5px;
+  }
+
+  .side .nav b {
+    font-size:14px;
+  }
+
+  .side #logout {
+    padding:9px 10px;
+  }
+
+  .stats {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .stats .stat:last-child {
+    grid-column:span 2;
+  }
+
+  .stat {
+    padding:15px;
+  }
+
+  .stat strong {
+    font-size:25px;
+  }
+
+  .top h1 {
+    font-size:25px;
+  }
+
+  .section-head {
+    align-items:center;
+  }
+
+  .section-head .btn {
+    padding:10px 12px;
+    min-height:42px;
+    font-size:12px;
+  }
+
+  .repo {
+    flex-direction:column;
+  }
+
+  .repo .tag {
+    align-self:flex-start;
+  }
+
+  .mobile-app {
+    padding:15px;
+  }
+
+  .mobile-app .actions {
+    gap:8px;
+  }
+
+  .mobile-app .mini {
+    font-size:12px;
+    padding:9px 5px;
+  }
+
+  .modal-bg {
+    padding:10px;
+  }
+
+  .modal {
+    border-radius:15px;
+  }
+
+  .modal-actions {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+
+  .modal-actions .btn {
+    width:100%;
+  }
+
+  .login-wrap {
+    padding:15px;
+  }
+
+  .login-card {
+    padding:23px 19px;
+  }
+}
+
+/* VERY NARROW PHONES */
+
+@media(max-width:350px) {
+  .side .brand {
+    font-size:15px;
+  }
+
+  .side .nav {
+    font-size:10px;
+  }
+
+  .main {
+    padding-left:10px;
+    padding-right:10px;
+  }
+
+  .stat strong {
+    font-size:22px;
+  }
 }
 </style>
 </head>
@@ -537,22 +1007,25 @@ tr:last-child td {border:0}
     <div class="eyebrow" style="margin-top:28px">Private control panel</div>
     <h1>Welcome back.</h1>
 
-    <p class="muted" style="font-size:13px;line-height:1.6">
+    <p class="muted">
       Sign in with your administrator credentials to deploy and manage your Heroku applications.
     </p>
 
     <form id="loginForm">
       <div class="field">
-        <label>Admin email</label>
+        <label for="email">Admin email</label>
         <input id="email" type="email" autocomplete="username" placeholder="admin@example.com" required>
       </div>
 
       <div class="field">
-        <label>Password</label>
+        <label for="password">Password</label>
         <input id="password" type="password" autocomplete="current-password" placeholder="Your password" required>
       </div>
 
-      <button class="btn primary full" id="loginBtn">Sign in to dashboard</button>
+      <button class="btn primary full" id="loginBtn" type="submit">
+        Sign in to dashboard
+      </button>
+
       <div id="loginError" class="error"></div>
     </form>
 
@@ -645,6 +1118,10 @@ tr:last-child td {border:0}
         </table>
       </div>
 
+      <div class="mobile-app-list" id="overviewMobileApps">
+        <div class="empty">Loading applications…</div>
+      </div>
+
     </section>
 
     <section id="appsPage" class="hidden">
@@ -669,6 +1146,8 @@ tr:last-child td {border:0}
         </table>
       </div>
 
+      <div class="mobile-app-list" id="allMobileApps"></div>
+
     </section>
 
     <section id="deployPage" class="hidden">
@@ -676,16 +1155,16 @@ tr:last-child td {border:0}
       <div class="card">
         <div class="eyebrow">NEW HEROKU APPLICATION</div>
 
-        <h2 style="font:600 21px 'Space Grotesk'">
+        <h2 style="font:600 22px 'Space Grotesk';margin:12px 0">
           Deploy from GitHub
         </h2>
 
-        <p class="muted" style="font-size:13px">
+        <p class="muted" style="font-size:14px;line-height:1.7">
           Connect your WhatsApp account first, then deploy the bot to Heroku.
         </p>
 
         <div class="field">
-          <label>Heroku application name</label>
+          <label for="appName">Heroku application name</label>
           <input id="appName" placeholder="e.g. teddy-xmd-bot-01" maxlength="30">
           <div class="hint">
             3–30 characters. Lowercase letters, numbers and hyphens.
@@ -709,13 +1188,13 @@ tr:last-child td {border:0}
             Get Pairing Code ↗
           </button>
 
-          <div class="hint" style="margin-top:10px">
+          <div class="hint" style="margin-top:12px">
             Pairing website: teddyxmdpair-60b69f1c4cee.herokuapp.com
           </div>
         </div>
 
         <div class="field">
-          <label>Step 2 — WhatsApp Session ID</label>
+          <label for="sessionId">Step 2 — WhatsApp Session ID</label>
           <input
             id="sessionId"
             class="session-input"
@@ -740,12 +1219,12 @@ tr:last-child td {border:0}
           Deploy to Heroku →
         </button>
 
-        <div id="deployMessage" class="hint" style="margin-top:12px"></div>
+        <div id="deployMessage" class="hint" style="margin-top:14px"></div>
       </div>
 
       <div class="card">
         <div class="eyebrow">SOURCE CONFIGURATION</div>
-        <strong id="sourceName">TEDDY-XMD</strong>
+        <strong id="sourceName" style="display:block;margin-top:10px">TEDDY-XMD</strong>
         <p class="hint" id="sourceBranch">GitHub source details will appear here.</p>
       </div>
 
@@ -929,13 +1408,16 @@ function goPage(page) {
     deploy: "New deployment"
   }[page];
 
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
   if (page === "apps") loadApps();
   if (page === "deploy") loadManifest();
 }
 
-// APPLICATION ROWS
+// APPLICATION TABLE ROW
 function row(app, short) {
   const appName = esc(app.name);
+
   const appUrl = app.web_url
     ? `<a href="${esc(app.web_url)}" target="_blank" rel="noopener" style="color:var(--gold2)">Open app ↗</a>`
     : "No web URL";
@@ -971,11 +1453,76 @@ function row(app, short) {
   `;
 }
 
+// MOBILE APPLICATION CARD
+function mobileAppCard(app) {
+  const name = esc(app.name);
+
+  const link = app.web_url
+    ? `<a href="${esc(app.web_url)}" target="_blank" rel="noopener" style="color:var(--gold2)">Open app ↗</a>`
+    : "No web URL";
+
+  const created = app.created_at
+    ? new Date(app.created_at).toLocaleDateString()
+    : "—";
+
+  return `
+    <article class="mobile-app">
+
+      <div class="mobile-app-head">
+        <div>
+          <div class="mobile-app-name">${name}</div>
+          <div class="sub">${link}</div>
+        </div>
+        ${statusHTML(app)}
+      </div>
+
+      <div class="mobile-app-info">
+        <div>
+          <small>Region</small>
+          <strong>${esc(app.region || "—")}</strong>
+        </div>
+
+        <div>
+          <small>Created</small>
+          <strong>${created}</strong>
+        </div>
+
+        <div>
+          <small>Running dynos</small>
+          <strong>${Number(app.running_dynos || 0)}</strong>
+        </div>
+
+        <div>
+          <small>Desired dynos</small>
+          <strong>${Number(app.desired_web_dynos || 0)}</strong>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="mini" onclick="viewLogs('${name}')">Logs</button>
+        <button class="mini" onclick="restartApp('${name}')">Restart</button>
+        <button class="mini" onclick="redeployApp('${name}')">Redeploy</button>
+        <button class="mini" style="color:#ffaaaa" onclick="deleteApp('${name}')">Delete</button>
+      </div>
+
+    </article>
+  `;
+}
+
 // LOAD APPLICATIONS
 async function loadApps(silent = false) {
   if (!silent) {
     $("appsRows").innerHTML =
       '<tr><td colspan="4" class="empty">Loading applications…</td></tr>';
+
+    $("allAppsRows").innerHTML =
+      '<tr><td colspan="5" class="empty">Loading applications…</td></tr>';
+
+    $("overviewMobileApps").innerHTML =
+      '<div class="empty">Loading applications…</div>';
+
+    $("allMobileApps").innerHTML =
+      '<div class="empty">Loading applications…</div>';
   }
 
   try {
@@ -993,6 +1540,8 @@ async function loadApps(silent = false) {
         ["offline", "crashed", "scaled-down"].includes(app.status)
       ).length;
 
+    const empty = '<div class="empty">No applications found.</div>';
+
     $("appsRows").innerHTML =
       apps.map(app => row(app, true)).join("") ||
       '<tr><td colspan="4" class="empty">No applications found.</td></tr>';
@@ -1001,13 +1550,27 @@ async function loadApps(silent = false) {
       apps.map(app => row(app, false)).join("") ||
       '<tr><td colspan="5" class="empty">No applications found.</td></tr>';
 
+    $("overviewMobileApps").innerHTML =
+      apps.map(mobileAppCard).join("") || empty;
+
+    $("allMobileApps").innerHTML =
+      apps.map(mobileAppCard).join("") || empty;
+
   } catch (error) {
     if (!silent) {
+      const message = esc(error.message);
+
       $("appsRows").innerHTML =
-        `<tr><td colspan="4" class="empty">${esc(error.message)}</td></tr>`;
+        `<tr><td colspan="4" class="empty">${message}</td></tr>`;
 
       $("allAppsRows").innerHTML =
-        `<tr><td colspan="5" class="empty">${esc(error.message)}</td></tr>`;
+        `<tr><td colspan="5" class="empty">${message}</td></tr>`;
+
+      $("overviewMobileApps").innerHTML =
+        `<div class="empty">${message}</div>`;
+
+      $("allMobileApps").innerHTML =
+        `<div class="empty">${message}</div>`;
     }
 
     toast(error.message);
@@ -1020,6 +1583,7 @@ async function loadManifest() {
     manifestData = await api("/api/manifest");
 
     $("repoText").textContent = manifestData.repository || "Connected";
+
     $("sourceName").textContent =
       manifestData.manifest?.name || "TEDDY-XMD";
 
@@ -1029,8 +1593,7 @@ async function loadManifest() {
 
     const fields = manifestData.manifest?.env || {};
 
-    // SESSION_ID has its own dedicated input above.
-    // Do not display a second SESSION_ID field from app.json.
+    // SESSION_ID has its own dedicated input.
     $("envFields").innerHTML = Object.entries(fields)
       .filter(([key]) => key !== "SESSION_ID")
       .map(([key, value]) => `
@@ -1082,7 +1645,6 @@ async function deployApp() {
     env[input.dataset.env] = input.value;
   });
 
-  // The manually entered session ID takes priority.
   env.SESSION_ID = sessionId;
 
   $("deployBtn").disabled = true;
@@ -1105,14 +1667,18 @@ async function deployApp() {
 
     if (data.setup?.id) {
       const track = document.createElement("button");
+
       track.className = "mini";
       track.textContent = "Track deployment";
       track.onclick = () => watchSetup(data.setup.id);
-      $("deployMessage").appendChild(document.createTextNode(" "));
+
+      $("deployMessage").appendChild(
+        document.createTextNode(" ")
+      );
+
       $("deployMessage").appendChild(track);
     }
 
-    // Clear the session field after a successful submission.
     $("sessionId").value = "";
 
     loadApps(true);
@@ -1254,7 +1820,10 @@ async function deleteApp(name) {
 
 // LOGS
 async function viewLogs(name) {
-  modal(`${name} · Logs`, '<p class="muted">Fetching latest Heroku logs…</p>');
+  modal(
+    `${name} · Logs`,
+    '<p class="muted">Fetching latest Heroku logs…</p>'
+  );
 
   try {
     const logs = await api(

@@ -56,3 +56,8 @@ Heroku's App Setups API requires a gzipped tar archive with an `app.json` manife
 - The Heroku API may reject app creation if account verification, app limits, region/stack availability, or billing requirements prevent it.
 - Logs are fetched as a recent snapshot, not a continuously streaming live tail.
 - The panel uses Express's in-memory session store. For production multi-instance hosting, replace it with a persistent session store.
+
+## TEDDY-XMD Android app
+The installed app reads `public/app-config.json` on launch. Update `websiteUrl` and `allowedHosts` there to redirect it to a different HTTPS dashboard without rebuilding the APK. Keep the original app-config host online; see `ANDROID-APP-README.md`.
+
+The repository now includes an Android WebView app in `android/`. It opens the private deployment dashboard and uses the provided Teddy Tech image as its launcher icon. GitHub Actions builds a debug APK and places it at `public/downloads/TEDDY-XMD.apk`; the dashboard's **Install TEDDY-XMD** buttons download that file after the build commit is deployed. See `ANDROID-APP-README.md`.

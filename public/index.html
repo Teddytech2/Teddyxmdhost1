@@ -1033,6 +1033,7 @@ tr:last-child td {
   border-radius:24px; background:linear-gradient(145deg,#191a1e,#0d0e11);
   box-shadow:0 24px 90px rgba(0,0,0,.6); text-align:center;
 }
+.install-app-link[hidden] { display:none !important; }
 .install-prompt img {
   width:82px; height:82px; border-radius:22px; object-fit:cover;
   border:1px solid rgba(214,173,88,.55); margin:0 auto 16px; display:block;
@@ -1946,15 +1947,29 @@ checkAuth();
 
 <script>
 
-// Show the Android install invitation on website visits, but not inside the installed app.
+// Show the Android install invitation only after the real APK exists.
+// This prevents a missing APK route from falling back to index.html.
 (function showAndroidInstallPrompt() {
   const isInstalledApp = /TEDDYXMDApp/i.test(navigator.userAgent) ||
     window.matchMedia('(display-mode: standalone)').matches;
   if (isInstalledApp) return;
+
   const prompt = document.getElementById('installPrompt');
   const dismiss = document.getElementById('dismissInstallPrompt');
+  const installLinks = document.querySelectorAll('.install-app-link');
   if (!prompt || !dismiss) return;
-  window.setTimeout(() => prompt.classList.add('show'), 650);
+
+  // Hide install controls until the server confirms that an APK is present.
+  installLinks.forEach(link => { link.hidden = true; });
+
+  fetch('/downloads/TEDDY-XMD.apk', { method: 'HEAD', cache: 'no-store' })
+    .then(response => {
+      if (!response.ok) return;
+      installLinks.forEach(link => { link.hidden = false; });
+      window.setTimeout(() => prompt.classList.add('show'), 650);
+    })
+    .catch(() => { /* APK is not available; keep install controls hidden. */ });
+
   dismiss.addEventListener('click', () => prompt.classList.remove('show'));
   prompt.addEventListener('click', event => {
     if (event.target === prompt) prompt.classList.remove('show');

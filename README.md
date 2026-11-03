@@ -61,3 +61,8 @@ Heroku's App Setups API requires a gzipped tar archive with an `app.json` manife
 The installed app reads `public/app-config.json` on launch. Update `websiteUrl` and `allowedHosts` there to redirect it to a different HTTPS dashboard without rebuilding the APK. Keep the original app-config host online; see `ANDROID-APP-README.md`.
 
 The repository now includes an Android WebView app in `android/`. It opens the private deployment dashboard and uses the provided Teddy Tech image as its launcher icon. GitHub Actions builds a debug APK and places it at `public/downloads/TEDDY-XMD.apk`; the dashboard's **Install TEDDY-XMD** buttons download that file after the build commit is deployed. See `ANDROID-APP-README.md`.
+
+
+## Android app
+
+See [ANDROID-APP-README.md](ANDROID-APP-README.md) for building the TEDDY-XMD Android APK and configuring its website destination.

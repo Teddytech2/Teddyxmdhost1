@@ -2,6 +2,7 @@ package com.teddytech.teddyxmd;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Build;
 import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -66,7 +67,9 @@ public class MainActivity extends Activity {
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
         settings.setSupportMultipleWindows(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        settings.setSafeBrowsingEnabled(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            settings.setSafeBrowsingEnabled(true);
+        }
         settings.setUserAgentString(settings.getUserAgentString() + " TEDDYXMDApp");
 
         webView.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) -> {

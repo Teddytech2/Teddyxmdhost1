@@ -1,0 +1,20 @@
+{
+  "name": "TEDDY-XMD DEPLOYER",
+  "description": "Private admin panel for deploying and managing TEDDY-XMD apps on Heroku.",
+  "repository": "https://github.com/Teddyxmd/TEDDY-XMD",
+  "keywords": [
+    "node",
+    "heroku",
+    "deployment"
+  ],
+  "env": {
+    "NODE_ENV": {
+      "description": "Runtime environment",
+      "value": "production"
+    },
+    "SESSION_SECRET": {
+      "description": "Session signing secret. Set a long random value in Heroku config vars.",
+      "required": true
+    }
+  }
+}

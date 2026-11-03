@@ -1,0 +1,13 @@
+{
+  "name": "teddy-xmd-deployer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Private Heroku deployment and app management panel for TEDDY-XMD",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}

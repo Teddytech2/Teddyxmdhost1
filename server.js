@@ -4,6 +4,7 @@ const session = require("express-session");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const path = require("path");
+const fs = require("fs");
 const crypto = require("crypto");
 const config = require("./config");
 
@@ -609,6 +610,22 @@ app.get("/api/apps/:name/logs", requireAdmin, async (req, res) => {
   } catch (error) {
     sendError(res, error);
   }
+});
+
+// ANDROID APK DOWNLOAD
+// Do not let the single-page-app fallback return index.html for a missing APK.
+app.get("/downloads/TEDDY-XMD.apk", (req, res) => {
+  const apkPath = path.join(__dirname, "public", "downloads", "TEDDY-XMD.apk");
+
+  if (!fs.existsSync(apkPath)) {
+    return res.status(404).type("text/plain").send(
+      "TEDDY-XMD Android APK is not available yet. Run the GitHub Actions workflow: Build TEDDY-XMD Android APK, then redeploy this dashboard."
+    );
+  }
+
+  res.setHeader("Content-Type", "application/vnd.android.package-archive");
+  res.setHeader("Content-Disposition", 'attachment; filename="TEDDY-XMD.apk"');
+  return res.sendFile(apkPath);
 });
 
 // FRONTEND

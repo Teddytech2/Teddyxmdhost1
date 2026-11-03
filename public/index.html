@@ -467,6 +467,31 @@ tr:last-child td {border:0}
   vertical-align:middle;
 }
 
+.pairing-box {
+  border:1px solid #514124;
+  background:linear-gradient(145deg,#211b10,#15130f);
+  border-radius:13px;
+  padding:16px;
+  margin:20px 0;
+}
+
+.pairing-box h3 {
+  margin:0 0 7px;
+  font:600 16px 'Space Grotesk';
+  color:var(--gold2);
+}
+
+.pairing-box p {
+  margin:0 0 13px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.6;
+}
+
+.session-input {
+  letter-spacing:.04em;
+}
+
 @keyframes spin {to{transform:rotate(360deg)}}
 
 @media(max-width:800px) {
@@ -656,8 +681,7 @@ tr:last-child td {border:0}
         </h2>
 
         <p class="muted" style="font-size:13px">
-          The latest source archive is fetched from your configured repository.
-          The app.json manifest is read automatically.
+          Connect your WhatsApp account first, then deploy the bot to Heroku.
         </p>
 
         <div class="field">
@@ -669,9 +693,50 @@ tr:last-child td {border:0}
           </div>
         </div>
 
-        <div id="envFields"></div>
+        <div class="pairing-box">
+          <h3>Step 1 — Connect WhatsApp</h3>
+          <p>
+            Open the TEDDY-XMD pairing website, enter your WhatsApp number
+            and generate your pairing code. Complete the linking process
+            and copy the generated session ID.
+          </p>
 
-        <button class="btn primary" id="deployBtn" onclick="deployApp()">
+          <button
+            type="button"
+            class="btn secondary full"
+            onclick="openPairingWebsite()"
+          >
+            Get Pairing Code ↗
+          </button>
+
+          <div class="hint" style="margin-top:10px">
+            Pairing website: teddyxmdpair-60b69f1c4cee.herokuapp.com
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Step 2 — WhatsApp Session ID</label>
+          <input
+            id="sessionId"
+            class="session-input"
+            type="password"
+            placeholder="Paste your TEDDY-XMD session ID here"
+            autocomplete="off"
+            spellcheck="false"
+            required
+          >
+          <div class="hint">
+            Required. Your session ID will be sent to Heroku as SESSION_ID.
+            Keep it private.
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Other app configuration</label>
+          <div id="envFields"></div>
+        </div>
+
+        <button class="btn primary full" id="deployBtn" onclick="deployApp()">
           Deploy to Heroku →
         </button>
 
@@ -694,6 +759,9 @@ tr:last-child td {border:0}
 
 <script>
 const $ = id => document.getElementById(id);
+
+const PAIRING_WEBSITE =
+  "https://teddyxmdpair-60b69f1c4cee.herokuapp.com/";
 
 let appsCache = [];
 let manifestData = null;
@@ -740,6 +808,15 @@ function esc(value) {
     '"': "&quot;",
     "'": "&#39;"
   }[char]));
+}
+
+// PAIRING WEBSITE
+function openPairingWebsite() {
+  window.open(
+    PAIRING_WEBSITE,
+    "_blank",
+    "noopener,noreferrer"
+  );
 }
 
 // STATUS DISPLAY
@@ -942,34 +1019,39 @@ async function loadManifest() {
   try {
     manifestData = await api("/api/manifest");
 
-    $("repoText").textContent = manifestData.repository;
-    $("branchName").textContent = manifestData.branch;
-    $("sourceName").textContent = manifestData.manifest.name;
+    $("repoText").textContent = manifestData.repository || "Connected";
+    $("sourceName").textContent =
+      manifestData.manifest?.name || "TEDDY-XMD";
 
     $("sourceBranch").textContent =
-      manifestData.repository + " · branch " + manifestData.branch;
+      (manifestData.repository || "GitHub repository") +
+      " · branch " + (manifestData.branch || "main");
 
-    const fields = manifestData.manifest.env || {};
+    const fields = manifestData.manifest?.env || {};
 
-    $("envFields").innerHTML = Object.entries(fields).map(([key, value]) => `
-      <div class="field">
-        <label>
-          ${esc(key)}
-          ${value.required
-            ? '<span style="color:#e7b85f">*</span>'
-            : ""}
-        </label>
+    // SESSION_ID has its own dedicated input above.
+    // Do not display a second SESSION_ID field from app.json.
+    $("envFields").innerHTML = Object.entries(fields)
+      .filter(([key]) => key !== "SESSION_ID")
+      .map(([key, value]) => `
+        <div class="field">
+          <label>
+            ${esc(key)}
+            ${value.required
+              ? '<span style="color:#e7b85f">*</span>'
+              : ""}
+          </label>
 
-        <input
-          data-env="${esc(key)}"
-          type="text"
-          placeholder="${esc(value.description || "Optional configuration")}"
-          value="${esc(value.value || "")}"
-        >
+          <input
+            data-env="${esc(key)}"
+            type="text"
+            placeholder="${esc(value.description || "Optional configuration")}"
+            value="${esc(value.value || "")}"
+          >
 
-        <div class="hint">${esc(value.description || "")}</div>
-      </div>
-    `).join("");
+          <div class="hint">${esc(value.description || "")}</div>
+        </div>
+      `).join("");
 
   } catch (error) {
     $("envFields").innerHTML =
@@ -980,12 +1062,28 @@ async function loadManifest() {
 // DEPLOY
 async function deployApp() {
   const name = $("appName").value.trim().toLowerCase();
+  const sessionId = $("sessionId").value.trim();
+
+  if (!name) {
+    return toast("Enter a Heroku application name.");
+  }
+
+  if (!/^[a-z0-9](?:[a-z0-9-]{1,28}[a-z0-9])$/.test(name)) {
+    return toast("Enter a valid Heroku app name.");
+  }
+
+  if (!sessionId) {
+    return toast("Please enter your WhatsApp SESSION_ID first.");
+  }
 
   const env = {};
 
   document.querySelectorAll("[data-env]").forEach(input => {
     env[input.dataset.env] = input.value;
   });
+
+  // The manually entered session ID takes priority.
+  env.SESSION_ID = sessionId;
 
   $("deployBtn").disabled = true;
   $("deployBtn").innerHTML =
@@ -1000,16 +1098,22 @@ async function deployApp() {
       body: JSON.stringify({ name, env })
     });
 
-    $("deployMessage").innerHTML = `
-      Deployment setup created:
-      <b>${esc(data.setup.id)}</b>.
-      Status: ${esc(data.setup.status)}.
-      <button class="mini" onclick="watchSetup('${esc(data.setup.id)}')">
-        Track deployment
-      </button>
-    `;
+    $("deployMessage").textContent =
+      `Deployment setup created. Status: ${data.setup?.status || "Submitted"}.`;
 
     toast("Heroku deployment started");
+
+    if (data.setup?.id) {
+      const track = document.createElement("button");
+      track.className = "mini";
+      track.textContent = "Track deployment";
+      track.onclick = () => watchSetup(data.setup.id);
+      $("deployMessage").appendChild(document.createTextNode(" "));
+      $("deployMessage").appendChild(track);
+    }
+
+    // Clear the session field after a successful submission.
+    $("sessionId").value = "";
 
     loadApps(true);
 

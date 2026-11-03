@@ -1,85 +1,1201 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#090a0c"><meta name="description" content="Private TEDDY-XMD Heroku deployment and management panel.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090a0c">
+<meta name="description" content="Private TEDDY-XMD Heroku deployment and management panel.">
 <title>TEDDY-XMD DEPLOYER | Teddy Tech</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
 <style>
-:root{--bg:#090a0c;--panel:#111318;--panel2:#171a20;--line:#272b33;--gold:#d6ad58;--gold2:#f2d28c;--text:#f4f2ed;--muted:#9297a2;--green:#55c98b;--red:#ef7373}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% -10%,#292114 0,transparent 35%),var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}button,input{font:inherit}button{cursor:pointer;border:0}.hidden{display:none!important}.login-wrap{min-height:100vh;display:grid;place-items:center;padding:22px}.login-card{width:min(420px,100%);padding:34px;background:rgba(17,19,24,.96);border:1px solid var(--line);border-radius:22px;box-shadow:0 25px 90px #0008}.brand{font:700 20px 'Space Grotesk';letter-spacing:.04em}.brand span{color:var(--gold)}.mark{width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,#f1d18a,#9c702c);display:grid;place-items:center;color:#17120a;font-size:25px;margin-bottom:22px}.muted{color:var(--muted)}.eyebrow{color:var(--gold);font-size:11px;letter-spacing:.19em;font-weight:700;text-transform:uppercase}.login-card h1{font:700 28px 'Space Grotesk';margin:10px 0}.field{display:grid;gap:8px;margin:17px 0}.field label{font-size:13px;color:#c5c7cd}.field input{width:100%;background:#0b0d11;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:13px 14px;outline:none}.field input:focus{border-color:var(--gold)}.btn{padding:11px 15px;border-radius:10px;font-weight:700;transition:.2s}.primary{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#17130b}.primary:hover{filter:brightness(1.08);transform:translateY(-1px)}.secondary{background:#22262e;color:var(--text);border:1px solid #343944}.danger{background:#3a2023;color:#ffb5b5;border:1px solid #69353a}.full{width:100%}.error{color:#ff9999;font-size:13px;min-height:18px;margin-top:10px}.layout{display:grid;grid-template-columns:250px 1fr;min-height:100vh}.side{border-right:1px solid var(--line);padding:25px 17px;background:#0d0f13;display:flex;flex-direction:column}.side .brand{padding:5px 10px 30px}.navlabel{font-size:10px;color:#707682;letter-spacing:.17em;font-weight:700;padding:12px 11px}.nav{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;color:#aeb2bc;text-decoration:none;margin:3px 0;font-size:14px;cursor:pointer}.nav.active,.nav:hover{background:#252117;color:var(--gold2)}.nav b{font-size:17px;width:20px;text-align:center}.side-foot{margin-top:auto;border-top:1px solid var(--line);padding:18px 10px 0;font-size:12px;color:var(--muted)}.main{padding:30px clamp(18px,4vw,52px);max-width:1500px;width:100%;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:30px}.top h1{font:700 clamp(24px,3vw,32px) 'Space Grotesk';margin:4px 0}.top p{margin:0;color:var(--muted);font-size:13px}.admin{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);padding:9px 13px;border-radius:12px;font-size:12px}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px #55c98b88}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}.stat,.card{background:linear-gradient(145deg,#15181e,#101217);border:1px solid var(--line);border-radius:16px;padding:19px}.stat small{color:var(--muted);font-size:12px}.stat strong{display:block;font:700 27px 'Space Grotesk';margin-top:8px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.section-head h2{font:600 18px 'Space Grotesk';margin:0}.card{margin-bottom:18px}.repo{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}.repo strong{display:block;margin-bottom:5px}.repo small{color:var(--muted)}.tag{font-size:11px;padding:6px 9px;border-radius:30px;background:#292317;color:var(--gold2);border:1px solid #514124}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:620px}th{text-align:left;color:#828894;font-size:11px;text-transform:uppercase;letter-spacing:.1em;padding:12px;border-bottom:1px solid var(--line)}td{padding:15px 12px;border-bottom:1px solid #242830;font-size:13px}tr:last-child td{border:0}.appname{font-weight:700}.sub{color:var(--muted);font-size:11px;margin-top:4px}.status{display:inline-flex;align-items:center;gap:7px;color:var(--green);font-size:12px}.status:before{content:'';width:7px;height:7px;border-radius:50%;background:var(--green)}.actions{display:flex;gap:7px;flex-wrap:wrap}.mini{padding:7px 9px;border-radius:8px;background:#242831;color:#e7e8eb;font-size:11px;font-weight:700}.mini:hover{background:#353b46}.empty{text-align:center;color:var(--muted);padding:35px}.modal-bg{position:fixed;inset:0;background:#000b;display:grid;place-items:center;padding:18px;z-index:5}.modal{width:min(600px,100%);max-height:90vh;overflow:auto;background:#13161c;border:1px solid #353a43;border-radius:18px;padding:24px;box-shadow:0 20px 80px #000}.modal h2{font:700 21px 'Space Grotesk';margin:0 0 7px}.modal .field{margin:14px 0}.modal input{background:#0a0c10}.hint{font-size:11px;color:var(--muted);line-height:1.5}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}.logbox{white-space:pre-wrap;background:#080a0d;border:1px solid var(--line);border-radius:10px;padding:14px;max-height:55vh;overflow:auto;font:12px/1.6 ui-monospace,monospace;color:#cbd0d8}.toast{position:fixed;right:20px;bottom:20px;background:#20252c;border:1px solid #414854;padding:13px 16px;border-radius:12px;z-index:10;font-size:13px;max-width:90vw}.spinner{display:inline-block;width:13px;height:13px;border:2px solid #777;border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}@keyframes spin{to{transform:rotate(360deg)}}@media(max-width:800px){.layout{grid-template-columns:1fr}.side{position:static;padding:13px;flex-direction:row;align-items:center;gap:8px;border-right:0;border-bottom:1px solid var(--line)}.side .brand{padding:0 8px}.navlabel,.side-foot{display:none}.nav{padding:9px;font-size:12px}.nav b{display:none}.side .nav:last-of-type{margin-left:auto}.main{padding:22px 15px}.stats{gap:8px}.stat{padding:13px}.stat strong{font-size:22px}.top{align-items:flex-start}.admin{display:none}}@media(max-width:480px){.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:span 2}.section-head{align-items:flex-start}.repo .btn{width:100%}}
+:root {
+  --bg:#090a0c;
+  --panel:#111318;
+  --panel2:#171a20;
+  --line:#272b33;
+  --gold:#d6ad58;
+  --gold2:#f2d28c;
+  --text:#f4f2ed;
+  --muted:#9297a2;
+  --green:#55c98b;
+  --red:#ef7373;
+  --yellow:#e7b85f;
+}
+
+* {box-sizing:border-box}
+
+body {
+  margin:0;
+  background:radial-gradient(ellipse at 80% -10%,#292114 0,transparent 35%),var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  min-height:100vh;
+}
+
+button,input {font:inherit}
+button {cursor:pointer;border:0}
+.hidden {display:none!important}
+
+.login-wrap {
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:22px;
+}
+
+.login-card {
+  width:min(420px,100%);
+  padding:34px;
+  background:rgba(17,19,24,.96);
+  border:1px solid var(--line);
+  border-radius:22px;
+  box-shadow:0 25px 90px #0008;
+}
+
+.brand {
+  font:700 20px 'Space Grotesk';
+  letter-spacing:.04em;
+}
+
+.brand span {color:var(--gold)}
+
+.mark {
+  width:48px;
+  height:48px;
+  border-radius:15px;
+  background:linear-gradient(135deg,#f1d18a,#9c702c);
+  display:grid;
+  place-items:center;
+  color:#17120a;
+  font-size:25px;
+  margin-bottom:22px;
+}
+
+.muted {color:var(--muted)}
+
+.eyebrow {
+  color:var(--gold);
+  font-size:11px;
+  letter-spacing:.19em;
+  font-weight:700;
+  text-transform:uppercase;
+}
+
+.login-card h1 {
+  font:700 28px 'Space Grotesk';
+  margin:10px 0;
+}
+
+.field {
+  display:grid;
+  gap:8px;
+  margin:17px 0;
+}
+
+.field label {
+  font-size:13px;
+  color:#c5c7cd;
+}
+
+.field input {
+  width:100%;
+  background:#0b0d11;
+  color:var(--text);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:13px 14px;
+  outline:none;
+}
+
+.field input:focus {border-color:var(--gold)}
+
+.btn {
+  padding:11px 15px;
+  border-radius:10px;
+  font-weight:700;
+  transition:.2s;
+}
+
+.primary {
+  background:linear-gradient(135deg,var(--gold2),var(--gold));
+  color:#17130b;
+}
+
+.primary:hover {
+  filter:brightness(1.08);
+  transform:translateY(-1px);
+}
+
+.secondary {
+  background:#22262e;
+  color:var(--text);
+  border:1px solid #343944;
+}
+
+.danger {
+  background:#3a2023;
+  color:#ffb5b5;
+  border:1px solid #69353a;
+}
+
+.full {width:100%}
+
+.error {
+  color:#ff9999;
+  font-size:13px;
+  min-height:18px;
+  margin-top:10px;
+}
+
+.layout {
+  display:grid;
+  grid-template-columns:250px 1fr;
+  min-height:100vh;
+}
+
+.side {
+  border-right:1px solid var(--line);
+  padding:25px 17px;
+  background:#0d0f13;
+  display:flex;
+  flex-direction:column;
+}
+
+.side .brand {padding:5px 10px 30px}
+
+.navlabel {
+  font-size:10px;
+  color:#707682;
+  letter-spacing:.17em;
+  font-weight:700;
+  padding:12px 11px;
+}
+
+.nav {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  border-radius:10px;
+  color:#aeb2bc;
+  text-decoration:none;
+  margin:3px 0;
+  font-size:14px;
+  cursor:pointer;
+}
+
+.nav.active,.nav:hover {
+  background:#252117;
+  color:var(--gold2);
+}
+
+.nav b {
+  font-size:17px;
+  width:20px;
+  text-align:center;
+}
+
+.side-foot {
+  margin-top:auto;
+  border-top:1px solid var(--line);
+  padding:18px 10px 0;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.main {
+  padding:30px clamp(18px,4vw,52px);
+  max-width:1500px;
+  width:100%;
+  margin:auto;
+}
+
+.top {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  margin-bottom:30px;
+}
+
+.top h1 {
+  font:700 clamp(24px,3vw,32px) 'Space Grotesk';
+  margin:4px 0;
+}
+
+.top p {
+  margin:0;
+  color:var(--muted);
+  font-size:13px;
+}
+
+.admin {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  padding:9px 13px;
+  border-radius:12px;
+  font-size:12px;
+}
+
+.dot {
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 12px #55c98b88;
+}
+
+.stats {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin-bottom:22px;
+}
+
+.stat,.card {
+  background:linear-gradient(145deg,#15181e,#101217);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:19px;
+}
+
+.stat small {
+  color:var(--muted);
+  font-size:12px;
+}
+
+.stat strong {
+  display:block;
+  font:700 27px 'Space Grotesk';
+  margin-top:8px;
+}
+
+.section-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:16px;
+}
+
+.section-head h2 {
+  font:600 18px 'Space Grotesk';
+  margin:0;
+}
+
+.card {margin-bottom:18px}
+
+.repo {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  flex-wrap:wrap;
+}
+
+.repo strong {
+  display:block;
+  margin-bottom:5px;
+}
+
+.repo small {color:var(--muted)}
+
+.tag {
+  font-size:11px;
+  padding:6px 9px;
+  border-radius:30px;
+  background:#292317;
+  color:var(--gold2);
+  border:1px solid #514124;
+}
+
+.table-wrap {overflow:auto}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  min-width:650px;
+}
+
+th {
+  text-align:left;
+  color:#828894;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  padding:12px;
+  border-bottom:1px solid var(--line);
+}
+
+td {
+  padding:15px 12px;
+  border-bottom:1px solid #242830;
+  font-size:13px;
+}
+
+tr:last-child td {border:0}
+
+.appname {font-weight:700}
+
+.sub {
+  color:var(--muted);
+  font-size:11px;
+  margin-top:4px;
+}
+
+.status {
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.status-dot {
+  width:7px;
+  height:7px;
+  display:inline-block;
+  border-radius:50%;
+}
+
+.actions {
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+}
+
+.mini {
+  padding:7px 9px;
+  border-radius:8px;
+  background:#242831;
+  color:#e7e8eb;
+  font-size:11px;
+  font-weight:700;
+}
+
+.mini:hover {background:#353b46}
+
+.empty {
+  text-align:center;
+  color:var(--muted);
+  padding:35px;
+}
+
+.modal-bg {
+  position:fixed;
+  inset:0;
+  background:#000b;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  z-index:5;
+}
+
+.modal {
+  width:min(600px,100%);
+  max-height:90vh;
+  overflow:auto;
+  background:#13161c;
+  border:1px solid #353a43;
+  border-radius:18px;
+  padding:24px;
+  box-shadow:0 20px 80px #000;
+}
+
+.modal h2 {
+  font:700 21px 'Space Grotesk';
+  margin:0 0 7px;
+}
+
+.modal .field {margin:14px 0}
+.modal input {background:#0a0c10}
+
+.hint {
+  font-size:11px;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.modal-actions {
+  display:flex;
+  justify-content:flex-end;
+  gap:9px;
+  margin-top:20px;
+}
+
+.logbox {
+  white-space:pre-wrap;
+  background:#080a0d;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:14px;
+  max-height:55vh;
+  overflow:auto;
+  font:12px/1.6 ui-monospace,monospace;
+  color:#cbd0d8;
+}
+
+.toast {
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  background:#20252c;
+  border:1px solid #414854;
+  padding:13px 16px;
+  border-radius:12px;
+  z-index:10;
+  font-size:13px;
+  max-width:90vw;
+}
+
+.spinner {
+  display:inline-block;
+  width:13px;
+  height:13px;
+  border:2px solid #777;
+  border-top-color:var(--gold);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  vertical-align:middle;
+}
+
+@keyframes spin {to{transform:rotate(360deg)}}
+
+@media(max-width:800px) {
+  .layout {grid-template-columns:1fr}
+  .side {
+    position:static;
+    padding:13px;
+    flex-direction:row;
+    align-items:center;
+    gap:8px;
+    border-right:0;
+    border-bottom:1px solid var(--line);
+  }
+  .side .brand {padding:0 8px}
+  .navlabel,.side-foot {display:none}
+  .nav {padding:9px;font-size:12px}
+  .nav b {display:none}
+  .side .nav:last-of-type {margin-left:auto}
+  .main {padding:22px 15px}
+  .stats {gap:8px}
+  .stat {padding:13px}
+  .stat strong {font-size:22px}
+  .top {align-items:flex-start}
+  .admin {display:none}
+}
+
+@media(max-width:480px) {
+  .stats {grid-template-columns:1fr 1fr}
+  .stats .stat:last-child {grid-column:span 2}
+  .section-head {align-items:flex-start}
+  .repo .btn {width:100%}
+}
 </style>
 </head>
+
 <body>
+
 <div id="login" class="login-wrap">
   <div class="login-card">
-    <div class="mark">♛</div><div class="brand">TEDDY<span>-XMD</span> DEPLOYER</div>
-    <div class="eyebrow" style="margin-top:28px">Private control panel</div><h1>Welcome back.</h1>
-    <p class="muted" style="font-size:13px;line-height:1.6">Sign in with your administrator credentials to deploy and manage your Heroku applications.</p>
+    <div class="mark">♛</div>
+    <div class="brand">TEDDY<span>-XMD</span> DEPLOYER</div>
+
+    <div class="eyebrow" style="margin-top:28px">Private control panel</div>
+    <h1>Welcome back.</h1>
+
+    <p class="muted" style="font-size:13px;line-height:1.6">
+      Sign in with your administrator credentials to deploy and manage your Heroku applications.
+    </p>
+
     <form id="loginForm">
-      <div class="field"><label>Admin email</label><input id="email" type="email" autocomplete="username" placeholder="admin@example.com" required></div>
-      <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Your password" required></div>
-      <button class="btn primary full" id="loginBtn">Sign in to dashboard</button><div id="loginError" class="error"></div>
+      <div class="field">
+        <label>Admin email</label>
+        <input id="email" type="email" autocomplete="username" placeholder="admin@example.com" required>
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input id="password" type="password" autocomplete="current-password" placeholder="Your password" required>
+      </div>
+
+      <button class="btn primary full" id="loginBtn">Sign in to dashboard</button>
+      <div id="loginError" class="error"></div>
     </form>
-    <div class="hint" style="margin-top:20px">ACCESS RESTRICTED · POWERED BY TEDDY TECH</div>
+
+    <div class="hint" style="margin-top:20px">
+      ACCESS RESTRICTED · POWERED BY TEDDY TECH
+    </div>
   </div>
 </div>
+
 <div id="dashboard" class="layout hidden">
+
   <aside class="side">
     <div class="brand">TEDDY<span>-XMD</span></div>
+
     <div class="navlabel">WORKSPACE</div>
+
     <a class="nav active" data-page="overview"><b>▦</b> Overview</a>
     <a class="nav" data-page="apps"><b>◈</b> Applications</a>
     <a class="nav" data-page="deploy"><b>＋</b> New deployment</a>
-    <div class="side-foot">TEDDY TECH<br><span style="color:#626873">KING OF AUTOMATION</span></div>
+
+    <div class="side-foot">
+      TEDDY TECH<br>
+      <span style="color:#626873">KING OF AUTOMATION</span>
+    </div>
+
     <a class="nav" id="logout"><b>↪</b> Logout</a>
   </aside>
+
   <main class="main">
-    <header class="top"><div><div class="eyebrow">HEROKU CONTROL CENTER</div><h1 id="pageTitle">Overview</h1><p>Deploy and manage your TEDDY-XMD applications.</p></div><div class="admin"><span class="dot"></span> Administrator</div></header>
+
+    <header class="top">
+      <div>
+        <div class="eyebrow">HEROKU CONTROL CENTER</div>
+        <h1 id="pageTitle">Overview</h1>
+        <p>Deploy and manage your TEDDY-XMD applications.</p>
+      </div>
+
+      <div class="admin">
+        <span class="dot"></span>
+        Administrator
+      </div>
+    </header>
+
     <section id="overviewPage">
+
       <div class="stats">
-        <div class="stat"><small>Total applications</small><strong id="totalApps">—</strong></div>
-        <div class="stat"><small>Maintenance mode</small><strong id="maintenanceApps">—</strong></div>
-        <div class="stat"><small>Source branch</small><strong style="font-size:19px" id="branchName">main</strong></div>
+        <div class="stat">
+          <small>Total applications</small>
+          <strong id="totalApps">—</strong>
+        </div>
+
+        <div class="stat">
+          <small>Running applications</small>
+          <strong id="runningApps">—</strong>
+        </div>
+
+        <div class="stat">
+          <small>Offline / crashed</small>
+          <strong id="offlineApps">—</strong>
+        </div>
       </div>
-      <div class="card repo"><div><div class="eyebrow">CONNECTED REPOSITORY</div><strong>Teddyxmd / TEDDY-XMD</strong><small id="repoText">Loading GitHub source…</small></div><span class="tag">APP.JSON ENABLED</span></div>
-      <div class="section-head"><h2>Your applications</h2><button class="btn secondary" onclick="loadApps()">↻ Refresh</button></div>
-      <div class="card table-wrap"><table><thead><tr><th>Application</th><th>Status</th><th>Region</th><th>Actions</th></tr></thead><tbody id="appsRows"><tr><td colspan="4" class="empty">Loading applications…</td></tr></tbody></table></div>
+
+      <div class="card repo">
+        <div>
+          <div class="eyebrow">CONNECTED REPOSITORY</div>
+          <strong>Teddyxmd / TEDDY-XMD</strong>
+          <small id="repoText">Loading GitHub source…</small>
+        </div>
+        <span class="tag">APP.JSON ENABLED</span>
+      </div>
+
+      <div class="section-head">
+        <h2>Your applications</h2>
+        <button class="btn secondary" onclick="loadApps()">↻ Refresh</button>
+      </div>
+
+      <div class="card table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Application</th>
+              <th>Status</th>
+              <th>Region</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="appsRows">
+            <tr><td colspan="4" class="empty">Loading applications…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
     </section>
-    <section id="appsPage" class="hidden"><div class="section-head"><h2>All Heroku applications</h2><button class="btn secondary" onclick="loadApps()">↻ Refresh</button></div><div class="card table-wrap"><table><thead><tr><th>Application</th><th>Status</th><th>Region</th><th>Created</th><th>Actions</th></tr></thead><tbody id="allAppsRows"></tbody></table></div></section>
+
+    <section id="appsPage" class="hidden">
+
+      <div class="section-head">
+        <h2>All Heroku applications</h2>
+        <button class="btn secondary" onclick="loadApps()">↻ Refresh</button>
+      </div>
+
+      <div class="card table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Application</th>
+              <th>Status</th>
+              <th>Region</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="allAppsRows"></tbody>
+        </table>
+      </div>
+
+    </section>
+
     <section id="deployPage" class="hidden">
-      <div class="card"><div class="eyebrow">NEW HEROKU APPLICATION</div><h2 style="font:600 21px 'Space Grotesk'">Deploy from GitHub</h2><p class="muted" style="font-size:13px">The latest source archive is fetched from your configured repository. The app.json manifest is read automatically.</p>
-        <div class="field"><label>Heroku application name</label><input id="appName" placeholder="e.g. teddy-xmd-bot-01" maxlength="30"><div class="hint">3–30 characters. Lowercase letters, numbers and hyphens. Must be globally unique on Heroku.</div></div>
+
+      <div class="card">
+        <div class="eyebrow">NEW HEROKU APPLICATION</div>
+
+        <h2 style="font:600 21px 'Space Grotesk'">
+          Deploy from GitHub
+        </h2>
+
+        <p class="muted" style="font-size:13px">
+          The latest source archive is fetched from your configured repository.
+          The app.json manifest is read automatically.
+        </p>
+
+        <div class="field">
+          <label>Heroku application name</label>
+          <input id="appName" placeholder="e.g. teddy-xmd-bot-01" maxlength="30">
+          <div class="hint">
+            3–30 characters. Lowercase letters, numbers and hyphens.
+            Must be globally unique on Heroku.
+          </div>
+        </div>
+
         <div id="envFields"></div>
-        <button class="btn primary" id="deployBtn" onclick="deployApp()">Deploy to Heroku →</button><div id="deployMessage" class="hint" style="margin-top:12px"></div>
+
+        <button class="btn primary" id="deployBtn" onclick="deployApp()">
+          Deploy to Heroku →
+        </button>
+
+        <div id="deployMessage" class="hint" style="margin-top:12px"></div>
       </div>
-      <div class="card"><div class="eyebrow">SOURCE CONFIGURATION</div><strong id="sourceName">TEDDY-XMD</strong><p class="hint" id="sourceBranch">GitHub source details will appear here.</p></div>
+
+      <div class="card">
+        <div class="eyebrow">SOURCE CONFIGURATION</div>
+        <strong id="sourceName">TEDDY-XMD</strong>
+        <p class="hint" id="sourceBranch">GitHub source details will appear here.</p>
+      </div>
+
     </section>
+
   </main>
 </div>
-<div id="modalRoot"></div><div id="toastRoot"></div>
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
 <script>
-const $=id=>document.getElementById(id);let appsCache=[];let manifestData=null;
-async function api(url,opts={}){const r=await fetch(url,{...opts,headers:{'Content-Type':'application/json',...(opts.headers||{})}});const type=r.headers.get('content-type')||'';const data=type.includes('json')?await r.json():await r.text();if(!r.ok)throw new Error(data.error||data.message||`Request failed (${r.status})`);return data}
-function toast(msg){$('toastRoot').innerHTML=`<div class="toast">${esc(msg)}</div>`;setTimeout(()=>$('toastRoot').innerHTML='',4000)}
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function showDashboard(){ $('login').classList.add('hidden');$('dashboard').classList.remove('hidden');loadApps();loadManifest() }
-async function checkAuth(){try{const m=await api('/api/me');if(m.authenticated)showDashboard()}catch{}}
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginBtn').disabled=true;$('loginBtn').innerHTML='<span class="spinner"></span> Signing in';$('loginError').textContent='';try{await api('/api/login',{method:'POST',body:JSON.stringify({email:$('email').value,password:$('password').value})});showDashboard()}catch(err){$('loginError').textContent=err.message}finally{$('loginBtn').disabled=false;$('loginBtn').textContent='Sign in to dashboard'}});
-$('logout').onclick=async()=>{try{await api('/api/logout',{method:'POST'})}catch{}location.reload()};
-document.querySelectorAll('.nav[data-page]').forEach(n=>n.onclick=()=>goPage(n.dataset.page));
-function goPage(p){['overview','apps','deploy'].forEach(x=>$(`${x}Page`).classList.toggle('hidden',x!==p));document.querySelectorAll('.nav[data-page]').forEach(n=>n.classList.toggle('active',n.dataset.page===p));$('pageTitle').textContent={overview:'Overview',apps:'Applications',deploy:'New deployment'}[p];if(p==='apps')loadApps();if(p==='deploy')loadManifest()}
-async function loadApps(){try{appsCache=await api('/api/apps');$('totalApps').textContent=appsCache.length;$('maintenanceApps').textContent=appsCache.filter(a=>a.maintenance).length;const html=appsCache.map(a=>row(a,false)).join('')||'<tr><td colspan="5" class="empty">No applications found in this Heroku account.</td></tr>';$('appsRows').innerHTML=appsCache.map(a=>row(a,true)).join('')||'<tr><td colspan="4" class="empty">No applications found.</td></tr>';$('allAppsRows').innerHTML=html}catch(e){$('appsRows').innerHTML=`<tr><td colspan="4" class="empty">${esc(e.message)}</td></tr>`;$('allAppsRows').innerHTML=`<tr><td colspan="5" class="empty">${esc(e.message)}</td></tr>`}}
-function row(a,short){return `<tr><td><div class="appname">${esc(a.name)}</div><div class="sub">${esc(a.web_url||'No web URL')}</div></td><td><span class="status">${a.maintenance?'Maintenance':'Available'}</span></td>${short?'':`<td>${esc(a.region||'—')}</td><td>${a.created_at?new Date(a.created_at).toLocaleDateString():'—'}</td>`}${short?`<td>${esc(a.region||'—')}</td>`:''}<td><div class="actions"><button class="mini" onclick="viewLogs('${esc(a.name)}')">Logs</button><button class="mini" onclick="restartApp('${esc(a.name)}')">Restart</button><button class="mini" onclick="redeployApp('${esc(a.name)}')">Redeploy</button><button class="mini" style="color:#ffaaaa" onclick="deleteApp('${esc(a.name)}')">Delete</button></div></td></tr>`}
-async function loadManifest(){try{manifestData=await api('/api/manifest');$('repoText').textContent=manifestData.repository;$('branchName').textContent=manifestData.branch;$('sourceName').textContent=manifestData.manifest.name;$('sourceBranch').textContent=manifestData.repository+' · branch '+manifestData.branch;const fields=manifestData.manifest.env||{};$('envFields').innerHTML=Object.entries(fields).map(([k,v])=>`<div class="field"><label>${esc(k)} ${v.required?'<span style="color:#e7b85f">*</span>':''}</label><input data-env="${esc(k)}" type="text" placeholder="${esc(v.description||'Optional configuration')}" value="${esc(v.value||'')}"><div class="hint">${esc(v.description||'')}</div></div>`).join('')}catch(e){$('envFields').innerHTML=`<p class="error">${esc(e.message)}</p>`}}
-async function deployApp(){const name=$('appName').value.trim().toLowerCase();const env={};document.querySelectorAll('[data-env]').forEach(i=>env[i.dataset.env]=i.value);$('deployBtn').disabled=true;$('deployBtn').innerHTML='<span class="spinner"></span> Starting deployment';$('deployMessage').textContent='Submitting source to Heroku…';try{const d=await api('/api/deploy',{method:'POST',body:JSON.stringify({name,env})});$('deployMessage').innerHTML=`Deployment setup created: <b>${esc(d.setup.id)}</b>. Status: ${esc(d.setup.status)}. <button class="mini" onclick="watchSetup('${esc(d.setup.id)}')">Track deployment</button>`;toast('Heroku deployment started');loadApps()}catch(e){$('deployMessage').textContent=e.message}finally{$('deployBtn').disabled=false;$('deployBtn').textContent='Deploy to Heroku →'}}
-async function watchSetup(id){modal('Deployment status',`<div id="setupStatus">Checking setup…</div><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Close</button><button class="btn primary" onclick="watchSetup('${id}')">Refresh status</button></div>`);try{const d=await api('/api/setups/'+encodeURIComponent(id));const s=d.setup;$('setupStatus').innerHTML=`<p><b>App:</b> ${esc(s.app?.name||'Pending')}</p><p><b>Status:</b> ${esc(s.status)}</p><p><b>Build:</b> ${esc(s.build?.status||'Waiting')}</p>${s.failure_message?`<p class="error">${esc(s.failure_message)}</p>`:''}${s.resolved_success_url?`<p><a style="color:var(--gold2)" href="${esc(s.resolved_success_url)}" target="_blank" rel="noopener">Open deployed app ↗</a></p>`:''}${d.buildResult?.lines?`<pre class="logbox">${esc(d.buildResult.lines.map(x=>x.line).join(''))}</pre>`:''}`}catch(e){$('setupStatus').textContent=e.message}}
-async function restartApp(n){if(!confirm(`Restart ${n}?`))return;try{const d=await api(`/api/apps/${encodeURIComponent(n)}/restart`,{method:'POST',body:'{}'});toast(d.message||'Restart requested')}catch(e){toast(e.message)}}
-async function redeployApp(n){if(!confirm(`Deploy the latest GitHub code to ${n}?`))return;try{const d=await api(`/api/apps/${encodeURIComponent(n)}/redeploy`,{method:'POST',body:'{}'});toast('Redeploy started');if(d.build?.id)modal('Redeployment started',`<p>Build ID: ${esc(d.build.id)}</p><p>Status: ${esc(d.build.status)}</p><div class="modal-actions"><button class="btn primary" onclick="closeModal()">Done</button></div>`)}catch(e){toast(e.message)}}
-async function deleteApp(n){if(!confirm(`Permanently delete ${n} from Heroku? This cannot be undone.`))return;const typed=prompt(`Type the exact app name "${n}" to confirm deletion:`);if(typed!==n)return toast('Deletion cancelled: app name did not match.');try{await api(`/api/apps/${encodeURIComponent(n)}`,{method:'DELETE',body:JSON.stringify({confirm:typed})});toast(`${n} deleted`);loadApps()}catch(e){toast(e.message)}}
-async function viewLogs(n){modal(`${n} · Logs`,'<p class="muted">Fetching latest Heroku logs…</p>');try{const logs=await api(`/api/apps/${encodeURIComponent(n)}/logs`);$('modalContent').innerHTML=`<pre class="logbox">${esc(logs||'No log lines returned.')}</pre><div class="modal-actions"><button class="btn secondary" onclick="viewLogs('${esc(n)}')">Refresh</button><button class="btn primary" onclick="closeModal()">Close</button></div>`}catch(e){$('modalContent').innerHTML=`<p class="error">${esc(e.message)}</p><div class="modal-actions"><button class="btn primary" onclick="closeModal()">Close</button></div>`}}
-function modal(title,content){$('modalRoot').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal"><h2>${esc(title)}</h2><div id="modalContent">${content}</div></div></div>`}
-function closeModal(){$('modalRoot').innerHTML=''}
+const $ = id => document.getElementById(id);
+
+let appsCache = [];
+let manifestData = null;
+let refreshTimer = null;
+
+async function api(url, opts = {}) {
+  const response = await fetch(url, {
+    ...opts,
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+      ...(opts.headers || {})
+    }
+  });
+
+  const type = response.headers.get("content-type") || "";
+  const data = type.includes("json")
+    ? await response.json()
+    : await response.text();
+
+  if (!response.ok) {
+    throw new Error(
+      data.error || data.message || `Request failed (${response.status})`
+    );
+  }
+
+  return data;
+}
+
+function toast(message) {
+  $("toastRoot").innerHTML =
+    `<div class="toast">${esc(message)}</div>`;
+
+  setTimeout(() => {
+    $("toastRoot").innerHTML = "";
+  }, 4000);
+}
+
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[char]));
+}
+
+// STATUS DISPLAY
+function getStatus(status) {
+  const states = {
+    running: ["Running", "#55c98b"],
+    starting: ["Starting", "#e7b85f"],
+    crashed: ["Crashed", "#ef7373"],
+    offline: ["Offline", "#ef7373"],
+    "scaled-down": ["Scaled down", "#9297a2"],
+    maintenance: ["Maintenance", "#e7b85f"],
+    unknown: ["Unknown", "#9297a2"]
+  };
+
+  return states[status] || states.unknown;
+}
+
+function statusHTML(app) {
+  const [label, color] = getStatus(app.status);
+
+  return `
+    <span class="status" style="color:${color}">
+      <span class="status-dot" style="background:${color}"></span>
+      ${label}
+    </span>
+    <div class="sub">
+      ${Number(app.running_dynos || 0)} running /
+      ${Number(app.desired_web_dynos || 0)} desired web dynos
+    </div>
+  `;
+}
+
+// AUTHENTICATION
+function showDashboard() {
+  $("login").classList.add("hidden");
+  $("dashboard").classList.remove("hidden");
+
+  loadApps();
+  loadManifest();
+
+  if (refreshTimer) clearInterval(refreshTimer);
+
+  refreshTimer = setInterval(() => {
+    if (!$("dashboard").classList.contains("hidden")) {
+      loadApps(true);
+    }
+  }, 30000);
+}
+
+async function checkAuth() {
+  try {
+    const data = await api("/api/me");
+
+    if (data.authenticated) {
+      showDashboard();
+    }
+  } catch {}
+}
+
+$("loginForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  $("loginBtn").disabled = true;
+  $("loginBtn").innerHTML = '<span class="spinner"></span> Signing in';
+  $("loginError").textContent = "";
+
+  try {
+    await api("/api/login", {
+      method: "POST",
+      body: JSON.stringify({
+        email: $("email").value,
+        password: $("password").value
+      })
+    });
+
+    showDashboard();
+  } catch (error) {
+    $("loginError").textContent = error.message;
+  } finally {
+    $("loginBtn").disabled = false;
+    $("loginBtn").textContent = "Sign in to dashboard";
+  }
+});
+
+$("logout").onclick = async () => {
+  try {
+    await api("/api/logout", { method: "POST" });
+  } catch {}
+
+  location.reload();
+};
+
+// NAVIGATION
+document.querySelectorAll(".nav[data-page]").forEach(nav => {
+  nav.onclick = () => goPage(nav.dataset.page);
+});
+
+function goPage(page) {
+  ["overview", "apps", "deploy"].forEach(name => {
+    $(`${name}Page`).classList.toggle("hidden", name !== page);
+  });
+
+  document.querySelectorAll(".nav[data-page]").forEach(nav => {
+    nav.classList.toggle("active", nav.dataset.page === page);
+  });
+
+  $("pageTitle").textContent = {
+    overview: "Overview",
+    apps: "Applications",
+    deploy: "New deployment"
+  }[page];
+
+  if (page === "apps") loadApps();
+  if (page === "deploy") loadManifest();
+}
+
+// APPLICATION ROWS
+function row(app, short) {
+  const appName = esc(app.name);
+  const appUrl = app.web_url
+    ? `<a href="${esc(app.web_url)}" target="_blank" rel="noopener" style="color:var(--gold2)">Open app ↗</a>`
+    : "No web URL";
+
+  return `
+    <tr>
+      <td>
+        <div class="appname">${appName}</div>
+        <div class="sub">${appUrl}</div>
+      </td>
+
+      <td>${statusHTML(app)}</td>
+
+      ${short
+        ? `<td>${esc(app.region || "—")}</td>`
+        : `
+          <td>${esc(app.region || "—")}</td>
+          <td>${app.created_at
+            ? new Date(app.created_at).toLocaleDateString()
+            : "—"}</td>
+        `
+      }
+
+      <td>
+        <div class="actions">
+          <button class="mini" onclick="viewLogs('${appName}')">Logs</button>
+          <button class="mini" onclick="restartApp('${appName}')">Restart</button>
+          <button class="mini" onclick="redeployApp('${appName}')">Redeploy</button>
+          <button class="mini" style="color:#ffaaaa" onclick="deleteApp('${appName}')">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+// LOAD APPLICATIONS
+async function loadApps(silent = false) {
+  if (!silent) {
+    $("appsRows").innerHTML =
+      '<tr><td colspan="4" class="empty">Loading applications…</td></tr>';
+  }
+
+  try {
+    const apps = await api("/api/apps");
+
+    appsCache = apps;
+
+    $("totalApps").textContent = apps.length;
+
+    $("runningApps").textContent =
+      apps.filter(app => app.status === "running").length;
+
+    $("offlineApps").textContent =
+      apps.filter(app =>
+        ["offline", "crashed", "scaled-down"].includes(app.status)
+      ).length;
+
+    $("appsRows").innerHTML =
+      apps.map(app => row(app, true)).join("") ||
+      '<tr><td colspan="4" class="empty">No applications found.</td></tr>';
+
+    $("allAppsRows").innerHTML =
+      apps.map(app => row(app, false)).join("") ||
+      '<tr><td colspan="5" class="empty">No applications found.</td></tr>';
+
+  } catch (error) {
+    if (!silent) {
+      $("appsRows").innerHTML =
+        `<tr><td colspan="4" class="empty">${esc(error.message)}</td></tr>`;
+
+      $("allAppsRows").innerHTML =
+        `<tr><td colspan="5" class="empty">${esc(error.message)}</td></tr>`;
+    }
+
+    toast(error.message);
+  }
+}
+
+// MANIFEST
+async function loadManifest() {
+  try {
+    manifestData = await api("/api/manifest");
+
+    $("repoText").textContent = manifestData.repository;
+    $("branchName").textContent = manifestData.branch;
+    $("sourceName").textContent = manifestData.manifest.name;
+
+    $("sourceBranch").textContent =
+      manifestData.repository + " · branch " + manifestData.branch;
+
+    const fields = manifestData.manifest.env || {};
+
+    $("envFields").innerHTML = Object.entries(fields).map(([key, value]) => `
+      <div class="field">
+        <label>
+          ${esc(key)}
+          ${value.required
+            ? '<span style="color:#e7b85f">*</span>'
+            : ""}
+        </label>
+
+        <input
+          data-env="${esc(key)}"
+          type="text"
+          placeholder="${esc(value.description || "Optional configuration")}"
+          value="${esc(value.value || "")}"
+        >
+
+        <div class="hint">${esc(value.description || "")}</div>
+      </div>
+    `).join("");
+
+  } catch (error) {
+    $("envFields").innerHTML =
+      `<p class="error">${esc(error.message)}</p>`;
+  }
+}
+
+// DEPLOY
+async function deployApp() {
+  const name = $("appName").value.trim().toLowerCase();
+
+  const env = {};
+
+  document.querySelectorAll("[data-env]").forEach(input => {
+    env[input.dataset.env] = input.value;
+  });
+
+  $("deployBtn").disabled = true;
+  $("deployBtn").innerHTML =
+    '<span class="spinner"></span> Starting deployment';
+
+  $("deployMessage").textContent =
+    "Submitting source to Heroku…";
+
+  try {
+    const data = await api("/api/deploy", {
+      method: "POST",
+      body: JSON.stringify({ name, env })
+    });
+
+    $("deployMessage").innerHTML = `
+      Deployment setup created:
+      <b>${esc(data.setup.id)}</b>.
+      Status: ${esc(data.setup.status)}.
+      <button class="mini" onclick="watchSetup('${esc(data.setup.id)}')">
+        Track deployment
+      </button>
+    `;
+
+    toast("Heroku deployment started");
+
+    loadApps(true);
+
+  } catch (error) {
+    $("deployMessage").textContent = error.message;
+  } finally {
+    $("deployBtn").disabled = false;
+    $("deployBtn").textContent = "Deploy to Heroku →";
+  }
+}
+
+// DEPLOYMENT STATUS
+async function watchSetup(id) {
+  modal("Deployment status", '<div id="setupStatus">Checking setup…</div>');
+
+  try {
+    const data = await api(
+      "/api/setups/" + encodeURIComponent(id)
+    );
+
+    const setup = data.setup;
+
+    $("setupStatus").innerHTML = `
+      <p><b>App:</b> ${esc(setup.app?.name || "Pending")}</p>
+      <p><b>Status:</b> ${esc(setup.status)}</p>
+      <p><b>Build:</b> ${esc(setup.build?.status || "Waiting")}</p>
+
+      ${setup.failure_message
+        ? `<p class="error">${esc(setup.failure_message)}</p>`
+        : ""
+      }
+
+      ${setup.resolved_success_url
+        ? `<p><a style="color:var(--gold2)" href="${esc(setup.resolved_success_url)}" target="_blank" rel="noopener">Open deployed app ↗</a></p>`
+        : ""
+      }
+
+      ${data.buildResult?.lines
+        ? `<pre class="logbox">${esc(data.buildResult.lines.map(line => line.line).join(""))}</pre>`
+        : ""
+      }
+
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeModal()">Close</button>
+        <button class="btn primary" onclick="watchSetup('${esc(id)}')">Refresh status</button>
+      </div>
+    `;
+
+  } catch (error) {
+    $("setupStatus").textContent = error.message;
+  }
+}
+
+// RESTART
+async function restartApp(name) {
+  if (!confirm(`Restart ${name}?`)) return;
+
+  try {
+    const data = await api(
+      `/api/apps/${encodeURIComponent(name)}/restart`,
+      {
+        method: "POST",
+        body: "{}"
+      }
+    );
+
+    toast(data.message || "Restart requested");
+    setTimeout(() => loadApps(true), 3000);
+
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+// REDEPLOY
+async function redeployApp(name) {
+  if (!confirm(`Deploy the latest GitHub code to ${name}?`)) return;
+
+  try {
+    const data = await api(
+      `/api/apps/${encodeURIComponent(name)}/redeploy`,
+      {
+        method: "POST",
+        body: "{}"
+      }
+    );
+
+    toast("Redeploy started");
+
+    if (data.build?.id) {
+      modal(
+        "Redeployment started",
+        `
+          <p>Build ID: ${esc(data.build.id)}</p>
+          <p>Status: ${esc(data.build.status)}</p>
+          <div class="modal-actions">
+            <button class="btn primary" onclick="closeModal()">Done</button>
+          </div>
+        `
+      );
+    }
+
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+// DELETE
+async function deleteApp(name) {
+  if (!confirm(
+    `Permanently delete ${name} from Heroku? This cannot be undone.`
+  )) return;
+
+  const typed = prompt(
+    `Type the exact app name "${name}" to confirm deletion:`
+  );
+
+  if (typed !== name) {
+    return toast("Deletion cancelled: app name did not match.");
+  }
+
+  try {
+    await api(
+      `/api/apps/${encodeURIComponent(name)}`,
+      {
+        method: "DELETE",
+        body: JSON.stringify({ confirm: typed })
+      }
+    );
+
+    toast(`${name} deleted`);
+    loadApps();
+
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+// LOGS
+async function viewLogs(name) {
+  modal(`${name} · Logs`, '<p class="muted">Fetching latest Heroku logs…</p>');
+
+  try {
+    const logs = await api(
+      `/api/apps/${encodeURIComponent(name)}/logs`
+    );
+
+    $("modalContent").innerHTML = `
+      <pre class="logbox">${esc(logs || "No log lines returned.")}</pre>
+
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="viewLogs('${esc(name)}')">Refresh</button>
+        <button class="btn primary" onclick="closeModal()">Close</button>
+      </div>
+    `;
+
+  } catch (error) {
+    $("modalContent").innerHTML = `
+      <p class="error">${esc(error.message)}</p>
+
+      <div class="modal-actions">
+        <button class="btn primary" onclick="closeModal()">Close</button>
+      </div>
+    `;
+  }
+}
+
+// MODALS
+function modal(title, content) {
+  $("modalRoot").innerHTML = `
+    <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <h2>${esc(title)}</h2>
+        <div id="modalContent">${content}</div>
+      </div>
+    </div>
+  `;
+}
+
+function closeModal() {
+  $("modalRoot").innerHTML = "";
+}
+
+// START
 checkAuth();
 </script>
-</body></html>
+
+</body>
+</html>

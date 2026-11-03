@@ -9,7 +9,6 @@ const config = require("./config");
 
 const app = express();
 const PORT = process.env.PORT || config.PORT || 3000;
-
 const HEROKU_API = "https://api.heroku.com";
 
 const HEROKU_HEADERS = {
@@ -37,20 +36,16 @@ app.use(session({
   }
 }));
 
-app.use(
-  "/api/login",
-  rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 10,
-    standardHeaders: true,
-    legacyHeaders: false
-  })
-);
+app.use("/api/login", rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false
+}));
 
+// ADMIN AUTHENTICATION
 function requireAdmin(req, res, next) {
-  if (req.session && req.session.admin === true) {
-    return next();
-  }
+  if (req.session?.admin === true) return next();
 
   return res.status(401).json({
     error: "Please log in as administrator."
@@ -65,15 +60,15 @@ function safeEqual(a, b) {
     crypto.timingSafeEqual(aa, bb);
 }
 
+// HEROKU API CLIENT
 async function heroku(pathname, options = {}) {
   if (
     !config.HEROKU_API_KEY ||
     config.HEROKU_API_KEY.includes("PASTE_YOUR")
   ) {
     const error = new Error(
-      "Set HEROKU_API_KEY in config.js before using Heroku features."
+      "Set HEROKU_API_KEY in config.js."
     );
-
     error.status = 503;
     throw error;
   }
@@ -87,7 +82,6 @@ async function heroku(pathname, options = {}) {
   });
 
   const raw = await response.text();
-
   let data = {};
 
   try {
@@ -105,7 +99,6 @@ async function heroku(pathname, options = {}) {
 
     error.status = response.status;
     error.details = data;
-
     throw error;
   }
 
@@ -126,6 +119,7 @@ function sendError(res, error) {
   });
 }
 
+// GITHUB REPOSITORY
 function repoInfo() {
   const owner = config.GITHUB.OWNER;
   const repo = config.GITHUB.REPO;
@@ -135,16 +129,14 @@ function repoInfo() {
     owner,
     repo,
     branch,
-
     tarball:
       `https://codeload.github.com/${owner}/${repo}/tar.gz/refs/heads/${encodeURIComponent(branch)}`,
-
     rawManifest:
       `https://raw.githubusercontent.com/${owner}/${repo}/${encodeURIComponent(branch)}/app.json`
   };
 }
 
-// ADMIN LOGIN
+// LOGIN
 app.post("/api/login", (req, res) => {
   const email = String(req.body.email || "")
     .trim()
@@ -190,14 +182,11 @@ app.post("/api/logout", requireAdmin, (req, res) => {
 
 app.get("/api/me", (req, res) => {
   res.json({
-    authenticated: !!(
-      req.session &&
-      req.session.admin
-    )
+    authenticated: !!req.session?.admin
   });
 });
 
-// GITHUB MANIFEST
+// FETCH BOT MANIFEST
 app.get("/api/manifest", requireAdmin, async (req, res) => {
   try {
     const info = repoInfo();
@@ -240,7 +229,6 @@ app.get("/api/manifest", requireAdmin, async (req, res) => {
     res.json({
       repository: `https://github.com/${info.owner}/${info.repo}`,
       branch: info.branch,
-
       manifest: {
         name: manifest.name || info.repo,
         description: manifest.description || "",
@@ -261,7 +249,7 @@ app.post("/api/deploy", requireAdmin, async (req, res) => {
 
     if (!/^[a-z][a-z0-9-]{1,28}[a-z0-9]$/.test(name)) {
       return res.status(400).json({
-        error: "App name must be 3–30 characters and contain only lowercase letters, numbers or hyphens."
+        error: "App name must be 3–30 characters, start with a letter and end with a letter or number."
       });
     }
 
@@ -303,21 +291,16 @@ app.post("/api/deploy", requireAdmin, async (req, res) => {
         });
       }
 
-      if (value) {
-        overrides[key] = value;
-      }
+      if (value) overrides[key] = value;
     }
 
     const setup = await heroku("/app-setups", {
       method: "POST",
-
       body: JSON.stringify({
         app: { name },
-
         source_blob: {
           url: info.tarball
         },
-
         ...(Object.keys(overrides).length
           ? { overrides: { env: overrides } }
           : {})
@@ -333,7 +316,7 @@ app.post("/api/deploy", requireAdmin, async (req, res) => {
   }
 });
 
-// DEPLOYMENT STATUS
+// DEPLOYMENT PROGRESS
 app.get("/api/setups/:id", requireAdmin, async (req, res) => {
   try {
     const setup = await heroku(
@@ -344,8 +327,7 @@ app.get("/api/setups/:id", requireAdmin, async (req, res) => {
 
     if (
       setup.app &&
-      setup.build &&
-      setup.build.id &&
+      setup.build?.id &&
       setup.build.status === "succeeded"
     ) {
       try {
@@ -355,32 +337,97 @@ app.get("/api/setups/:id", requireAdmin, async (req, res) => {
       } catch {}
     }
 
-    res.json({
-      setup,
-      buildResult
-    });
+    res.json({ setup, buildResult });
   } catch (error) {
     sendError(res, error);
   }
 });
 
-// LIST APPS
+// LIST APPS WITH LIVE DYNO STATUS
 app.get("/api/apps", requireAdmin, async (req, res) => {
   try {
     const apps = await heroku("/apps");
 
-    res.json(
-      apps.map(app => ({
-        id: app.id,
-        name: app.name,
-        web_url: app.web_url,
-        created_at: app.created_at,
-        updated_at: app.updated_at,
-        region: app.region && app.region.name,
-        stack: app.stack && app.stack.name,
-        maintenance: app.maintenance
-      }))
+    const results = await Promise.all(
+      apps.map(async (app) => {
+        try {
+          const [dynos, formation] = await Promise.all([
+            heroku(`/apps/${encodeURIComponent(app.name)}/dynos`),
+            heroku(`/apps/${encodeURIComponent(app.name)}/formation`)
+          ]);
+
+          const webFormation = formation.find(
+            process => process.type === "web"
+          );
+
+          const webDynos = dynos.filter(
+            dyno => dyno.type === "web"
+          );
+
+          const running = webDynos.filter(
+            dyno => dyno.state === "up"
+          ).length;
+
+          const starting = webDynos.some(
+            dyno => ["starting", "restarting"].includes(dyno.state)
+          );
+
+          const crashed = webDynos.some(
+            dyno => dyno.state === "crashed"
+          );
+
+          const desired = webFormation
+            ? Number(webFormation.quantity || 0)
+            : 0;
+
+          let status = "offline";
+
+          if (app.maintenance) {
+            status = "maintenance";
+          } else if (running > 0) {
+            status = "running";
+          } else if (starting) {
+            status = "starting";
+          } else if (crashed) {
+            status = "crashed";
+          } else if (desired === 0) {
+            status = "scaled-down";
+          }
+
+          return {
+            id: app.id,
+            name: app.name,
+            web_url: app.web_url,
+            created_at: app.created_at,
+            updated_at: app.updated_at,
+            region: app.region?.name || null,
+            stack: app.stack?.name || null,
+            maintenance: app.maintenance,
+            status,
+            running_dynos: running,
+            total_web_dynos: webDynos.length,
+            desired_web_dynos: desired
+          };
+        } catch (error) {
+          console.error(
+            `Status check failed for ${app.name}:`,
+            error.message
+          );
+
+          return {
+            id: app.id,
+            name: app.name,
+            web_url: app.web_url,
+            maintenance: app.maintenance,
+            status: "unknown",
+            error: error.message
+          };
+        }
+      })
     );
+
+    res.set("Cache-Control", "no-store");
+    res.json(results);
   } catch (error) {
     sendError(res, error);
   }
@@ -449,7 +496,6 @@ app.post("/api/apps/:name/redeploy", requireAdmin, async (req, res) => {
       `/apps/${encodeURIComponent(name)}/builds`,
       {
         method: "POST",
-
         body: JSON.stringify({
           source_blob: {
             url: info.tarball,
@@ -460,10 +506,7 @@ app.post("/api/apps/:name/redeploy", requireAdmin, async (req, res) => {
       }
     );
 
-    res.json({
-      ok: true,
-      build
-    });
+    res.json({ ok: true, build });
   } catch (error) {
     sendError(res, error);
   }
@@ -506,7 +549,6 @@ app.get("/api/apps/:name/logs", requireAdmin, async (req, res) => {
       `/apps/${name}/log-sessions`,
       {
         method: "POST",
-
         body: JSON.stringify({
           lines: 200,
           source: "app",
@@ -528,8 +570,11 @@ app.get("/api/apps/:name/logs", requireAdmin, async (req, res) => {
       }
     });
 
-    const logs = await response.text();
+    if (!response.ok) {
+      throw new Error(`Log retrieval failed: ${response.status}`);
+    }
 
+    const logs = await response.text();
     res.type("text/plain").send(logs);
   } catch (error) {
     sendError(res, error);
@@ -539,16 +584,13 @@ app.get("/api/apps/:name/logs", requireAdmin, async (req, res) => {
 // FRONTEND
 app.use(express.static(path.join(__dirname, "public")));
 
-// EXPRESS 5 CATCH-ALL ROUTE
+// EXPRESS 5 CATCH-ALL
 app.get("/{*splat}", (req, res) => {
   res.sendFile(
     path.join(__dirname, "public", "index.html")
   );
 });
 
-// START SERVER
 app.listen(PORT, () => {
-  console.log(
-    `TEDDY-XMD DEPLOYER listening on ${PORT}`
-  );
+  console.log(`TEDDY-XMD DEPLOYER listening on ${PORT}`);
 });

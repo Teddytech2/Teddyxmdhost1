@@ -269,13 +269,22 @@ app.post("/api/deploy", requireAdmin, async (req, res) => {
 
     const manifest = await manifestResponse.json();
     const supplied = req.body.env || {};
+
+    if (
+      typeof supplied !== "object" ||
+      Array.isArray(supplied) ||
+      supplied === null
+    ) {
+      return res.status(400).json({
+        error: "Invalid environment configuration."
+      });
+    }
+
     const overrides = {};
 
+    // Process variables declared in app.json
     for (const [key, spec] of Object.entries(manifest.env || {})) {
-      const value =
-        supplied[key] !== undefined
-          ? String(supplied[key])
-          : "";
+      const value = String(supplied[key] ?? "").trim();
 
       const required =
         typeof spec === "object" &&
@@ -291,8 +300,28 @@ app.post("/api/deploy", requireAdmin, async (req, res) => {
         });
       }
 
-      if (value) overrides[key] = value;
+      if (value) {
+        overrides[key] = value;
+      }
     }
+
+    // SESSION_ID is accepted even if it is not in app.json
+    const sessionId = String(supplied.SESSION_ID || "").trim();
+
+    if (!sessionId) {
+      return res.status(400).json({
+        error: "Please enter your WhatsApp SESSION_ID before deploying."
+      });
+    }
+
+    if (sessionId.length > 20000) {
+      return res.status(400).json({
+        error: "SESSION_ID is too long."
+      });
+    }
+
+    // Always include SESSION_ID in Heroku config overrides
+    overrides.SESSION_ID = sessionId;
 
     const setup = await heroku("/app-setups", {
       method: "POST",
@@ -301,9 +330,9 @@ app.post("/api/deploy", requireAdmin, async (req, res) => {
         source_blob: {
           url: info.tarball
         },
-        ...(Object.keys(overrides).length
-          ? { overrides: { env: overrides } }
-          : {})
+        overrides: {
+          env: overrides
+        }
       })
     });
 
@@ -311,6 +340,7 @@ app.post("/api/deploy", requireAdmin, async (req, res) => {
       ok: true,
       setup
     });
+
   } catch (error) {
     sendError(res, error);
   }

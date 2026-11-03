@@ -12,6 +12,93 @@ const app = express();
 const PORT = process.env.PORT || config.PORT || 3000;
 const HEROKU_API = "https://api.heroku.com";
 
+// Keep apps in a Deploying state while Heroku is building/releasing them.
+const activeDeployments = new Map();
+const DEPLOYMENT_TRACK_TTL = 30 * 60 * 1000;
+
+function rememberDeployment(appName, details = {}) {
+  if (!appName) return;
+  const key = String(appName).toLowerCase();
+  const previous = activeDeployments.get(key) || {};
+  activeDeployments.set(key, {
+    ...previous,
+    ...details,
+    startedAt: previous.startedAt || Date.now(),
+    expiresAt: Date.now() + DEPLOYMENT_TRACK_TTL
+  });
+}
+
+function clearDeployment(appName) {
+  if (appName) activeDeployments.delete(String(appName).toLowerCase());
+}
+
+async function refreshDeployment(appName) {
+  const key = String(appName || "").toLowerCase();
+  const item = activeDeployments.get(key);
+  if (!item) return null;
+
+  if (Date.now() > item.expiresAt) {
+    clearDeployment(key);
+    return null;
+  }
+
+  try {
+    if (item.setupId) {
+      const setup = await heroku(`/app-setups/${encodeURIComponent(item.setupId)}`);
+      const status = String(setup.status || "pending").toLowerCase();
+      const buildStatus = String(setup.build?.status || "").toLowerCase();
+      const failed = ["failed", "failure", "canceled", "cancelled", "errored"];
+      const succeeded = ["succeeded", "success", "complete", "completed"];
+
+      if (failed.includes(status) || failed.includes(buildStatus)) {
+        clearDeployment(key);
+        return null;
+      }
+
+      const updated = {
+        ...item,
+        setupStatus: status,
+        buildStatus,
+        statusCheckedAt: Date.now()
+      };
+
+      if (succeeded.includes(status)) {
+        updated.completedAt = item.completedAt || Date.now();
+        // Keep the Deploying state briefly while Heroku starts the first dyno.
+        if (Date.now() - updated.completedAt > 5 * 60 * 1000) {
+          clearDeployment(key);
+          return null;
+        }
+      } else {
+        updated.completedAt = null;
+      }
+
+      activeDeployments.set(key, updated);
+    } else if (item.buildId) {
+      const build = await heroku(`/apps/${encodeURIComponent(appName)}/builds/${encodeURIComponent(item.buildId)}`);
+      const status = String(build.status || "pending").toLowerCase();
+      if (["failed", "failure", "canceled", "cancelled", "errored"].includes(status)) {
+        clearDeployment(key);
+        return null;
+      }
+      const updated = { ...item, buildStatus: status, statusCheckedAt: Date.now() };
+      if (["succeeded", "success"].includes(status)) {
+        updated.completedAt = item.completedAt || Date.now();
+        if (Date.now() - updated.completedAt > 5 * 60 * 1000) {
+          clearDeployment(key);
+          return null;
+        }
+      }
+      activeDeployments.set(key, updated);
+    }
+  } catch (error) {
+    // Keep showing progress during temporary Heroku status API errors.
+    console.warn(`Deployment progress check failed for ${appName}:`, error.message);
+  }
+
+  return activeDeployments.get(key) || null;
+}
+
 const HEROKU_HEADERS = {
   Authorization: `Bearer ${config.HEROKU_API_KEY}`,
   Accept: "application/vnd.heroku+json; version=3",
@@ -337,6 +424,8 @@ app.post("/api/deploy", requireAdmin, async (req, res) => {
       })
     });
 
+    rememberDeployment(name, { setupId: setup.id, kind: "setup" });
+
     res.json({
       ok: true,
       setup
@@ -368,8 +457,94 @@ app.get("/api/setups/:id", requireAdmin, async (req, res) => {
       } catch {}
     }
 
+    if (setup.app?.name) {
+      const setupStatus = String(setup.status || "pending").toLowerCase();
+      const buildStatus = String(setup.build?.status || "").toLowerCase();
+      const failed = ["failed", "failure", "canceled", "cancelled", "errored"];
+      if (failed.includes(setupStatus) || failed.includes(buildStatus)) {
+        clearDeployment(setup.app.name);
+      } else {
+        const current = activeDeployments.get(String(setup.app.name).toLowerCase()) || {};
+        rememberDeployment(setup.app.name, {
+          ...current,
+          setupId: setup.id,
+          kind: "setup",
+          setupStatus,
+          buildStatus,
+          completedAt: ["succeeded", "success", "complete", "completed"].includes(setupStatus)
+            ? (current.completedAt || Date.now())
+            : null
+        });
+      }
+    }
+
     res.json({ setup, buildResult });
   } catch (error) {
+    sendError(res, error);
+  }
+});
+
+// LIVE HEROKU BUILD OUTPUT
+// Heroku provides a separate output_stream_url for each app setup build.
+// Proxy it through the authenticated dashboard so the API key and stream URL
+// are never exposed to the browser.
+app.get("/api/setups/:id/build-logs", requireAdmin, async (req, res) => {
+  let controller;
+
+  try {
+    const setup = await heroku(
+      `/app-setups/${encodeURIComponent(req.params.id)}`
+    );
+
+    const streamUrl = setup.build?.output_stream_url;
+    if (!streamUrl) {
+      return res.status(202).type("text/plain").send(
+        "Waiting for Heroku to start the build and publish its logs…\n"
+      );
+    }
+
+    const parsed = new URL(streamUrl);
+    if (
+      parsed.protocol !== "https:" ||
+      parsed.hostname !== "build-output.heroku.com"
+    ) {
+      return res.status(502).json({
+        error: "Heroku returned an unexpected build log address."
+      });
+    }
+
+    controller = new AbortController();
+    res.on("close", () => controller.abort());
+
+    const upstream = await fetch(parsed.toString(), {
+      headers: { Accept: "text/plain" },
+      signal: controller.signal
+    });
+
+    if (!upstream.ok) {
+      throw new Error(`Heroku build log stream returned ${upstream.status}.`);
+    }
+
+    res.status(200);
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+
+    if (!upstream.body) return res.end();
+
+    const reader = upstream.body.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (res.destroyed) break;
+      if (!res.write(Buffer.from(value))) {
+        await new Promise(resolve => res.once("drain", resolve));
+      }
+    }
+    if (!res.destroyed) res.end();
+  } catch (error) {
+    if (error.name === "AbortError" || res.destroyed) return;
+    if (res.headersSent) return res.end();
     sendError(res, error);
   }
 });
@@ -382,6 +557,7 @@ app.get("/api/apps", requireAdmin, async (req, res) => {
     const results = await Promise.all(
       apps.map(async (app) => {
         try {
+          const deployment = await refreshDeployment(app.name);
           const [dynos, formation] = await Promise.all([
             heroku(`/apps/${encodeURIComponent(app.name)}/dynos`),
             heroku(`/apps/${encodeURIComponent(app.name)}/formation`)
@@ -420,9 +596,27 @@ app.get("/api/apps", requireAdmin, async (req, res) => {
           } else if (starting) {
             status = "starting";
           } else if (crashed) {
-            status = "crashed";
+            status = "offline";
           } else if (desired === 0) {
             status = "scaled-down";
+          }
+
+          if (deployment && running === 0 && !crashed && !app.maintenance) {
+            const setupStatus = String(deployment.setupStatus || "pending").toLowerCase();
+            const buildStatus = String(deployment.buildStatus || "").toLowerCase();
+            const buildingStates = ["pending", "provisioning", "importing", "building"];
+
+            if (
+              buildingStates.includes(setupStatus) ||
+              ["pending", "running"].includes(buildStatus)
+            ) {
+              status = "building";
+            } else {
+              status = "deploying";
+            }
+          } else if (running > 0 || crashed) {
+            // A live dyno means deployment completed; a crashed dyno is Offline.
+            clearDeployment(app.name);
           }
 
           return {
@@ -435,6 +629,8 @@ app.get("/api/apps", requireAdmin, async (req, res) => {
             stack: app.stack?.name || null,
             maintenance: app.maintenance,
             status,
+            status_reason: crashed ? "The web dyno crashed." : null,
+            deployment_started_at: deployment?.startedAt || null,
             running_dynos: running,
             total_web_dynos: webDynos.length,
             desired_web_dynos: desired
@@ -537,6 +733,7 @@ app.post("/api/apps/:name/redeploy", requireAdmin, async (req, res) => {
       }
     );
 
+    rememberDeployment(name, { buildId: build.id, kind: "build" });
     res.json({ ok: true, build });
   } catch (error) {
     sendError(res, error);

@@ -1320,6 +1320,8 @@ const PAIRING_WEBSITE =
 let appsCache = [];
 let manifestData = null;
 let refreshTimer = null;
+let buildLogAbortController = null;
+let buildLogRetryTimer = null;
 
 async function api(url, opts = {}) {
   const response = await fetch(url, {
@@ -1377,8 +1379,10 @@ function openPairingWebsite() {
 function getStatus(status) {
   const states = {
     running: ["Running", "#55c98b"],
+    building: ["Building", "#e7b85f"],
+    deploying: ["Deploying", "#e7b85f"],
     starting: ["Starting", "#e7b85f"],
-    crashed: ["Crashed", "#ef7373"],
+    crashed: ["Offline", "#ef7373"],
     offline: ["Offline", "#ef7373"],
     "scaled-down": ["Scaled down", "#9297a2"],
     maintenance: ["Maintenance", "#e7b85f"],
@@ -1397,8 +1401,9 @@ function statusHTML(app) {
       ${label}
     </span>
     <div class="sub">
-      ${Number(app.running_dynos || 0)} running /
-      ${Number(app.desired_web_dynos || 0)} desired web dynos
+      ${["building", "deploying"].includes(app.status)
+        ? (app.status === "building" ? "Heroku is building your application…" : "Heroku is releasing and starting your application…")
+        : `${app.status_reason ? esc(app.status_reason) + " · " : ""}${Number(app.running_dynos || 0)} running / ${Number(app.desired_web_dynos || 0)} desired web dynos`}
     </div>
   `;
 }
@@ -1744,7 +1749,7 @@ async function deployApp() {
       const track = document.createElement("button");
 
       track.className = "mini";
-      track.textContent = "Track deployment";
+      track.textContent = "View build logs";
       track.onclick = () => watchSetup(data.setup.id);
 
       $("deployMessage").appendChild(
@@ -1766,8 +1771,11 @@ async function deployApp() {
   }
 }
 
-// DEPLOYMENT STATUS
+// DEPLOYMENT STATUS + LIVE BUILD LOGS
 async function watchSetup(id) {
+  if (buildLogAbortController) buildLogAbortController.abort();
+  if (buildLogRetryTimer) clearTimeout(buildLogRetryTimer);
+
   modal("Deployment status", '<div id="setupStatus">Checking setup…</div>');
 
   try {
@@ -1776,14 +1784,26 @@ async function watchSetup(id) {
     );
 
     const setup = data.setup;
+    const status = String(setup.status || "pending");
+    const buildStatus = String(setup.build?.status || "waiting");
 
     $("setupStatus").innerHTML = `
       <p><b>App:</b> ${esc(setup.app?.name || "Pending")}</p>
-      <p><b>Status:</b> ${esc(setup.status)}</p>
-      <p><b>Build:</b> ${esc(setup.build?.status || "Waiting")}</p>
+      <p><b>Setup:</b> ${esc(status)}</p>
+      <p><b>Build:</b> ${esc(buildStatus)}</p>
 
       ${setup.failure_message
         ? `<p class="error">${esc(setup.failure_message)}</p>`
+        : ""
+      }
+
+      ${setup.manifest_errors?.length
+        ? `<p class="error">${esc(setup.manifest_errors.join("\n"))}</p>`
+        : ""
+      }
+
+      ${setup.postdeploy?.output
+        ? `<p><b>Post-deploy output:</b> ${esc(setup.postdeploy.output)}</p>`
         : ""
       }
 
@@ -1792,19 +1812,86 @@ async function watchSetup(id) {
         : ""
       }
 
-      ${data.buildResult?.lines
-        ? `<pre class="logbox">${esc(data.buildResult.lines.map(line => line.line).join(""))}</pre>`
-        : ""
-      }
+      <h3 style="margin:18px 0 8px">Build logs</h3>
+      <p class="muted" id="buildLogState">Connecting to Heroku build output…</p>
+      <pre class="logbox" id="buildLogOutput" style="min-height:180px;max-height:48vh">Waiting for build output…</pre>
 
       <div class="modal-actions">
         <button class="btn secondary" onclick="closeModal()">Close</button>
-        <button class="btn primary" onclick="watchSetup('${esc(id)}')">Refresh status</button>
+        <button class="btn primary" onclick="watchSetup('${esc(id)}')">Refresh status and logs</button>
       </div>
     `;
 
+    streamSetupBuildLogs(id);
   } catch (error) {
     $("setupStatus").textContent = error.message;
+  }
+}
+
+async function streamSetupBuildLogs(id) {
+  const output = $("buildLogOutput");
+  const state = $("buildLogState");
+  if (!output || !state) return;
+
+  buildLogAbortController = new AbortController();
+  const controller = buildLogAbortController;
+
+  try {
+    const response = await fetch(
+      "/api/setups/" + encodeURIComponent(id) + "/build-logs",
+      {
+        credentials: "same-origin",
+        headers: { Accept: "text/plain" },
+        signal: controller.signal
+      }
+    );
+
+    if (response.status === 202) {
+      const waitingText = await response.text();
+      state.textContent = "Heroku is preparing the build. Checking again shortly…";
+      output.textContent = waitingText || "Waiting for Heroku build output…";
+      buildLogRetryTimer = setTimeout(() => streamSetupBuildLogs(id), 4000);
+      return;
+    }
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let message = errorText;
+      try { message = JSON.parse(errorText).error || errorText; } catch {}
+      throw new Error(message || `Build log request failed (${response.status})`);
+    }
+
+    state.textContent = "Live build logs · connected to Heroku";
+    output.textContent = "";
+
+    if (!response.body) {
+      output.textContent = await response.text();
+      state.textContent = "Build log stream finished.";
+      return;
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      if (chunk) {
+        output.textContent += chunk.replace(/\u0000/g, "");
+        output.scrollTop = output.scrollHeight;
+      }
+    }
+
+    const finalChunk = decoder.decode();
+    if (finalChunk) output.textContent += finalChunk;
+    state.textContent = "Build log stream finished.";
+    output.scrollTop = output.scrollHeight;
+  } catch (error) {
+    if (error.name === "AbortError") return;
+    if ($("buildLogState")) {
+      $("buildLogState").textContent = "Could not load build logs: " + error.message;
+    }
   }
 }
 

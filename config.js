@@ -18,10 +18,10 @@ module.exports = {
   PAYSTACK_SECRET_KEY: process.env.PAYSTACK_SECRET_KEY || 'PASTE_YOUR_PAYSTACK_SECRET_KEY_HERE',
 
   // Exact public URL of this deployment panel (no trailing slash required).
-  PUBLIC_URL: process.env.PUBLIC_URL || 'https://YOUR-APP-NAME.herokuapp.com',
+  PUBLIC_URL: process.env.PUBLIC_URL || 'https://teddyxmdhost1-39f912857ad8.herokuapp.com',
 
   // Use a unique random value of at least 32 characters.
-  SESSION_SECRET: process.env.SESSION_SECRET || 'REPLACE_WITH_A_UNIQUE_RANDOM_SECRET_AT_LEAST_32_CHARACTERS',
+  SESSION_SECRET: process.env.SESSION_SECRET || 'tshkh_£@dgjxsg583#£3&dtj',
 
   // Pricing: every bot deployment costs 10 coins; 10 coins = KSh 50.
   DEPLOY_COST_COINS: Number(process.env.DEPLOY_COST_COINS || 10),

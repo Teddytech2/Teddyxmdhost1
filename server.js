@@ -894,6 +894,23 @@ async function start() {
   await mongoose.connect(config.MONGODB_URI);
   console.log('Connected to MongoDB Atlas.');
 
+  // Migration for older database versions: this release identifies users by
+  // email and has no username field. A leftover unique username_1 index from
+  // an older schema rejects every second document with username=null.
+  // Remove only that obsolete index; never delete users or other collections.
+  try {
+    const userIndexes = await User.collection.indexes();
+    if (userIndexes.some(index => index.name === 'username_1')) {
+      await User.collection.dropIndex('username_1');
+      console.log('Removed obsolete MongoDB users.username_1 index.');
+    }
+  } catch (indexError) {
+    // A missing users collection/index is normal on a fresh installation.
+    if (![26, 27].includes(indexError.code) && !/not found|ns does not exist/i.test(indexError.message || '')) {
+      throw indexError;
+    }
+  }
+
   const adminEmail = String(config.ADMIN.EMAIL || '').trim().toLowerCase();
   const adminPassword = String(config.ADMIN.PASSWORD || '');
   if (!adminEmail || adminPassword.length < 8) throw new Error('Set ADMIN_EMAIL and ADMIN_PASSWORD (at least 8 characters).');

@@ -8,13 +8,13 @@ module.exports = {
 
   // Administrator account created on the first successful startup.
   ADMIN: {
-    EMAIL: process.env.ADMIN_EMAIL || 'YOUR_ADMIN_EMAIL@example.com',
-    PASSWORD: process.env.ADMIN_PASSWORD || 'CHANGE_THIS_TO_A_STRONG_PASSWORD'
+    EMAIL: process.env.ADMIN_EMAIL || 'admin.teddyxmd.com',
+    PASSWORD: process.env.ADMIN_PASSWORD || 'teddyxmd'
   },
 
   // Service credentials. Replace the placeholders with your real credentials.
   HEROKU_API_KEY: process.env.HEROKU_API_KEY || 'PASTE_YOUR_HEROKU_API_KEY_HERE',
-  MONGODB_URI: process.env.MONGODB_URI || 'PASTE_YOUR_MONGODB_ATLAS_URI_HERE',
+  MONGODB_URI: process.env.MONGODB_URI || 'mongodb+srv://karmahell33_db_user:FdVaBDQOZj3qpCsn@cluster0.sjpgsqj.mongodb.net/?appName=Cluster0',
   PAYSTACK_SECRET_KEY: process.env.PAYSTACK_SECRET_KEY || 'PASTE_YOUR_PAYSTACK_SECRET_KEY_HERE',
 
   // Exact public URL of this deployment panel (no trailing slash required).

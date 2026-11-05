@@ -21,7 +21,7 @@ module.exports = {
   PUBLIC_URL: process.env.PUBLIC_URL || 'https://teddyxmdhost1-39f912857ad8.herokuapp.com',
 
   // Use a unique random value of at least 32 characters.
-  SESSION_SECRET: process.env.SESSION_SECRET || 'tshkh_£@dgjxsg583#£3&dtj',
+  SESSION_SECRET: process.env.SESSION_SECRET || 'K9mP2vX7qR4tY8wZ1nB5cF0hJ3gL6sA9',
 
   // Pricing: every bot deployment costs 10 coins; 10 coins = KSh 50.
   DEPLOY_COST_COINS: Number(process.env.DEPLOY_COST_COINS || 10),

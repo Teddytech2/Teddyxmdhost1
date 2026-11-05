@@ -1,18 +1,21 @@
-// Copy this file to config.js and fill in your credentials.
-// Never commit config.js or share your Heroku API key.
+// Copy these settings into config.js and replace every placeholder.
+// Keep real credentials out of public repositories.
 module.exports = {
   PORT: process.env.PORT || 3000,
+  NODE_ENV: 'production',
   ADMIN: {
-    EMAIL: process.env.ADMIN_EMAIL || "admin@example.com",
-    PASSWORD: process.env.ADMIN_PASSWORD || "CHANGE_THIS_LONG_PASSWORD"
+    EMAIL: 'YOUR_ADMIN_EMAIL@example.com',
+    PASSWORD: 'CHANGE_THIS_TO_A_STRONG_PASSWORD'
   },
-  HEROKU_API_KEY: process.env.HEROKU_API_KEY || "PASTE_YOUR_HEROKU_API_KEY_HERE",
-  GITHUB: {
-    OWNER: "Teddyxmd",
-    REPO: "TEDDY-XMD",
-    BRANCH: "main"
-  },
-  SESSION_SECRET: process.env.SESSION_SECRET || "CHANGE_THIS_TO_A_LONG_RANDOM_SECRET",
-  // Keep the deployment panel itself out of the delete/restart controls.
-  PROTECTED_APP_NAMES: (process.env.PROTECTED_APP_NAMES || "").split(",").map(x => x.trim()).filter(Boolean)
+  HEROKU_API_KEY: 'PASTE_YOUR_HEROKU_API_KEY_HERE',
+  MONGODB_URI: 'PASTE_YOUR_MONGODB_ATLAS_URI_HERE',
+  PAYSTACK_SECRET_KEY: 'PASTE_YOUR_PAYSTACK_SECRET_KEY_HERE',
+  PUBLIC_URL: 'https://YOUR-APP-NAME.herokuapp.com',
+  SESSION_SECRET: 'REPLACE_WITH_A_UNIQUE_RANDOM_SECRET_AT_LEAST_32_CHARACTERS',
+  DEPLOY_COST_COINS: 10,
+  KES_PER_10_COINS: 50,
+  USD_PER_10_COINS: 0.4,
+  PAYSTACK_USD_MINIMUM: 2,
+  DEFAULT_HEROKU_APP_PREFIX: 'teddyxhost',
+  PROTECTED_APP_NAMES: ['teddyxmdhost1-39f912857ad8']
 };

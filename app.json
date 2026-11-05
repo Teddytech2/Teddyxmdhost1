@@ -1,20 +1,22 @@
 {
-  "name": "TEDDY-XMD DEPLOYER",
-  "description": "Private admin panel for deploying and managing TEDDY-XMD apps on Heroku.",
-  "repository": "https://github.com/Teddyxmd/TEDDY-XMD",
+  "name": "teddy-tech-bot-deployer",
+  "description": "Multi-user Teddy Tech bot deployment platform with Teddy Coins and Paystack",
+  "repository": "https://github.com/Teddyxmd/Teddyxmdhost1",
   "keywords": [
-    "node",
+    "teddy-tech",
     "heroku",
-    "deployment"
+    "whatsapp",
+    "bot-deployer"
   ],
-  "env": {
-    "NODE_ENV": {
-      "description": "Runtime environment",
-      "value": "production"
-    },
-    "SESSION_SECRET": {
-      "description": "Session signing secret. Set a long random value in Heroku config vars.",
-      "required": true
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
     }
-  }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
 }

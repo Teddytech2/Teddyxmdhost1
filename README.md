@@ -1,68 +1,63 @@
-# TEDDY-XMD DEPLOYER
+# TEDDY TECH BOT DEPLOYER — Multi-user edition
 
-Private admin-only Heroku deployment and management panel for `https://github.com/Teddyxmd/TEDDY-XMD`.
+A multi-user Heroku bot deployment portal with Teddy Coins, MongoDB Atlas, Paystack and per-user app ownership.
 
 ## Features
-- Admin-only email/password login (no registration)
-- Reads the repository's `app.json` from GitHub
-- Deploys a new Heroku app through the Heroku Platform API App Setups endpoint
-- Lists Heroku apps and displays app URLs/status
-- Views recent logs, restarts apps, redeploys latest GitHub source, and deletes apps with typed confirmation
-- Server-side Heroku API key; it is never sent to the browser
+- Public user registration and sign-in.
+- Admin account seeded from `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
+- MongoDB Atlas stores accounts, sessions, wallets, payments, deployments and transaction history.
+- Every bot deployment costs **10 Teddy Coins**.
+- Coin pricing: **10 coins = KSh 50**. KES packs can be purchased through Paystack.
+- USD checkout is card-only and starts at Paystack's **$2 minimum**. Default configured rate is $0.40 per 10 coins, so USD checkout starts at 50 coins ($2). Change `USD_PER_10_COINS` only after checking Paystack minimums and your intended price.
+- Paystack payments are verified server-side before coins are credited. Callback and signed webhook processing are idempotent.
+- Users can see and manage only apps they deployed. Admin can see every Heroku app and all users/payments/deployments.
+- TEDDY-XMD ULTRA, JUNE ULTRA, WOLFBOT, CYPHERX BOT and custom public GitHub repositories are supported. Select the bot label, then enter that bot's public GitHub repository URL. All selected repositories must contain a valid `app.json` in the repository root on the selected branch. A SESSION_ID field is available for bots that require one; it is optional for other bots.
+- Heroku setup/build logs, runtime logs, restart, redeploy and delete actions.
+- Failed Heroku setup/build automatically refunds the 10-coin deployment charge.
 
-## 1. Configure
-```bash
-npm install
-```
-Edit the included `config.js` file before starting.
-Edit `config.js` and set:
-- `ADMIN.EMAIL`
-- `ADMIN.PASSWORD` (use a long unique password)
-- `HEROKU_API_KEY`
-- `SESSION_SECRET` (long random secret)
-- `GITHUB.BRANCH` if the bot repository uses a branch other than `main`
+## Configure `config.js` before deploying
 
-`config.js` is ignored by Git. Never commit it or share your Heroku API key.
+Edit `config.js` and fill in these values directly:
+- `ADMIN.EMAIL` and `ADMIN.PASSWORD` — your administrator login.
+- `HEROKU_API_KEY` — your Heroku API key.
+- `MONGODB_URI` — your MongoDB Atlas connection string.
+- `PAYSTACK_SECRET_KEY` — your Paystack secret key.
+- `PUBLIC_URL` — the full URL of this panel on Heroku.
+- `SESSION_SECRET` — a unique random string of at least 32 characters.
+- `PROTECTED_APP_NAMES` — names of this panel and any apps customers must not manage.
 
-## 2. Run locally
-```bash
-npm start
-```
-Open `http://localhost:3000`.
+The default pricing is already configured: every bot deployment costs 10 coins, and 10 coins cost KSh 50. The default USD rate is $0.40 per 10 coins, subject to Paystack's $2 minimum.
 
-## 3. Host this panel on Heroku
-Create a separate Heroku app for the panel (do not use the same app name as a bot deployment). Push this project to a private GitHub repository, then create a Heroku app connected to that repository or deploy it with Heroku CLI.
+**Security:** Keep the GitHub repository private when placing live credentials in `config.js`. Never share the ZIP or commit it to a public repository. Environment variables supplied by Heroku can override the values in `config.js`. Set `NODE_ENV=production` if you prefer to configure it in Heroku; otherwise `config.js` defaults to production.
 
-Set these Heroku Config Vars on the panel app:
-- `ADMIN_EMAIL`
-- `ADMIN_PASSWORD`
-- `HEROKU_API_KEY`
-- `SESSION_SECRET`
-- `PROTECTED_APP_NAMES` (comma-separated; include the panel's own Heroku app name)
+## First admin login
+On first startup, the app creates the admin user using `ADMIN_EMAIL` and `ADMIN_PASSWORD`. The admin email and password are read from `config.js`; replace the placeholders before the first startup. If that email already exists in MongoDB, its role is promoted to `admin`; its password is not overwritten. To preserve your existing login, set the same admin email/password you currently use before the first startup with this MongoDB database.
 
-The settings in `config.js` are defaults; environment variables override them on Heroku. You can edit `config.js` as requested, but keep the GitHub repository private if it contains real credentials. Heroku Config Vars are safer for production secrets.
+## Paystack setup
+1. Add your Paystack secret key to `PAYSTACK_SECRET_KEY` in Heroku Config Vars.
+2. Set the Paystack webhook URL to `https://YOUR-PANEL-DOMAIN/api/payments/webhook`.
+3. Test with Paystack test keys first.
+4. For USD card payments, your Kenya-based Paystack account must be enabled to accept USD/international payments. Paystack's current USD transaction minimum is $2.00. The default pack price therefore requires at least 50 coins for USD checkout.
+5. Payment value is only credited after server-side verification of successful status, amount, currency and customer email.
 
-**Important:** Add the panel app name to `PROTECTED_APP_NAMES` so the dashboard refuses to restart/redeploy/delete it. Keep `HEROKU_API_KEY` and credentials secret.
+## Deploy a bot
+1. Sign up or sign in.
+2. Buy Teddy Coins. KES allows 10 coins for KSh 50. USD card checkout has a $2 minimum.
+3. Select a bot category, enter its public GitHub repository URL and branch.
+4. Load `app.json` to confirm the repository is deployable and enter required environment variables.
+5. Enter a unique Heroku app name and deploy. 10 coins are charged for each deployment/redeployment.
+6. View the live Heroku build logs. If Heroku reports a failed setup/build, the deployment charge is refunded automatically.
 
-## How deployment works
-The panel reads `app.json` from the configured public GitHub repository, then submits the repository's GitHub source tarball to `POST /app-setups`. Heroku creates and builds the bot app. Redeploy submits the latest repository source to the selected app's Builds endpoint.
-
-Heroku's App Setups API requires a gzipped tar archive with an `app.json` manifest and supports environment overrides. It is not available for Heroku Fir generation apps. Check the official Heroku documentation and your account's current app/stack eligibility before use.
-
-## Notes / limitations
-- The GitHub repository must be public for the direct GitHub tarball source URL used by this starter.
-- The selected branch must contain `app.json` at the repository root.
-- Required `app.json` environment variables must be supplied on the deployment form unless the manifest supplies a value or generator.
-- The Heroku API may reject app creation if account verification, app limits, region/stack availability, or billing requirements prevent it.
-- Logs are fetched as a recent snapshot, not a continuously streaming live tail.
-- The panel uses Express's in-memory session store. For production multi-instance hosting, replace it with a persistent session store.
-
-## TEDDY-XMD Android app
-The installed app reads `public/app-config.json` on launch. Update `websiteUrl` and `allowedHosts` there to redirect it to a different HTTPS dashboard without rebuilding the APK. Keep the original app-config host online; see `ANDROID-APP-README.md`.
-
-The repository now includes an Android WebView app in `android/`. It opens the private deployment dashboard and uses the provided Teddy Tech image as its launcher icon. GitHub Actions builds a debug APK and places it at `public/downloads/TEDDY-XMD.apk`; the dashboard's **Install TEDDY-XMD** buttons download that file after the build commit is deployed. See `ANDROID-APP-README.md`.
+## Important
+- This version deploys **public GitHub repositories**. Private repositories are not supported by Heroku's unauthenticated source tarball URL.
+- Each user's app list and management actions are filtered by ownership stored in MongoDB. Admin has global access.
+- Do not commit real API keys, MongoDB URI, admin password or session secret to GitHub.
 
 
-## Android app
+## Heroku app name suggestions
+The Deploy a bot page includes a configurable name prefix (default: `teddyxhost`), a **Suggest available name** button, and a **Check custom name** button. Suggestions append a random suffix (for example, `teddyxhost-a1b2c3`) and check the connected Heroku account before displaying the name. Users can edit the suggested name or enter their own. Heroku is the final authority for global name availability; if another Heroku customer claims a name between the pre-check and deployment, the deployment is rejected and the coin charge is refunded. Change the default prefix in `config.js` using `DEFAULT_HEROKU_APP_PREFIX`.
 
-See [ANDROID-APP-README.md](ANDROID-APP-README.md) for building the TEDDY-XMD Android APK and configuring its website destination.
+
+### WhatsApp support contact
+
+Set `SUPPORT_WHATSAPP` in `config.js` to your WhatsApp number in international format using digits only (default: `254799963583`). The website displays a floating **WhatsApp Support** button on the login and dashboard screens, plus a support link on the sign-in page.

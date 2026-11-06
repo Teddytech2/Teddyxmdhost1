@@ -145,7 +145,7 @@ async function heroku(pathname, options = {}) {
   if (!config.HEROKU_API_KEY || String(config.HEROKU_API_KEY).includes('PASTE_YOUR')) {
     const error = new Error('Set HEROKU_API_KEY in your Heroku Config Vars.'); error.status = 503; throw error;
   }
-  const response = await fetch(`${HEROKU_API}${pathname}`, {
+  const response = await fetch(`\( {HEROKU_API} \){pathname}`, {
     ...options,
     headers: { ...HEROKU_HEADERS, ...(options.headers || {}) }
   });
@@ -161,7 +161,7 @@ async function heroku(pathname, options = {}) {
 
 function getPublicBase(req) {
   if (config.PUBLIC_URL) return String(config.PUBLIC_URL).replace(/\/$/, '');
-  return `${req.protocol}://${req.get('host')}`;
+  return `\( {req.protocol}:// \){req.get('host')}`;
 }
 
 function parseGithubRepo(value) {
@@ -174,10 +174,10 @@ function parseGithubRepo(value) {
   if (parts.length < 2) throw Object.assign(new Error('GitHub URL must look like https://github.com/owner/repository.'), { status: 400 });
   const owner = parts[0];
   const repo = parts[1].replace(/\.git$/i, '');
-  if (!/^[A-Za-z0-9_.-]{1,100}$/.test(owner) || !/^[A-Za-z0-9_.-]{1,100}$/.test(repo)) {
+  if (!/^[A-Za-z0-9_.-]{1,100}\( /.test(owner) || !/^[A-Za-z0-9_.-]{1,100} \)/.test(repo)) {
     throw Object.assign(new Error('The GitHub repository URL is not valid.'), { status: 400 });
   }
-  return { owner, repo, url: `https://github.com/${owner}/${repo}` };
+  return { owner, repo, url: `https://github.com/\( {owner}/ \){repo}` };
 }
 
 function repoSource(repo, branch) {
@@ -190,11 +190,10 @@ function repoSource(repo, branch) {
     repo: repo.repo,
     url: repo.url,
     branch: safeBranch,
-    tarball: `https://codeload.github.com/${repo.owner}/${repo.repo}/tar.gz/refs/heads/${encodeURIComponent(safeBranch)}`,
-    rawManifest: `https://raw.githubusercontent.com/${repo.owner}/${repo.repo}/${encodeURIComponent(safeBranch)}/app.json`
+    tarball: `https://codeload.github.com/\( {repo.owner}/ \){repo.repo}/tar.gz/refs/heads/${encodeURIComponent(safeBranch)}`,
+    rawManifest: `https://raw.githubusercontent.com/\( {repo.owner}/ \){repo.repo}/${encodeURIComponent(safeBranch)}/app.json`
   };
 }
-
 
 function normalizeHerokuAppName(value) {
   return String(value || '').trim().toLowerCase();
@@ -250,7 +249,7 @@ async function paystackRequest(pathname, options = {}) {
   if (!config.PAYSTACK_SECRET_KEY || String(config.PAYSTACK_SECRET_KEY).includes('PASTE_YOUR')) {
     const error = new Error('Paystack is not configured yet. Add PAYSTACK_SECRET_KEY to Heroku Config Vars.'); error.status = 503; throw error;
   }
-  const response = await fetch(`${PAYSTACK_API}${pathname}`, {
+  const response = await fetch(`\( {PAYSTACK_API} \){pathname}`, {
     ...options,
     headers: { Authorization: `Bearer ${config.PAYSTACK_SECRET_KEY}`, 'Content-Type': 'application/json', ...(options.headers || {}) }
   });
@@ -286,7 +285,7 @@ async function addWalletCredit(paymentId, paystackData) {
       await WalletTransaction.create([{
         userId: current.userId, type: 'purchase', delta: current.coins,
         balanceAfter: updatedUser.coins, reference: current.reference,
-        description: `Purchased ${current.coins} Teddy Coins through Paystack (${current.currency})`
+        description: `Purchased \( {current.coins} Teddy Coins through Paystack ( \){current.currency})`
       }], { session: mongoSession });
       credited = true;
     });
@@ -349,7 +348,6 @@ async function refundDeployment(deployment, reason) {
 }
 
 // ----------------------------- AUTH ROUTES ---------------------------------
-// Public, non-secret settings used by the website UI. Never expose API keys here.
 app.get('/api/public-config', (req, res) => {
   const supportNumber = String(config.SUPPORT_WHATSAPP || '').replace(/\D/g, '');
   res.set('Cache-Control', 'no-store');
@@ -424,14 +422,12 @@ app.get('/api/manifest', requireAuth, asyncRoute(async (req, res) => {
   res.json({ repository: data.info.url, branch: data.info.branch, manifest: data.manifest });
 }));
 
-
 // ------------------------- HEROKU APP NAME TOOLS ---------------------------
-// Heroku remains the final arbiter: names can be claimed after a preflight check.
 app.get('/api/app-name/suggest', requireAuth, asyncRoute(async (req, res) => {
   const prefix = normalizeAppPrefix(req.query.prefix);
   for (let attempt = 0; attempt < 12; attempt++) {
     const suffix = crypto.randomBytes(3).toString('hex');
-    const name = `${prefix}-${suffix}`.slice(0, 30).replace(/-+$/, '');
+    const name = `\( {prefix}- \){suffix}`.slice(0, 30).replace(/-+$/, '');
     if (!validateHerokuAppName(name)) continue;
     if (await Deployment.exists({ appName: name, status: { $ne: 'deleted' } })) continue;
     if (await herokuAppNameAvailable(name)) return res.json({ available: true, name, prefix: `${prefix}-`, scope: 'connected-account' });
@@ -476,9 +472,6 @@ app.post('/api/deploy', requireAuth, asyncRoute(async (req, res) => {
   if (!sessionId) return res.status(400).json({ error: 'WhatsApp SESSION_ID is required. Use the Get SESSION_ID link in the dashboard to generate one.' });
 
   const { info } = await getManifest(repoUrl, branch);
-  // Keep the customer deployment form intentionally simple: the only value
-  // customers provide is SESSION_ID. Heroku's app.json setup handles the
-  // repository's declared defaults and generated config vars server-side.
   const overrides = { SESSION_ID: sessionId };
 
   const existing = await Deployment.findOne({ appName: name });
@@ -500,7 +493,7 @@ app.post('/api/deploy', requireAuth, asyncRoute(async (req, res) => {
         const docs = await Deployment.create([{ userId: req.user._id, appName: name, botName, repoUrl: info.url, repoOwner: info.owner, repoName: info.repo, branch: info.branch, status: 'queued', statusMessage: 'Waiting for Heroku', coinsCharged: DEPLOY_COST }], { session: mongoSession });
         deployment = docs[0];
       }
-      await WalletTransaction.create([{ userId: req.user._id, type: 'deployment_charge', delta: -DEPLOY_COST, balanceAfter: user.coins, reference: name, description: `Deployment charge for ${botName} (${name})` }], { session: mongoSession });
+      await WalletTransaction.create([{ userId: req.user._id, type: 'deployment_charge', delta: -DEPLOY_COST, balanceAfter: user.coins, reference: name, description: `Deployment charge for \( {botName} ( \){name})` }], { session: mongoSession });
     });
   } finally { await mongoSession.endSession(); }
 
@@ -532,7 +525,7 @@ app.get('/api/setups/:id', requireAuth, asyncRoute(async (req, res) => {
   const setup = await heroku(`/app-setups/${encodeURIComponent(req.params.id)}`);
   let buildResult = null;
   if (setup.app?.name && setup.build?.id && setup.build.status === 'succeeded') {
-    try { buildResult = await heroku(`/apps/${encodeURIComponent(setup.app.name)}/builds/${encodeURIComponent(setup.build.id)}/result`); } catch {}
+    try { buildResult = await heroku(`/apps/\( {encodeURIComponent(setup.app.name)}/builds/ \){encodeURIComponent(setup.build.id)}/result`); } catch {}
   }
   const setupStatus = String(setup.status || 'pending').toLowerCase();
   const buildStatus = String(setup.build?.status || '').toLowerCase();
@@ -548,7 +541,6 @@ app.get('/api/setups/:id', requireAuth, asyncRoute(async (req, res) => {
   res.json({ setup, buildResult, deployment: { appName: deployment.appName, status: deployment.status, refunded: deployment.refunded } });
 }));
 
-// Live Heroku build output for an app setup. Stream URL and Heroku token stay server-side.
 app.get('/api/setups/:id/build-logs', requireAuth, asyncRoute(async (req, res) => {
   const deployment = await Deployment.findOne({ setupId: req.params.id });
   if (!deployment) return res.status(404).type('text/plain').send('Deployment not found.');
@@ -572,7 +564,6 @@ app.get('/api/setups/:id/build-logs', requireAuth, asyncRoute(async (req, res) =
   if (!res.destroyed) res.end();
 }));
 
-// ----------------------------- APP LIST / STATUS ----------------------------
 async function herokuAppSummary(appData, deployment) {
   try {
     const [dynos, formation] = await Promise.all([
@@ -625,10 +616,6 @@ app.get('/api/apps', requireAuth, asyncRoute(async (req, res) => {
     const map = new Map(deployments.map(d => [d.appName, d]));
     appRecords = all.map(a => ({ app: a, deployment: map.get(a.name) || null }));
   } else {
-    // Read the deployment collection directly so older records are not hidden
-    // by schema/query differences (for example, a legacy string userId or an
-    // owner email saved by an earlier deployer build). Ownership is still
-    // strictly limited to the signed-in account.
     const accountId = String(req.user._id);
     const accountEmail = String(req.user.email || '').trim().toLowerCase();
     const ownerClauses = [{ userId: req.user._id }, { userId: accountId }];
@@ -648,7 +635,6 @@ app.get('/api/apps', requireAuth, asyncRoute(async (req, res) => {
       .map(d => Deployment.hydrate(d));
     await Deployment.populate(deployments, { path: 'userId', select: 'email name' });
 
-    // Remove duplicate app records if a legacy deployment was written twice.
     const seenApps = new Set();
     deployments = deployments.filter(d => {
       const key = String(d.appName).toLowerCase();
@@ -672,7 +658,6 @@ app.get('/api/apps', requireAuth, asyncRoute(async (req, res) => {
       deployment.ownerEmail = deployment.userId?.email;
       deployment.botName = deployment.botName;
       deployment.repoUrl = deployment.repoUrl;
-      // Poll setup state while it is not yet live, so failed builds are refunded even if logs are not opened.
       if (deployment.setupId && ['queued', 'building', 'deploying'].includes(deployment.status)) {
         try {
           const setup = await heroku(`/app-setups/${encodeURIComponent(deployment.setupId)}`);
@@ -684,7 +669,7 @@ app.get('/api/apps', requireAuth, asyncRoute(async (req, res) => {
       }
       else if (deployment.buildId && deployment.status === 'building') {
         try {
-          const build = await heroku(`/apps/${encodeURIComponent(deployment.appName)}/builds/${encodeURIComponent(deployment.buildId)}`);
+          const build = await heroku(`/apps/\( {encodeURIComponent(deployment.appName)}/builds/ \){encodeURIComponent(deployment.buildId)}`);
           const buildState = String(build.status || '').toLowerCase();
           if (['failed', 'failure', 'canceled', 'cancelled', 'errored'].includes(buildState)) await refundDeployment(deployment, build.error_message || 'Heroku redeployment build failed');
           else if (['succeeded', 'success'].includes(buildState)) { deployment.status = 'deploying'; deployment.statusMessage = 'Build completed; waiting for the web dyno.'; deployment.updatedAt = new Date(); await deployment.save(); }
@@ -707,7 +692,7 @@ app.get('/api/deployments', requireAuth, asyncRoute(async (req, res) => {
 app.get('/api/apps/:name', requireAuth, asyncRoute(async (req, res) => {
   await canAccessDeployment(req, req.params.name);
   const name = encodeURIComponent(req.params.name);
-  const [details, formation, configVars] = await Promise.all([heroku(`/apps/${name}`), heroku(`/apps/${name}/formation`), heroku(`/apps/${name}/config-vars`)]);
+  const [details, formation, configVars] = await Promise.all([heroku(`/apps/\( {name}`), heroku(`/apps/ \){name}/formation`), heroku(`/apps/${name}/config-vars`)]);
   for (const key of ['HEROKU_API_KEY', 'PAYSTACK_SECRET_KEY', 'MONGODB_URI', 'SESSION_SECRET']) delete configVars[key];
   res.set('Cache-Control', 'no-store');
   res.json({ details, formation, configVars });
@@ -727,7 +712,7 @@ app.post('/api/apps/:name/redeploy', requireAuth, asyncRoute(async (req, res) =>
   const deployment = await canAccessDeployment(req, nameRaw);
   if (!deployment) return res.status(400).json({ error: 'This app has no saved repository details. Contact support.' });
   const info = repoSource({ owner: deployment.repoOwner, repo: deployment.repoName }, deployment.branch);
-  const build = await heroku(`/apps/${encodeURIComponent(nameRaw)}/builds`, { method: 'POST', body: JSON.stringify({ source_blob: { url: info.tarball, version_description: `Free redeployment ${deployment.repoOwner}/${deployment.repoName}@${deployment.branch}` } }) });
+  const build = await heroku(`/apps/${encodeURIComponent(nameRaw)}/builds`, { method: 'POST', body: JSON.stringify({ source_blob: { url: info.tarball, version_description: `Free redeployment \( {deployment.repoOwner}/ \){deployment.repoName}@${deployment.branch}` } }) });
   deployment.buildId = build.id; deployment.setupId = null; deployment.status = 'building'; deployment.statusMessage = 'Free redeployment build started.'; deployment.coinsCharged = 0; deployment.refunded = false; deployment.updatedAt = new Date(); await deployment.save();
   res.json({ ok: true, free: true, build, message: 'Free redeployment started. No coins were deducted.' });
 }));
@@ -764,7 +749,7 @@ app.delete('/api/apps/:name', requireAuth, asyncRoute(async (req, res) => {
 
 app.get('/api/apps/:name/build-logs/:buildId', requireAuth, asyncRoute(async (req, res) => {
   const deployment = await canAccessDeployment(req, req.params.name);
-  const build = await heroku(`/apps/${encodeURIComponent(req.params.name)}/builds/${encodeURIComponent(req.params.buildId)}`);
+  const build = await heroku(`/apps/\( {encodeURIComponent(req.params.name)}/builds/ \){encodeURIComponent(req.params.buildId)}`);
   const streamUrl = build.output_stream_url;
   if (!streamUrl) return res.status(202).type('text/plain').send('Waiting for Heroku to publish this build log stream…\n');
   const parsed = new URL(streamUrl);
@@ -802,7 +787,7 @@ app.post('/api/payments/initialize', requireAuth, asyncRoute(async (req, res) =>
     amountMinor = Math.round(packs * USD_PER_10_COINS * 100);
     if (amountMinor < Math.round(USD_MINIMUM * 100)) return res.status(400).json({ error: `Paystack USD checkout minimum is $${USD_MINIMUM.toFixed(2)}. Choose at least ${Math.ceil(USD_MINIMUM / USD_PER_10_COINS) * 10} coins for USD, or pay in KES to buy 10 coins.` });
   }
-  const reference = `Teddy${Date.now()}${crypto.randomBytes(5).toString('hex')}`;
+  const reference = `Teddy\( {Date.now()} \){crypto.randomBytes(5).toString('hex')}`;
   const payment = await Payment.create({ userId: req.user._id, reference, coins, amountMinor, currency, status: 'pending' });
   const callbackUrl = `${getPublicBase(req)}/api/payments/callback`;
   try {
@@ -837,7 +822,6 @@ app.get('/api/payments/callback', asyncRoute(async (req, res) => {
   }
 }));
 
-// Webhook signature validation. Paystack also calls the callback; unique reference + Mongo transaction prevent double credit.
 app.post('/api/payments/webhook', asyncRoute(async (req, res) => {
   if (!config.PAYSTACK_SECRET_KEY) return res.sendStatus(503);
   const signature = String(req.headers['x-paystack-signature'] || '');
@@ -926,29 +910,32 @@ async function start() {
     console.error('Set ADMIN_EMAIL and ADMIN_PASSWORD in Heroku Config Vars (password at least 8 characters).');
     process.exit(1);
   }
-  // Integrations are checked when their endpoints are used. The dashboard and
-  // account registration must still start if Paystack or Heroku is not configured.
+
   await mongoose.connect(config.MONGODB_URI);
   console.log('Connected to MongoDB Atlas.');
 
-  // Migration for older database versions.
-  // This release has no username, referralCode, or number fields.
-  // Remove legacy unique indexes on fields no longer used by the User model;
-  // otherwise multiple existing documents with null values can crash startup.
+  // Migration: remove leftover unique indexes that cause null duplicate errors
   try {
+    // Clean User collection
     const userIndexes = await User.collection.indexes();
-    const obsolete = ['username_1', 'referralCode_1', 'number_1'];
-
-    for (const name of obsolete) {
+    const obsoleteUser = ['username_1', 'referralCode_1', 'number_1'];
+    for (const name of obsoleteUser) {
       if (userIndexes.some(index => index.name === name)) {
         await User.collection.dropIndex(name);
         console.log(`Removed obsolete MongoDB users.${name} index.`);
       }
     }
+
+    // Clean sessions collection (connect-mongo)
+    const sessionsCollection = mongoose.connection.db.collection('sessions');
+    const sessionIndexes = await sessionsCollection.indexes();
+    if (sessionIndexes.some(idx => idx.name === 'number_1')) {
+      await sessionsCollection.dropIndex('number_1');
+      console.log('Removed obsolete sessions.number_1 index.');
+    }
   } catch (indexError) {
-    // A missing users collection/index is normal on a fresh installation.
     if (![26, 27].includes(indexError.code) && !/not found|ns does not exist/i.test(indexError.message || '')) {
-      throw indexError;
+      console.warn('Index cleanup warning:', indexError.message);
     }
   }
 

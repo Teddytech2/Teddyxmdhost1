@@ -188,6 +188,7 @@ function repoSource(repo, branch) {
   return {
     owner: repo.owner,
     repo: repo.repo,
+    url: repo.url,
     branch: safeBranch,
     tarball: `https://codeload.github.com/${repo.owner}/${repo.repo}/tar.gz/refs/heads/${encodeURIComponent(safeBranch)}`,
     rawManifest: `https://raw.githubusercontent.com/${repo.owner}/${repo.repo}/${encodeURIComponent(safeBranch)}/app.json`

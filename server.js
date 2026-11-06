@@ -892,11 +892,12 @@ async function start() {
   console.log('Connected to MongoDB Atlas.');
 
   // Migration for older database versions.
-  // This release has no username or referralCode fields.
-  // Leftover unique indexes that allow multiple nulls will crash startup.
+  // This release has no username, referralCode, or number fields.
+  // Remove legacy unique indexes on fields no longer used by the User model;
+  // otherwise multiple existing documents with null values can crash startup.
   try {
     const userIndexes = await User.collection.indexes();
-    const obsolete = ['username_1', 'referralCode_1'];
+    const obsolete = ['username_1', 'referralCode_1', 'number_1'];
 
     for (const name of obsolete) {
       if (userIndexes.some(index => index.name === name)) {

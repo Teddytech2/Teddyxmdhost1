@@ -625,7 +625,38 @@ app.get('/api/apps', requireAuth, asyncRoute(async (req, res) => {
     const map = new Map(deployments.map(d => [d.appName, d]));
     appRecords = all.map(a => ({ app: a, deployment: map.get(a.name) || null }));
   } else {
-    deployments = await Deployment.find({ userId: req.user._id, status: { $ne: 'deleted' } }).populate('userId', 'email name').sort({ createdAt: -1 });
+    // Read the deployment collection directly so older records are not hidden
+    // by schema/query differences (for example, a legacy string userId or an
+    // owner email saved by an earlier deployer build). Ownership is still
+    // strictly limited to the signed-in account.
+    const accountId = String(req.user._id);
+    const accountEmail = String(req.user.email || '').trim().toLowerCase();
+    const ownerClauses = [{ userId: req.user._id }, { userId: accountId }];
+    if (accountEmail) ownerClauses.push(
+      { ownerEmail: accountEmail },
+      { userEmail: accountEmail },
+      { email: accountEmail }
+    );
+    const rawDocs = await Deployment.collection.find({
+      $and: [
+        { $or: ownerClauses },
+        { status: { $ne: 'deleted' } }
+      ]
+    }).sort({ createdAt: -1 }).toArray();
+    deployments = rawDocs
+      .filter(d => d.appName)
+      .map(d => Deployment.hydrate(d));
+    await Deployment.populate(deployments, { path: 'userId', select: 'email name' });
+
+    // Remove duplicate app records if a legacy deployment was written twice.
+    const seenApps = new Set();
+    deployments = deployments.filter(d => {
+      const key = String(d.appName).toLowerCase();
+      if (seenApps.has(key)) return false;
+      seenApps.add(key);
+      return true;
+    });
+
     for (const d of deployments) {
       try {
         const appData = await heroku(`/apps/${encodeURIComponent(d.appName)}`);

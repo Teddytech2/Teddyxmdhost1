@@ -1,21 +1,20 @@
-// Copy these settings into config.js and replace every placeholder.
-// Keep real credentials out of public repositories.
+// Heroku Config Vars are the source of all credentials.
+// Set these in Heroku Settings > Config Vars; never commit real secrets.
 module.exports = {
   PORT: process.env.PORT || 3000,
-  NODE_ENV: 'production',
-  ADMIN: {
-    EMAIL: 'YOUR_ADMIN_EMAIL@example.com',
-    PASSWORD: 'CHANGE_THIS_TO_A_STRONG_PASSWORD'
-  },
-  HEROKU_API_KEY: 'PASTE_YOUR_HEROKU_API_KEY_HERE',
-  MONGODB_URI: 'PASTE_YOUR_MONGODB_ATLAS_URI_HERE',
-  PAYSTACK_SECRET_KEY: 'PASTE_YOUR_PAYSTACK_SECRET_KEY_HERE',
-  PUBLIC_URL: 'https://YOUR-APP-NAME.herokuapp.com',
-  SESSION_SECRET: 'REPLACE_WITH_A_UNIQUE_RANDOM_SECRET_AT_LEAST_32_CHARACTERS',
-  DEPLOY_COST_COINS: 10,
-  KES_PER_10_COINS: 50,
-  USD_PER_10_COINS: 0.4,
-  PAYSTACK_USD_MINIMUM: 2,
-  DEFAULT_HEROKU_APP_PREFIX: 'teddyxhost',
-  PROTECTED_APP_NAMES: ['teddyxmdhost1-39f912857ad8']
+  NODE_ENV: process.env.NODE_ENV || 'production',
+  ADMIN: { EMAIL: process.env.ADMIN_EMAIL || '', PASSWORD: process.env.ADMIN_PASSWORD || '' },
+  HEROKU_API_KEY: process.env.HEROKU_API_KEY || '',
+  MONGODB_URI: process.env.MONGODB_URI || '',
+  PAYSTACK_SECRET_KEY: process.env.PAYSTACK_SECRET_KEY || '',
+  PUBLIC_URL: process.env.PUBLIC_URL || '',
+  SESSION_SECRET: process.env.SESSION_SECRET || '',
+  DEPLOY_COST_COINS: Number(process.env.DEPLOY_COST_COINS || 10),
+  KES_PER_10_COINS: Number(process.env.KES_PER_10_COINS || 50),
+  USD_PER_10_COINS: Number(process.env.USD_PER_10_COINS || 0.4),
+  PAYSTACK_USD_MINIMUM: Number(process.env.PAYSTACK_USD_MINIMUM || 2),
+  DEFAULT_HEROKU_APP_PREFIX: process.env.DEFAULT_HEROKU_APP_PREFIX || 'teddyxhost',
+  SUPPORT_WHATSAPP: process.env.SUPPORT_WHATSAPP || '254799963583',
+  PAIRING_WEBSITE_URL: process.env.PAIRING_WEBSITE_URL || 'https://teddyxmdpair-60b69f1c4cee.herokuapp.com/',
+  PROTECTED_APP_NAMES: (process.env.PROTECTED_APP_NAMES || '').split(',').map(x => x.trim()).filter(Boolean)
 };

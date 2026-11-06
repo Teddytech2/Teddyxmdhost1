@@ -11,7 +11,7 @@ A multi-user Heroku bot deployment portal with Teddy Coins, MongoDB Atlas, Payst
 - USD checkout is card-only and starts at Paystack's **$2 minimum**. Default configured rate is $0.40 per 10 coins, so USD checkout starts at 50 coins ($2). Change `USD_PER_10_COINS` only after checking Paystack minimums and your intended price.
 - Paystack payments are verified server-side before coins are credited. Callback and signed webhook processing are idempotent.
 - Users can see and manage only apps they deployed. Admin can see every Heroku app and all users/payments/deployments.
-- TEDDY-XMD ULTRA, JUNE ULTRA, WOLFBOT, CYPHERX BOT and custom public GitHub repositories are supported. Select the bot label, then enter that bot's public GitHub repository URL. All selected repositories must contain a valid `app.json` in the repository root on the selected branch. A SESSION_ID field is available for bots that require one; it is optional for other bots.
+- The built-in catalogue contains TEDDY-XMD ULTRA, JUNE ULTRA and CYPHERX BOT. Their GitHub repositories are configured by the administrator; customers do not enter repository URLs. Each bot has a **Get SESSION_ID** link that opens the pairing website. A SESSION_ID is required for every deployment.
 - Heroku setup/build logs, runtime logs, restart, redeploy and delete actions.
 - Failed Heroku setup/build automatically refunds the 10-coin deployment charge.
 
@@ -54,6 +54,10 @@ On first startup, the app creates the admin user using `ADMIN_EMAIL` and `ADMIN_
 - Do not commit real API keys, MongoDB URI, admin password or session secret to GitHub.
 
 
+## WhatsApp pairing website
+
+The **Get SESSION_ID** buttons open the configured pairing website: `https://teddyxmdpair-60b69f1c4cee.herokuapp.com/`. The URL can be overridden using the `PAIRING_WEBSITE_URL` Heroku Config Var. Generate a session there, copy it, then return to the deployer and paste it into the SESSION_ID field.
+
 ## Heroku app name suggestions
 The Deploy a bot page includes a configurable name prefix (default: `teddyxhost`), a **Suggest available name** button, and a **Check custom name** button. Suggestions append a random suffix (for example, `teddyxhost-a1b2c3`) and check the connected Heroku account before displaying the name. Users can edit the suggested name or enter their own. Heroku is the final authority for global name availability; if another Heroku customer claims a name between the pre-check and deployment, the deployment is rejected and the coin charge is refunded. Change the default prefix in `config.js` using `DEFAULT_HEROKU_APP_PREFIX`.
 
@@ -61,3 +65,14 @@ The Deploy a bot page includes a configurable name prefix (default: `teddyxhost`
 ### WhatsApp support contact
 
 Set `SUPPORT_WHATSAPP` in `config.js` to your WhatsApp number in international format using digits only (default: `254799963583`). The website displays a floating **WhatsApp Support** button on the login and dashboard screens, plus a support link on the sign-in page.
+
+
+## Built-in bot pairing links
+
+The Get SESSION_ID button opens the pairing page documented by each bot's official repository README:
+
+- TEDDY-XMD ULTRA: https://teddyxmdpair-60b69f1c4cee.herokuapp.com/
+- JUNE ULTRA: https://pair-junex.onrender.com/ (Pair Code 1)
+- CYPHERX BOT: https://pair.cypherxbot.space/ (Server 1)
+
+These links are configured per bot; the deployer does not send every bot to the TEDDY-XMD pairing page.

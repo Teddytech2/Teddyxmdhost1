@@ -8,8 +8,8 @@ module.exports = {
 
   // Administrator account created on the first successful startup.
   ADMIN: {
-    EMAIL: process.env.ADMIN_EMAIL || '',
-    PASSWORD: process.env.ADMIN_PASSWORD || ''
+    EMAIL: process.env.ADMIN_EMAIL || 'teddyxmd@admin.com',
+    PASSWORD: process.env.ADMIN_PASSWORD || 'teddyxmd'
   },
 
   // Service credentials. Replace the placeholders with your real credentials.

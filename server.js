@@ -475,15 +475,11 @@ app.post('/api/deploy', requireAuth, asyncRoute(async (req, res) => {
   const sessionId = String(supplied.SESSION_ID || '').trim();
   if (!sessionId) return res.status(400).json({ error: 'WhatsApp SESSION_ID is required. Use the Get SESSION_ID link in the dashboard to generate one.' });
 
-  const { info, manifest } = await getManifest(repoUrl, branch);
-  const overrides = {};
-  for (const [key, spec] of Object.entries(manifest.env || {})) {
-    const value = String(supplied[key] ?? '').trim();
-    if (spec.required && !value && !spec.value && !spec.generator) return res.status(400).json({ error: `Missing required configuration: ${key}` });
-    if (value) overrides[key] = value;
-  }
-  // Pass the generated WhatsApp session to every built-in bot.
-  overrides.SESSION_ID = sessionId;
+  const { info } = await getManifest(repoUrl, branch);
+  // Keep the customer deployment form intentionally simple: the only value
+  // customers provide is SESSION_ID. Heroku's app.json setup handles the
+  // repository's declared defaults and generated config vars server-side.
+  const overrides = { SESSION_ID: sessionId };
 
   const existing = await Deployment.findOne({ appName: name });
   if (existing && existing.status !== 'deleted') return res.status(409).json({ error: 'That Heroku app name is already registered in the deployer.' });
@@ -681,6 +677,8 @@ app.get('/api/apps/:name', requireAuth, asyncRoute(async (req, res) => {
   await canAccessDeployment(req, req.params.name);
   const name = encodeURIComponent(req.params.name);
   const [details, formation, configVars] = await Promise.all([heroku(`/apps/${name}`), heroku(`/apps/${name}/formation`), heroku(`/apps/${name}/config-vars`)]);
+  for (const key of ['HEROKU_API_KEY', 'PAYSTACK_SECRET_KEY', 'MONGODB_URI', 'SESSION_SECRET']) delete configVars[key];
+  res.set('Cache-Control', 'no-store');
   res.json({ details, formation, configVars });
 }));
 
@@ -710,7 +708,9 @@ app.put('/api/apps/:name/config-vars', requireAuth, asyncRoute(async (req, res) 
   const vars = req.body && req.body.vars;
   if (!vars || typeof vars !== 'object' || Array.isArray(vars)) return res.status(400).json({ error: 'Send vars as a JSON object of KEY: VALUE pairs. Use null to remove a key.' });
   const patch = {};
+  const protectedConfigKeys = new Set(['HEROKU_API_KEY', 'PAYSTACK_SECRET_KEY', 'MONGODB_URI', 'SESSION_SECRET']);
   for (const [key, value] of Object.entries(vars)) {
+    if (protectedConfigKeys.has(key)) return res.status(403).json({ error: `${key} is managed securely by Teddy Tech and cannot be viewed or edited here.` });
     if (!/^[A-Z][A-Z0-9_]{0,99}$/.test(key)) return res.status(400).json({ error: `Invalid environment variable name: ${key}` });
     if (value !== null && typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') return res.status(400).json({ error: `Value for ${key} must be text, a number, boolean, or null.` });
     patch[key] = value === null ? null : String(value);

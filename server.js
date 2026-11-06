@@ -625,32 +625,28 @@ app.get('/api/apps', requireAuth, asyncRoute(async (req, res) => {
     const map = new Map(deployments.map(d => [d.appName, d]));
     appRecords = all.map(a => ({ app: a, deployment: map.get(a.name) || null }));
   } else {
-    // Use the same account ownership lookup as the deployment-history API.
-    // This keeps successfully deployed apps visible in both Deployment history
-    // and the dashboard's Your deployed bots / My applications sections.
+    // Read the deployment collection directly so older records are not hidden
+    // by schema/query differences (for example, a legacy string userId or an
+    // owner email saved by an earlier deployer build). Ownership is still
+    // strictly limited to the signed-in account.
     const accountId = String(req.user._id);
     const accountEmail = String(req.user.email || '').trim().toLowerCase();
     const ownerClauses = [{ userId: req.user._id }, { userId: accountId }];
     if (accountEmail) ownerClauses.push(
-      { ownerEmail: accountEmail }, { userEmail: accountEmail }, { email: accountEmail }
+      { ownerEmail: accountEmail },
+      { userEmail: accountEmail },
+      { email: accountEmail }
     );
-    let owned = await Deployment.find({
-      $and: [{ $or: ownerClauses }, { status: { $ne: 'deleted' } }]
-    }).sort({ createdAt: -1 }).populate('userId', 'email name');
-
-    // Legacy records can contain userId as a string or an email-only owner.
-    // Merge those raw records without duplicating apps already found above.
     const rawDocs = await Deployment.collection.find({
-      $and: [{ $or: ownerClauses }, { status: { $ne: 'deleted' } }]
+      $and: [
+        { $or: ownerClauses },
+        { status: { $ne: 'deleted' } }
+      ]
     }).sort({ createdAt: -1 }).toArray();
-    const found = new Set(owned.map(d => String(d.appName || '').toLowerCase()));
-    for (const raw of rawDocs) {
-      const key = String(raw.appName || '').toLowerCase();
-      if (!key || found.has(key)) continue;
-      found.add(key);
-      owned.push(Deployment.hydrate(raw));
-    }
-    deployments = owned.filter(d => d.appName);
+    deployments = rawDocs
+      .filter(d => d.appName)
+      .map(d => Deployment.hydrate(d));
+    await Deployment.populate(deployments, { path: 'userId', select: 'email name' });
 
     // Remove duplicate app records if a legacy deployment was written twice.
     const seenApps = new Set();

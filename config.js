@@ -18,7 +18,7 @@ module.exports = {
   PAYSTACK_SECRET_KEY: process.env.PAYSTACK_SECRET_KEY || '',
 
   // Exact public URL of this deployment panel (no trailing slash required).
-  PUBLIC_URL: process.env.PUBLIC_URL || 'https://teddyxmdhost1-39f912857ad8.herokuapp.com',
+  PUBLIC_URL: process.env.PUBLIC_URL || 'https://teddyxmd.new.tg',
 
   // Use a unique random value of at least 32 characters.
   SESSION_SECRET: process.env.SESSION_SECRET || '',

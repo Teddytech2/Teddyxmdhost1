@@ -695,21 +695,29 @@ app.post('/api/apps/:name/redeploy', requireAuth, asyncRoute(async (req, res) =>
   const nameRaw = req.params.name;
   if ((config.PROTECTED_APP_NAMES || []).includes(nameRaw)) return res.status(403).json({ error: 'This app is protected.' });
   const deployment = await canAccessDeployment(req, nameRaw);
-  if (!deployment) return res.status(400).json({ error: 'This app has no saved repository details. Delete and deploy it again with a repository URL.' });
-  const balance = await chargeCoins(req.user._id, DEPLOY_COST, 'redeploy_charge', `Redeployment charge for ${nameRaw}`, nameRaw);
-  try {
-    const info = repoSource({ owner: deployment.repoOwner, repo: deployment.repoName }, deployment.branch);
-    const build = await heroku(`/apps/${encodeURIComponent(nameRaw)}/builds`, { method: 'POST', body: JSON.stringify({ source_blob: { url: info.tarball, version_description: `Deploy ${deployment.repoOwner}/${deployment.repoName}@${deployment.branch}` } }) });
-    deployment.buildId = build.id; deployment.setupId = null; deployment.status = 'building'; deployment.statusMessage = 'Redeployment build started.'; deployment.coinsCharged = DEPLOY_COST; deployment.refunded = false; deployment.updatedAt = new Date(); await deployment.save();
-    res.json({ ok: true, build, balance });
-  } catch (error) {
-    const mongoSession = await mongoose.startSession();
-    try { await mongoSession.withTransaction(async () => {
-      const user = await User.findByIdAndUpdate(req.user._id, { $inc: { coins: DEPLOY_COST } }, { new: true, session: mongoSession });
-      await WalletTransaction.create([{ userId: req.user._id, type: 'redeploy_refund', delta: DEPLOY_COST, balanceAfter: user.coins, reference: nameRaw, description: `Refund: redeployment could not start for ${nameRaw}` }], { session: mongoSession });
-    }); } finally { await mongoSession.endSession(); }
-    throw error;
+  if (!deployment) return res.status(400).json({ error: 'This app has no saved repository details. Contact support.' });
+  const info = repoSource({ owner: deployment.repoOwner, repo: deployment.repoName }, deployment.branch);
+  const build = await heroku(`/apps/${encodeURIComponent(nameRaw)}/builds`, { method: 'POST', body: JSON.stringify({ source_blob: { url: info.tarball, version_description: `Free redeployment ${deployment.repoOwner}/${deployment.repoName}@${deployment.branch}` } }) });
+  deployment.buildId = build.id; deployment.setupId = null; deployment.status = 'building'; deployment.statusMessage = 'Free redeployment build started.'; deployment.coinsCharged = 0; deployment.refunded = false; deployment.updatedAt = new Date(); await deployment.save();
+  res.json({ ok: true, free: true, build, message: 'Free redeployment started. No coins were deducted.' });
+}));
+
+app.put('/api/apps/:name/config-vars', requireAuth, asyncRoute(async (req, res) => {
+  const nameRaw = req.params.name;
+  await canAccessDeployment(req, nameRaw);
+  if ((config.PROTECTED_APP_NAMES || []).includes(nameRaw)) return res.status(403).json({ error: 'This app is protected.' });
+  const vars = req.body && req.body.vars;
+  if (!vars || typeof vars !== 'object' || Array.isArray(vars)) return res.status(400).json({ error: 'Send vars as a JSON object of KEY: VALUE pairs. Use null to remove a key.' });
+  const patch = {};
+  for (const [key, value] of Object.entries(vars)) {
+    if (!/^[A-Z][A-Z0-9_]{0,99}$/.test(key)) return res.status(400).json({ error: `Invalid environment variable name: ${key}` });
+    if (value !== null && typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') return res.status(400).json({ error: `Value for ${key} must be text, a number, boolean, or null.` });
+    patch[key] = value === null ? null : String(value);
   }
+  if (!Object.keys(patch).length) return res.status(400).json({ error: 'Enter at least one environment variable to update.' });
+  const updated = await heroku(`/apps/${encodeURIComponent(nameRaw)}/config-vars`, { method: 'PATCH', body: JSON.stringify(patch) });
+  res.set('Cache-Control', 'no-store');
+  res.json({ ok: true, configVars: updated, message: 'Environment variables updated successfully.' });
 }));
 
 app.delete('/api/apps/:name', requireAuth, asyncRoute(async (req, res) => {

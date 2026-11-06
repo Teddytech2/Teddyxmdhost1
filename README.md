@@ -26,7 +26,7 @@ Edit `config.js` and fill in these values directly:
 - `SESSION_SECRET` — a unique random string of at least 32 characters.
 - `PROTECTED_APP_NAMES` — names of this panel and any apps customers must not manage.
 
-The default pricing is already configured: every bot deployment costs 10 coins, and 10 coins cost KSh 50. The default USD rate is $0.40 per 10 coins, subject to Paystack's $2 minimum.
+The default pricing is already configured: every new bot deployment costs 10 coins; redeployments are free, and 10 coins cost KSh 50. The default USD rate is $0.40 per 10 coins, subject to Paystack's $2 minimum.
 
 **Security:** Keep the GitHub repository private when placing live credentials in `config.js`. Never share the ZIP or commit it to a public repository. Environment variables supplied by Heroku can override the values in `config.js`. Set `NODE_ENV=production` if you prefer to configure it in Heroku; otherwise `config.js` defaults to production.
 
@@ -45,7 +45,8 @@ On first startup, the app creates the admin user using `ADMIN_EMAIL` and `ADMIN_
 2. Buy Teddy Coins. KES allows 10 coins for KSh 50. USD card checkout has a $2 minimum.
 3. Select a bot category, enter its public GitHub repository URL and branch.
 4. Load `app.json` to confirm the repository is deployable and enter required environment variables.
-5. Enter a unique Heroku app name and deploy. 10 coins are charged for each deployment/redeployment.
+5. Enter a unique Heroku app name and deploy. A new deployment costs 10 coins. Redeployments of an existing app are free.
+6. In My applications, use **Environment variables** to view and edit that app’s Heroku Config Vars. Save changes to apply them; set a variable to `null` in the JSON editor to remove it. Only the app owner (or admin) can edit its variables.
 6. View the live Heroku build logs. If Heroku reports a failed setup/build, the deployment charge is refunded automatically.
 
 ## Important

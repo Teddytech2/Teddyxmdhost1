@@ -196,7 +196,33 @@ body{letter-spacing:.005em}
       <div class="card wallet-hero"><div><div class="eyebrow">AVAILABLE BALANCE</div><div class="wallet-balance"><span id="walletCoins">0</span> <span style="font-size:15px">COINS</span></div><div class="hint">Each deployment costs 10 coins.</div></div><span class="tag">10 COINS = KSH 50</span></div>
       <div class="grid2">
         <div class="card"><div class="eyebrow">KES CHECKOUT</div><h2 style="margin:8px 0">Pay in Kenyan Shillings</h2><div class="hint">Paystack checkout can show the payment methods enabled for your account, including card and supported local methods.</div><div class="field"><label>Choose coins</label><select id="kesCoins"><option value="10">10 coins — KSh 50</option><option value="20">20 coins — KSh 100</option><option value="50">50 coins — KSh 250</option><option value="100">100 coins — KSh 500</option><option value="200">200 coins — KSh 1,000</option><option value="500">500 coins — KSh 2,500</option></select></div><button class="btn primary full" onclick="buyCoins('KES')">Pay with KES →</button></div>
-        <div class="card"><div class="eyebrow">USD CARD CHECKOUT</div><h2 style="margin:8px 0">Pay in US Dollars</h2><div class="hint">USD payments are card-only. Paystack's USD minimum is $2.00, so the minimum USD top-up is 50 coins at the current configured rate.</div><div class="field"><label>Choose coins</label><select id="usdCoins"><option value="50">50 coins — $2.00</option><option value="100">100 coins — $4.00</option><option value="200">200 coins — $8.00</option><option value="500">500 coins — $20.00</option></select></div><button class="btn primary full" onclick="buyCoins('USD')">Pay by card in USD →</button></div>
+        <div class="card">
+  <div class="eyebrow">USD CARD CHECKOUT</div>
+  <h2 style="margin:8px 0">Pay in US Dollars</h2>
+
+  <div class="hint">
+    USD payments are card-only. 10 coins = $0.40.
+  </div>
+
+  <div class="field">
+    <label>Choose coins</label>
+
+    <select id="usdCoins">
+      <option value="10">10 coins — $0.40</option>
+      <option value="20">20 coins — $0.80</option>
+      <option value="30">30 coins — $1.20</option>
+      <option value="40">40 coins — $1.60</option>
+      <option value="50">50 coins — $2.00</option>
+      <option value="100">100 coins — $4.00</option>
+      <option value="200">200 coins — $8.00</option>
+      <option value="500">500 coins — $20.00</option>
+    </select>
+  </div>
+
+  <button class="btn primary full" onclick="buyCoins('USD')">
+    Pay by card in USD →
+  </button>
+</div>
       </div>
       <div class="section-head"><h2>Wallet transactions</h2><button class="btn secondary" onclick="loadWallet()">↻ Refresh</button></div>
       <div class="card"><div id="walletHistory" class="history-list"><div class="empty">Loading transactions…</div></div></div>

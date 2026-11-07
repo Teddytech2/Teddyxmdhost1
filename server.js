@@ -17,7 +17,7 @@ const PAYSTACK_API = 'https://api.paystack.co';
 const DEPLOY_COST = Number(config.DEPLOY_COST_COINS || 10);
 const KES_PER_10_COINS = Number(config.KES_PER_10_COINS || 50);
 const USD_PER_10_COINS = Number(config.USD_PER_10_COINS || 0.4);
-const USD_MINIMUM = Number(config.PAYSTACK_USD_MINIMUM || 2);
+const USD_MINIMUM = Number(config.PAYSTACK_USD_MINIMUM || 0.4);
 
 mongoose.set('strictQuery', true);
 

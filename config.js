@@ -27,7 +27,7 @@ module.exports = {
   DEPLOY_COST_COINS: Number(process.env.DEPLOY_COST_COINS || 10),
   KES_PER_10_COINS: Number(process.env.KES_PER_10_COINS || 50),
   USD_PER_10_COINS: Number(process.env.USD_PER_10_COINS || 0.4),
-  PAYSTACK_USD_MINIMUM: Number(process.env.PAYSTACK_USD_MINIMUM || 2),
+  PAYSTACK_USD_MINIMUM: Number(process.env.PAYSTACK_USD_MINIMUM || 0.4),
 
   // Customer support WhatsApp number in international format, digits only.
   SUPPORT_WHATSAPP: process.env.SUPPORT_WHATSAPP || '254799963583',

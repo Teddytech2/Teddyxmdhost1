@@ -3,51 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard — TEDDY-X HOST</title>
+  <title>Sign In — TEDDY-X HOST</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-  <div class="app-container">
-    <aside class="sidebar">
-      <div class="sidebar-brand"><h1>🚀 <span>TEDDY-X HOST</span></h1></div>
-      <nav class="sidebar-nav">
-        <a href="index.html" class="active">📊 Dashboard</a>
-        <a href="my-bots.html">🤖 My Bots</a>
-        <a href="templates.html">📁 Templates</a>
-        <a href="recover.html">🔄 Recover</a>
-        <a href="refer.html">🎁 Refer</a>
-        <a href="wallet.html">💰 Payments</a>
-      </nav>
-      <div class="sidebar-footer">TEDDY-X HOST © 2026</div>
-    </aside>
-
-    <main class="main-content">
-      <div class="top-bar">
-        <div class="greeting">
-          <h2>Good morning, <span id="user-name">User</span></h2>
-          <p>Welcome to TEDDY-X HOST — deploy your bot in seconds</p>
+<body class="auth-body">
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="logo"><h1>🚀 TEDDY-X HOST</h1></div>
+      <h2>Welcome Back</h2>
+      <form action="/api/login" method="POST">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" name="email" required placeholder="you@example.com">
         </div>
-        <div class="coins-display">💰 <span id="coin-balance">0</span> Coins</div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card"><h3>Total Bots</h3><div class="value" id="total-bots">0</div></div>
-        <div class="stat-card"><h3>Online</h3><div class="value" id="bots-online">0</div></div>
-        <div class="stat-card"><h3>Offline</h3><div class="value" id="bots-offline">0</div></div>
-        <div class="stat-card"><h3>Total Spent</h3><div class="value" id="total-spent">0</div></div>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><h3>Your Bots</h3></div>
-        <div class="empty-state">
-          <div class="icon">🤖</div>
-          <h3>No bots deployed yet</h3>
-          <p>Browse our template library and deploy your first bot in minutes</p><br>
-          <button class="btn btn-primary" onclick="window.location.href='templates.html'">+ Browse Templates</button>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" required placeholder="••••••••">
         </div>
+        <button type="submit" class="btn btn-primary">Sign In</button>
+      </form>
+      <div class="auth-footer">
+        Don't have an account? <a href="signup.html">Register →</a>
       </div>
-    </main>
+    </div>
   </div>
-  <script src="js/main.js"></script>
 </body>
 </html>

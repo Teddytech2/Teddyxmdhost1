@@ -1,4 +1,3 @@
-
 module.exports = {
   PORT: process.env.PORT || 3000,
   NODE_ENV: process.env.NODE_ENV || 'production',
@@ -12,11 +11,24 @@ module.exports = {
   MONGODB_URI: process.env.MONGODB_URI || '',
   PAYSTACK_SECRET_KEY: process.env.PAYSTACK_SECRET_KEY || '',
 
-  // Optional Binance Pay integration.
-  // Leave empty until your Binance Pay merchant account is approved.
+  // ---------------- Binance Pay — COMING SOON ----------------
+  // Leave keys empty until your Binance Pay merchant account is approved.
+  // Frontend + server.js both read these flags to show "Coming Soon"
+  // instead of charging users.
+  // To go live later: set BINANCE_PAY_ENABLED=true + BINANCE_PAY_COMING_SOON=false
+  // in Heroku Config Vars (no code change needed if server.js reads from here).
   BINANCE_PAY_API_KEY: process.env.BINANCE_PAY_API_KEY || '',
   BINANCE_PAY_SECRET_KEY: process.env.BINANCE_PAY_SECRET_KEY || '',
   BINANCE_PAY_MERCHANT_ID: process.env.BINANCE_PAY_MERCHANT_ID || '',
+
+  // Master switch — keep false until merchant is approved
+  BINANCE_PAY_ENABLED: process.env.BINANCE_PAY_ENABLED === 'true' ? true : false,
+  BINANCE_PAY_COMING_SOON: process.env.BINANCE_PAY_COMING_SOON === 'false' ? false : true,
+
+  // Binance Pay uses same rate as USD card: 10 coins = $0.40
+  BINANCE_PAY_CURRENCY: process.env.BINANCE_PAY_CURRENCY || 'USDT',
+  BINANCE_PAY_MINIMUM_USD: Number(process.env.BINANCE_PAY_MINIMUM_USD || 0.4),
+  BINANCE_PAY_MINIMUM_COINS: Number(process.env.BINANCE_PAY_MINIMUM_COINS || 10),
 
   PUBLIC_URL: process.env.PUBLIC_URL || 'https://teddyxmd.new.tg',
   SESSION_SECRET: process.env.SESSION_SECRET || '',
@@ -24,6 +36,7 @@ module.exports = {
   DEPLOY_COST_COINS: Number(process.env.DEPLOY_COST_COINS || 10),
   KES_PER_10_COINS: Number(process.env.KES_PER_10_COINS || 50),
   USD_PER_10_COINS: Number(process.env.USD_PER_10_COINS || 0.4),
+  // FIXED: $0.40 minimum so 10 coins works on card — was $2.00 before
   PAYSTACK_USD_MINIMUM: Number(process.env.PAYSTACK_USD_MINIMUM || 0.4),
 
   SUPPORT_WHATSAPP: process.env.SUPPORT_WHATSAPP || '254799963583',

@@ -14,10 +14,18 @@ const app = express();
 const PORT = process.env.PORT || config.PORT || 3000;
 const HEROKU_API = 'https://api.heroku.com';
 const PAYSTACK_API = 'https://api.paystack.co';
+const BINANCE_PAY_API = 'https://bpay.binanceapi.com';
 const DEPLOY_COST = Number(config.DEPLOY_COST_COINS || 10);
 const KES_PER_10_COINS = Number(config.KES_PER_10_COINS || 50);
 const USD_PER_10_COINS = Number(config.USD_PER_10_COINS || 0.4);
+// FIXED: was || 2, now || 0.4 to match config.js PAYSTACK_USD_MINIMUM
 const USD_MINIMUM = Number(config.PAYSTACK_USD_MINIMUM || 0.4);
+
+// Binance Pay — Coming Soon
+// config.js already has BINANCE_PAY_API_KEY / SECRET_KEY / MERCHANT_ID
+// Keep disabled until merchant is approved. Flip to true when live.
+const BINANCE_PAY_ENABLED = false;
+const BINANCE_PAY_COMING_SOON = true;
 
 mongoose.set('strictQuery', true);
 
@@ -55,10 +63,15 @@ const paymentSchema = new mongoose.Schema({
   reference: { type: String, required: true, unique: true },
   coins: { type: Number, required: true },
   amountMinor: { type: Number, required: true },
-  currency: { type: String, enum: ['KES', 'USD'], required: true },
+  currency: { type: String, enum: ['KES', 'USD', 'BINANCE_USD'], required: true },
+  // provider: paystack | binance-pay
+  provider: { type: String, enum: ['paystack', 'binance-pay'], default: 'paystack' },
   status: { type: String, default: 'pending' },
   credited: { type: Boolean, default: false },
   authorizationUrl: String,
+  // Binance Pay fields (for when it goes live)
+  binancePrepayId: String,
+  binanceCheckoutUrl: String,
   createdAt: { type: Date, default: Date.now },
   paidAt: Date
 }, { versionKey: false });
@@ -81,7 +94,7 @@ const WalletTransaction = mongoose.model('WalletTransaction', walletTransactionS
 // ----------------------------- MIDDLEWARE ----------------------------------
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(express.json({ limit: '1mb', verify: (req, res, buffer) => { if (req.originalUrl.startsWith('/api/payments/webhook')) req.rawBody = Buffer.from(buffer); } }));
+app.use(express.json({ limit: '1mb', verify: (req, res, buffer) => { if (req.originalUrl.startsWith('/api/payments/webhook') || req.originalUrl.startsWith('/api/binance-pay/webhook')) req.rawBody = Buffer.from(buffer); } }));
 app.use(express.urlencoded({ extended: false }));
 
 app.use(session({
@@ -105,6 +118,7 @@ app.use(session({
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 15, standardHeaders: true, legacyHeaders: false });
 app.use(['/api/login', '/api/register'], authLimiter);
 app.use('/api/payments/initialize', rateLimit({ windowMs: 10 * 60 * 1000, limit: 10, standardHeaders: true, legacyHeaders: false }));
+app.use('/api/binance-pay/initialize', rateLimit({ windowMs: 10 * 60 * 1000, limit: 10, standardHeaders: true, legacyHeaders: false }));
 
 function asyncRoute(fn) {
   return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
@@ -195,7 +209,6 @@ function repoSource(repo, branch) {
   };
 }
 
-
 function normalizeHerokuAppName(value) {
   return String(value || '').trim().toLowerCase();
 }
@@ -261,6 +274,42 @@ async function paystackRequest(pathname, options = {}) {
   return data.data;
 }
 
+// ----------------------------- BINANCE PAY (COMING SOON) -------------------
+// Ready to enable when merchant is approved. Do NOT call Binance until enabled.
+function isBinancePayConfigured() {
+  return Boolean(config.BINANCE_PAY_API_KEY && config.BINANCE_PAY_SECRET_KEY && config.BINANCE_PAY_MERCHANT_ID);
+}
+function binancePayComingSoonError() {
+  const e = new Error('Binance Pay is coming soon. Please use KES or USD card for now.');
+  e.status = 503; e.code = 'BINANCE_PAY_COMING_SOON'; return e;
+}
+// Placeholder for live integration — kept for when you flip BINANCE_PAY_ENABLED = true
+async function binancePayRequest(pathname, body = {}) {
+  if (!BINANCE_PAY_ENABLED || BINANCE_PAY_COMING_SOON) throw binancePayComingSoonError();
+  if (!isBinancePayConfigured()) { const e = new Error('Binance Pay is not configured yet.'); e.status = 503; throw e; }
+  const timestamp = Date.now();
+  const nonce = crypto.randomBytes(16).toString('hex');
+  const payload = JSON.stringify(body);
+  const signaturePayload = `${timestamp}\n${nonce}\n${payload}\n`;
+  const signature = crypto.createHmac('sha512', config.BINANCE_PAY_SECRET_KEY).update(signaturePayload).digest('hex').toUpperCase();
+  const response = await fetch(`${BINANCE_PAY_API}${pathname}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'BinancePay-Timestamp': String(timestamp),
+      'BinancePay-Nonce': nonce,
+      'BinancePay-Certificate-SN': config.BINANCE_PAY_API_KEY,
+      'BinancePay-Signature': signature
+    },
+    body: payload
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.status !== 'SUCCESS') {
+    const e = new Error(data.errorMessage || `Binance Pay returned ${response.status}`); e.status = 502; throw e;
+  }
+  return data.data;
+}
+
 // ----------------------------- WALLET / PAYMENTS ---------------------------
 async function addWalletCredit(paymentId, paystackData) {
   const payment = await Payment.findById(paymentId);
@@ -292,6 +341,29 @@ async function addWalletCredit(paymentId, paystackData) {
     });
   } finally { await mongoSession.endSession(); }
   return credited;
+}
+
+// Generic credit helper — reused by Binance Pay when it goes live
+async function creditPaymentByReference(reference, providerLabel) {
+  const payment = await Payment.findOne({ reference });
+  if (!payment || payment.credited) return payment;
+  const mongoSession = await mongoose.startSession();
+  try {
+    await mongoSession.withTransaction(async () => {
+      const current = await Payment.findOne({ _id: payment._id, credited: false, status: 'pending' }).session(mongoSession);
+      if (!current) return;
+      const updatedUser = await User.findByIdAndUpdate(current.userId, { $inc: { coins: current.coins } }, { new: true, session: mongoSession });
+      if (!updatedUser) throw new Error('Wallet account not found.');
+      current.status = 'success'; current.credited = true; current.paidAt = new Date();
+      await current.save({ session: mongoSession });
+      await WalletTransaction.create([{
+        userId: current.userId, type: 'purchase', delta: current.coins,
+        balanceAfter: updatedUser.coins, reference: current.reference,
+        description: `Purchased ${current.coins} Teddy Coins through ${providerLabel}`
+      }], { session: mongoSession });
+    });
+  } finally { await mongoSession.endSession(); }
+  return Payment.findById(payment._id);
 }
 
 async function verifyPaystackReference(reference) {
@@ -349,11 +421,16 @@ async function refundDeployment(deployment, reason) {
 }
 
 // ----------------------------- AUTH ROUTES ---------------------------------
-// Public, non-secret settings used by the website UI. Never expose API keys here.
 app.get('/api/public-config', (req, res) => {
   const supportNumber = String(config.SUPPORT_WHATSAPP || '').replace(/\D/g, '');
   res.set('Cache-Control', 'no-store');
-  res.json({ supportWhatsApp: supportNumber, pairingWebsiteUrl: config.PAIRING_WEBSITE_URL || '' });
+  res.json({
+    supportWhatsApp: supportNumber,
+    pairingWebsiteUrl: config.PAIRING_WEBSITE_URL || '',
+    // Frontend uses this to show Binance Pay as Coming Soon vs Live
+    binancePay: { enabled: BINANCE_PAY_ENABLED, comingSoon: BINANCE_PAY_COMING_SOON, configured: isBinancePayConfigured() },
+    pricing: { kesPer10Coins: KES_PER_10_COINS, usdPer10Coins: USD_PER_10_COINS, usdMinimum: USD_MINIMUM, usdMinimumCoins: Math.ceil(USD_MINIMUM / USD_PER_10_COINS) * 10 }
+  });
 });
 
 app.post('/api/register', asyncRoute(async (req, res) => {
@@ -424,9 +501,7 @@ app.get('/api/manifest', requireAuth, asyncRoute(async (req, res) => {
   res.json({ repository: data.info.url, branch: data.info.branch, manifest: data.manifest });
 }));
 
-
 // ------------------------- HEROKU APP NAME TOOLS ---------------------------
-// Heroku remains the final arbiter: names can be claimed after a preflight check.
 app.get('/api/app-name/suggest', requireAuth, asyncRoute(async (req, res) => {
   const prefix = normalizeAppPrefix(req.query.prefix);
   for (let attempt = 0; attempt < 12; attempt++) {
@@ -476,9 +551,6 @@ app.post('/api/deploy', requireAuth, asyncRoute(async (req, res) => {
   if (!sessionId) return res.status(400).json({ error: 'WhatsApp SESSION_ID is required. Use the Get SESSION_ID link in the dashboard to generate one.' });
 
   const { info } = await getManifest(repoUrl, branch);
-  // Keep the customer deployment form intentionally simple: the only value
-  // customers provide is SESSION_ID. Heroku's app.json setup handles the
-  // repository's declared defaults and generated config vars server-side.
   const overrides = { SESSION_ID: sessionId };
 
   const existing = await Deployment.findOne({ appName: name });
@@ -548,7 +620,6 @@ app.get('/api/setups/:id', requireAuth, asyncRoute(async (req, res) => {
   res.json({ setup, buildResult, deployment: { appName: deployment.appName, status: deployment.status, refunded: deployment.refunded } });
 }));
 
-// Live Heroku build output for an app setup. Stream URL and Heroku token stay server-side.
 app.get('/api/setups/:id/build-logs', requireAuth, asyncRoute(async (req, res) => {
   const deployment = await Deployment.findOne({ setupId: req.params.id });
   if (!deployment) return res.status(404).type('text/plain').send('Deployment not found.');
@@ -641,7 +712,6 @@ app.get('/api/apps', requireAuth, asyncRoute(async (req, res) => {
       deployment.ownerEmail = deployment.userId?.email;
       deployment.botName = deployment.botName;
       deployment.repoUrl = deployment.repoUrl;
-      // Poll setup state while it is not yet live, so failed builds are refunded even if logs are not opened.
       if (deployment.setupId && ['queued', 'building', 'deploying'].includes(deployment.status)) {
         try {
           const setup = await heroku(`/app-setups/${encodeURIComponent(deployment.setupId)}`);
@@ -655,7 +725,7 @@ app.get('/api/apps', requireAuth, asyncRoute(async (req, res) => {
         try {
           const build = await heroku(`/apps/${encodeURIComponent(deployment.appName)}/builds/${encodeURIComponent(deployment.buildId)}`);
           const buildState = String(build.status || '').toLowerCase();
-          if (['failed', 'failure', 'canceled', 'cancelled', 'errored'].includes(buildState)) await refundDeployment(deployment, build.error_message || 'Heroku redeployment build failed');
+          if (['failed', 'failure', 'canceled', 'cancelled', 'errored'].includes(buildState)) await refundDeployment(deployment, build.error_message || 'Heroku build failed');
           else if (['succeeded', 'success'].includes(buildState)) { deployment.status = 'deploying'; deployment.statusMessage = 'Build completed; waiting for the web dyno.'; deployment.updatedAt = new Date(); await deployment.save(); }
         } catch (e) { console.warn('Build refresh failed:', e.message); }
       }
@@ -690,16 +760,8 @@ app.post('/api/apps/:name/restart', requireAuth, asyncRoute(async (req, res) => 
   res.json({ ok: true, message: 'Restart requested.' });
 }));
 
-app.post('/api/apps/:name/redeploy', requireAuth, asyncRoute(async (req, res) => {
-  const nameRaw = req.params.name;
-  if ((config.PROTECTED_APP_NAMES || []).includes(nameRaw)) return res.status(403).json({ error: 'This app is protected.' });
-  const deployment = await canAccessDeployment(req, nameRaw);
-  if (!deployment) return res.status(400).json({ error: 'This app has no saved repository details. Contact support.' });
-  const info = repoSource({ owner: deployment.repoOwner, repo: deployment.repoName }, deployment.branch);
-  const build = await heroku(`/apps/${encodeURIComponent(nameRaw)}/builds`, { method: 'POST', body: JSON.stringify({ source_blob: { url: info.tarball, version_description: `Free redeployment ${deployment.repoOwner}/${deployment.repoName}@${deployment.branch}` } }) });
-  deployment.buildId = build.id; deployment.setupId = null; deployment.status = 'building'; deployment.statusMessage = 'Free redeployment build started.'; deployment.coinsCharged = 0; deployment.refunded = false; deployment.updatedAt = new Date(); await deployment.save();
-  res.json({ ok: true, free: true, build, message: 'Free redeployment started. No coins were deducted.' });
-}));
+// REMOVED: Free redeploy — POST /api/apps/:name/redeploy deleted intentionally.
+// Users must delete + deploy again (10 coins) or use Restart / Env Vars.
 
 app.put('/api/apps/:name/config-vars', requireAuth, asyncRoute(async (req, res) => {
   const nameRaw = req.params.name;
@@ -772,7 +834,7 @@ app.post('/api/payments/initialize', requireAuth, asyncRoute(async (req, res) =>
     if (amountMinor < Math.round(USD_MINIMUM * 100)) return res.status(400).json({ error: `Paystack USD checkout minimum is $${USD_MINIMUM.toFixed(2)}. Choose at least ${Math.ceil(USD_MINIMUM / USD_PER_10_COINS) * 10} coins for USD, or pay in KES to buy 10 coins.` });
   }
   const reference = `Teddy${Date.now()}${crypto.randomBytes(5).toString('hex')}`;
-  const payment = await Payment.create({ userId: req.user._id, reference, coins, amountMinor, currency, status: 'pending' });
+  const payment = await Payment.create({ userId: req.user._id, reference, coins, amountMinor, currency, provider: 'paystack', status: 'pending' });
   const callbackUrl = `${getPublicBase(req)}/api/payments/callback`;
   try {
     const data = await paystackRequest('/transaction/initialize', {
@@ -806,7 +868,6 @@ app.get('/api/payments/callback', asyncRoute(async (req, res) => {
   }
 }));
 
-// Webhook signature validation. Paystack also calls the callback; unique reference + Mongo transaction prevent double credit.
 app.post('/api/payments/webhook', asyncRoute(async (req, res) => {
   if (!config.PAYSTACK_SECRET_KEY) return res.sendStatus(503);
   const signature = String(req.headers['x-paystack-signature'] || '');
@@ -821,13 +882,51 @@ app.post('/api/payments/webhook', asyncRoute(async (req, res) => {
   res.sendStatus(200);
 }));
 
+// ----------------------------- BINANCE PAY ROUTES (COMING SOON) -------------
+// These endpoints exist so frontend can call them safely — they return 503 Coming Soon until enabled.
+// To go live: set BINANCE_PAY_ENABLED = true, BINANCE_PAY_COMING_SOON = false, implement createOrder + verify + webhook below.
+app.post('/api/binance-pay/initialize', requireAuth, asyncRoute(async (req, res) => {
+  return res.status(503).json({ ok: false, code: 'BINANCE_PAY_COMING_SOON', error: 'Binance Pay is coming soon. Please use KES or USD card for now.', binancePay: { enabled: false, comingSoon: true } });
+  /* LIVE CODE — uncomment when merchant approved:
+  const coins = Number(req.body.coins);
+  if (!Number.isInteger(coins) || coins < 10 || coins % 10 !== 0) return res.status(400).json({ error: 'Choose coins in multiples of 10 (minimum 10).' });
+  const amountMinor = Math.round((coins / 10) * USD_PER_10_COINS * 100);
+  const reference = `Binance${Date.now()}${crypto.randomBytes(5).toString('hex')}`;
+  const payment = await Payment.create({ userId: req.user._id, reference, coins, amountMinor, currency: 'BINANCE_USD', provider: 'binance-pay', status: 'pending' });
+  const data = await binancePayRequest('/binancepay/openapi/order/create', {
+    merchantTradeNo: reference,
+    orderAmount: (amountMinor / 100).toFixed(2),
+    currency: 'USDT',
+    goods: { goodsType: '02', goodsCategory: 'D000', referenceGoodsId: reference, goodsName: `${coins} Teddy Coins`, goodsDetail: `Teddy Tech ${coins} coins` },
+    returnUrl: `${getPublicBase(req)}/?payment=pending`,
+    cancelUrl: `${getPublicBase(req)}/?payment=failed`
+  });
+  payment.binancePrepayId = data.prepayId; payment.binanceCheckoutUrl = data.checkoutUrl; await payment.save();
+  res.json({ ok: true, checkoutUrl: data.checkoutUrl, prepayId: data.prepayId, reference, coins, amountMinor });
+  */
+}));
+
+app.get('/api/binance-pay/callback', asyncRoute(async (req, res) => {
+  return res.redirect('/?payment=failed&provider=binance-pay');
+}));
+
+app.post('/api/binance-pay/webhook', asyncRoute(async (req, res) => {
+  // Binance Pay webhook verification goes here when live.
+  // For now, always return Coming Soon so no fake credits can happen.
+  return res.status(503).json({ ok: false, code: 'BINANCE_PAY_COMING_SOON', error: 'Binance Pay is coming soon.' });
+}));
+
 app.get('/api/wallet', requireAuth, asyncRoute(async (req, res) => {
   const [user, transactions, payments] = await Promise.all([
     User.findById(req.user._id).select('coins'),
     WalletTransaction.find({ userId: req.user._id }).sort({ createdAt: -1 }).limit(50),
     Payment.find({ userId: req.user._id }).sort({ createdAt: -1 }).limit(20).select('-authorizationUrl')
   ]);
-  res.json({ coins: user.coins, transactions, payments, pricing: { kesPer10Coins: KES_PER_10_COINS, usdPer10Coins: USD_PER_10_COINS, usdMinimum: USD_MINIMUM, usdMinimumCoins: Math.ceil(USD_MINIMUM / USD_PER_10_COINS) * 10 } });
+  res.json({
+    coins: user.coins, transactions, payments,
+    pricing: { kesPer10Coins: KES_PER_10_COINS, usdPer10Coins: USD_PER_10_COINS, usdMinimum: USD_MINIMUM, usdMinimumCoins: Math.ceil(USD_MINIMUM / USD_PER_10_COINS) * 10 },
+    binancePay: { enabled: BINANCE_PAY_ENABLED, comingSoon: BINANCE_PAY_COMING_SOON, configured: isBinancePayConfigured(), usdPer10Coins: USD_PER_10_COINS }
+  });
 }));
 
 // ----------------------------- ADMIN ROUTES ---------------------------------
@@ -866,7 +965,7 @@ app.post('/api/admin/users/:id/coins', requireAuth, requireAdmin, asyncRoute(asy
 
 app.get('/api/admin/payments', requireAuth, requireAdmin, asyncRoute(async (req, res) => {
   const rows = await Payment.find().populate('userId', 'name email').sort({ createdAt: -1 }).limit(300);
-  res.json(rows.map(p => ({ reference: p.reference, user: p.userId ? { name: p.userId.name, email: p.userId.email } : null, coins: p.coins, amountMinor: p.amountMinor, currency: p.currency, status: p.status, credited: p.credited, createdAt: p.createdAt, paidAt: p.paidAt })));
+  res.json(rows.map(p => ({ reference: p.reference, user: p.userId ? { name: p.userId.name, email: p.userId.email } : null, coins: p.coins, amountMinor: p.amountMinor, currency: p.currency, provider: p.provider || 'paystack', status: p.status, credited: p.credited, createdAt: p.createdAt, paidAt: p.paidAt })));
 }));
 
 // ----------------------------- APK / FRONTEND -------------------------------
@@ -895,19 +994,13 @@ async function start() {
     console.error('Set ADMIN_EMAIL and ADMIN_PASSWORD in Heroku Config Vars (password at least 8 characters).');
     process.exit(1);
   }
-  // Integrations are checked when their endpoints are used. The dashboard and
-  // account registration must still start if Paystack or Heroku is not configured.
   await mongoose.connect(config.MONGODB_URI);
   console.log('Connected to MongoDB Atlas.');
+  console.log(`Binance Pay: ${BINANCE_PAY_COMING_SOON ? 'COMING SOON (disabled)' : 'ENABLED'} | Configured: ${isBinancePayConfigured()} | USD min: $${USD_MINIMUM.toFixed(2)}`);
 
-  // Migration for older database versions.
-  // This release has no username, referralCode, or number fields.
-  // Remove legacy unique indexes on fields no longer used by the User model;
-  // otherwise multiple existing documents with null values can crash startup.
   try {
     const userIndexes = await User.collection.indexes();
     const obsolete = ['username_1', 'referralCode_1', 'number_1'];
-
     for (const name of obsolete) {
       if (userIndexes.some(index => index.name === name)) {
         await User.collection.dropIndex(name);
@@ -915,7 +1008,6 @@ async function start() {
       }
     }
   } catch (indexError) {
-    // A missing users collection/index is normal on a fresh installation.
     if (![26, 27].includes(indexError.code) && !/not found|ns does not exist/i.test(indexError.message || '')) {
       throw indexError;
     }

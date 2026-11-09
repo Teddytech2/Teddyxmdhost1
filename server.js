@@ -24,10 +24,18 @@ const USD_MINIMUM = Number(config.PAYSTACK_USD_MINIMUM || 0.4);
 const BINANCE_PAY_ENABLED = config.BINANCE_PAY_ENABLED === true;
 const BINANCE_PAY_COMING_SOON = config.BINANCE_PAY_COMING_SOON !== false;
 
-// Allowed env vars — ONLY for TEDDY-XMD
-const ALLOWED_ENV_KEYS = ['SESSION_ID','BOT_MODE','ANTIDELETE_MODE','STATUS_MODE','ANTILINK_ACTION','PREFIX','OWNER_NUMBER','TIMEZONE','AUTOSTATUSVIEW','AUTOREACTSTATUS','AUTOREACTSTATUS_EMOJI','AUTOREACTSTATUS_RANDOM'];
+// Allowed env vars — ONLY for TEDDY-XMD, full app.json 26 vars
+const ALLOWED_ENV_KEYS = [
+  'SESSION_ID',
+  'BOT_MODE','ANTIDELETE_MODE','STATUS_MODE','ANTILINK_ACTION','PREFIX','OWNER_NUMBER','TIMEZONE',
+  'AUTOSTATUSVIEW','AUTOREACTSTATUS','AUTOREACTSTATUS_EMOJI','AUTOREACTSTATUS_RANDOM',
+  'BOT_NAME','AUTOREAD','AUTOREACT','ANTIEDIT_MODE','ANTIDELETE_STATUS','ALWAYS_ONLINE',
+  'FONT_STYLE','READ_RECEIPTS','AUTOREAD_MODE','AUTO_BIO','AUTO_STICKER',
+  'AUTO_TYPING','AUTO_RECORDING','AUTO_RECORDTYPE'
+];
 function buildEnvOverrides(supplied){
   const overrides = {};
+  const boolKeys = ['AUTOSTATUSVIEW','AUTOREACTSTATUS','AUTOREACTSTATUS_RANDOM','AUTOREAD','AUTOREACT','ANTIDELETE_STATUS','ALWAYS_ONLINE','AUTO_BIO','AUTO_STICKER','AUTO_TYPING','AUTO_RECORDING','AUTO_RECORDTYPE'];
   for(const key of ALLOWED_ENV_KEYS){
     let v = supplied[key];
     if(v===undefined||v===null) continue;
@@ -35,8 +43,14 @@ function buildEnvOverrides(supplied){
     if(v==='') continue;
     if(key==='OWNER_NUMBER' && !/^\d{7,15}$/.test(v)) throw Object.assign(new Error('OWNER_NUMBER must be digits only with country code, e.g. 254799963583'),{status:400});
     if(key==='PREFIX' && v.length>5) throw Object.assign(new Error('PREFIX must be 1-5 characters.'),{status:400});
-    if(key==='BOT_MODE' && !['public','private','group','pm'].includes(v.toLowerCase())) throw Object.assign(new Error('BOT_MODE must be public, private, group or pm.'),{status:400});
-    if(['AUTOSTATUSVIEW','AUTOREACTSTATUS','AUTOREACTSTATUS_RANDOM'].includes(key) && !['true','false'].includes(v.toLowerCase())) throw Object.assign(new Error(key+' must be true or false.'),{status:400});
+    if(key==='BOT_MODE' && !['public','private','group','pm','self'].includes(v.toLowerCase())) throw Object.assign(new Error('BOT_MODE must be public, private, group, pm or self.'),{status:400});
+    if(boolKeys.includes(key) && !['true','false'].includes(v.toLowerCase())) throw Object.assign(new Error(key+' must be true or false.'),{status:400});
+    if(key==='ANTIDELETE_MODE' && !['off','chat','private'].includes(v.toLowerCase())) throw Object.assign(new Error('ANTIDELETE_MODE must be off, chat or private.'),{status:400});
+    if(key==='ANTIEDIT_MODE' && !['off','chat','private'].includes(v.toLowerCase())) throw Object.assign(new Error('ANTIEDIT_MODE must be off, chat or private.'),{status:400});
+    if(key==='STATUS_MODE' && !['off','typing','recording','recordtype'].includes(v.toLowerCase())) throw Object.assign(new Error('STATUS_MODE must be off, typing, recording or recordtype.'),{status:400});
+    if(key==='ANTILINK_ACTION' && !['off','delete','kick'].includes(v.toLowerCase())) throw Object.assign(new Error('ANTILINK_ACTION must be off, delete or kick.'),{status:400});
+    if(key==='READ_RECEIPTS' && !['off','all','read'].includes(v.toLowerCase())) throw Object.assign(new Error('READ_RECEIPTS must be off, all or read.'),{status:400});
+    if(key==='AUTOREAD_MODE' && !['off','all','private','group'].includes(v.toLowerCase())) throw Object.assign(new Error('AUTOREAD_MODE must be off, all, private or group.'),{status:400});
     overrides[key]=v;
   }
   return overrides;
@@ -207,13 +221,11 @@ app.post('/api/login',asyncRoute(async(req,res)=>{
 }));
 app.post('/api/logout',(req,res)=>req.session.destroy(()=>res.json({ok:true})));
 app.get('/api/me',asyncRoute(async(req,res)=>{ if(!req.session?.userId) return res.json({authenticated:false}); const u=await User.findById(req.session.userId).select('-passwordHash'); if(!u) return res.json({authenticated:false}); res.set('Cache-Control','no-store'); res.json({authenticated:true,user:{id:u._id,name:u.name,email:u.email,role:u.role,coins:u.coins}}); }));
-// ALL 3 BOTS - catalogue
 app.get('/api/catalogue',requireAuth,(req,res)=>{ res.json({deploymentCost:DEPLOY_COST,bots:Object.entries(config.BOT_REPOSITORIES||{}).map(([id,bot])=>({id,name:bot.name,description:bot.description,repository:bot.repoUrl,branch:bot.branch||'main',pairingUrl:bot.pairingUrl||config.PAIRING_WEBSITE_URL||''}))}); });
 app.get('/api/manifest',requireAuth,asyncRoute(async(req,res)=>{ const repoUrl=String(req.query.repoUrl||'').trim(); const branch=String(req.query.branch||'main').trim(); if(!repoUrl) return res.status(400).json({error:'Enter a GitHub repository URL first.'}); const d=await getManifest(repoUrl,branch); res.json({repository:d.info.url,branch:d.info.branch,manifest:d.manifest}); }));
 app.get('/api/app-name/suggest',requireAuth,asyncRoute(async(req,res)=>{ const prefix=normalizeAppPrefix(req.query.prefix); for(let a=0;a<12;a++){ const suffix=crypto.randomBytes(3).toString('hex'); const name=`${prefix}-${suffix}`.slice(0,30).replace(/-+$/,''); if(!validateHerokuAppName(name)) continue; if(await Deployment.exists({appName:name,status:{$ne:'deleted'}})) continue; if(await herokuAppNameAvailable(name)) return res.json({available:true,name,prefix:`${prefix}-`,scope:'connected-account'}); } return res.status(503).json({error:'Could not find an available Heroku name right now. Try another prefix.'}); }));
 app.get('/api/app-name/check',requireAuth,asyncRoute(async(req,res)=>{ const name=normalizeHerokuAppName(req.query.name); if(!validateHerokuAppName(name)) return res.status(400).json({available:false,error:'Use 3–30 lowercase letters, numbers and hyphens; start with a letter and end with a letter or number.'}); if(await Deployment.exists({appName:name,status:{$ne:'deleted'}})) return res.json({available:false,name,message:'This name is already registered in TEDDY TECH BOT DEPLOYER.'}); const available=await herokuAppNameAvailable(name); return res.json({available,name,message:available?'This name is not present in the connected Heroku account. Heroku will make the final global availability check when deployment starts.':'This name is already taken in the connected Heroku account.'}); }));
 async function canAccessDeployment(req,appName){ const q={appName:String(appName).toLowerCase(),status:{$ne:'deleted'}}; if(req.user.role!=='admin') q.userId=req.user._id; const d=await Deployment.findOne(q); if(req.user.role!=='admin'&&!d){ const e=new Error('This application does not belong to your account.'); e.status=403; throw e; } return d; }
-// DEPLOY - ALL 3 BOTS, configs ONLY for TEDDY-XMD
 app.post('/api/deploy',requireAuth,asyncRoute(async(req,res)=>{
   const name=normalizeHerokuAppName(req.body.name);
   const botId=String(req.body.botId||'').trim();
@@ -226,7 +238,6 @@ app.post('/api/deploy',requireAuth,asyncRoute(async(req,res)=>{
   const sessionId=String(supplied.SESSION_ID||'').trim();
   if(!sessionId) return res.status(400).json({error:'WhatsApp SESSION_ID is required. Use the Get SESSION_ID link in the dashboard to generate one.'});
   const {info}=await getManifest(repoUrl,branch);
-  // KEY FIX: TEDDY-XMD = SESSION_ID + configs, JUNE / CYPHERX = SESSION_ID only
   let overrides = { SESSION_ID: sessionId };
   if(botId === 'teddy-xmd-ultra'){
     overrides = buildEnvOverrides(supplied);

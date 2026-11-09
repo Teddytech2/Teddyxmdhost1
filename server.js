@@ -24,10 +24,7 @@ const USD_MINIMUM = Number(config.PAYSTACK_USD_MINIMUM || 0.4);
 const BINANCE_PAY_ENABLED = config.BINANCE_PAY_ENABLED === true;
 const BINANCE_PAY_COMING_SOON = config.BINANCE_PAY_COMING_SOON !== false;
 
-// TEDDY-XMD ONLY
-const ONLY_BOT_ID = 'teddy-xmd-ultra';
-
-// Allowed env vars from TEDDY-XMD app.json
+// Allowed env vars — ONLY for TEDDY-XMD
 const ALLOWED_ENV_KEYS = ['SESSION_ID','BOT_MODE','ANTIDELETE_MODE','STATUS_MODE','ANTILINK_ACTION','PREFIX','OWNER_NUMBER','TIMEZONE','AUTOSTATUSVIEW','AUTOREACTSTATUS','AUTOREACTSTATUS_EMOJI','AUTOREACTSTATUS_RANDOM'];
 function buildEnvOverrides(supplied){
   const overrides = {};
@@ -210,18 +207,18 @@ app.post('/api/login',asyncRoute(async(req,res)=>{
 }));
 app.post('/api/logout',(req,res)=>req.session.destroy(()=>res.json({ok:true})));
 app.get('/api/me',asyncRoute(async(req,res)=>{ if(!req.session?.userId) return res.json({authenticated:false}); const u=await User.findById(req.session.userId).select('-passwordHash'); if(!u) return res.json({authenticated:false}); res.set('Cache-Control','no-store'); res.json({authenticated:true,user:{id:u._id,name:u.name,email:u.email,role:u.role,coins:u.coins}}); }));
-// TEDDY-XMD ONLY catalogue
-app.get('/api/catalogue',requireAuth,(req,res)=>{ const all=Object.entries(config.BOT_REPOSITORIES||{}).map(([id,bot])=>({id,name:bot.name,description:bot.description,repository:bot.repoUrl,branch:bot.branch||'main',pairingUrl:bot.pairingUrl||config.PAIRING_WEBSITE_URL||''})); const bots=all.filter(b=>b.id===ONLY_BOT_ID); res.json({deploymentCost:DEPLOY_COST,bots:bots.length?bots:all.slice(0,1)}); });
+// ALL 3 BOTS - catalogue
+app.get('/api/catalogue',requireAuth,(req,res)=>{ res.json({deploymentCost:DEPLOY_COST,bots:Object.entries(config.BOT_REPOSITORIES||{}).map(([id,bot])=>({id,name:bot.name,description:bot.description,repository:bot.repoUrl,branch:bot.branch||'main',pairingUrl:bot.pairingUrl||config.PAIRING_WEBSITE_URL||''}))}); });
 app.get('/api/manifest',requireAuth,asyncRoute(async(req,res)=>{ const repoUrl=String(req.query.repoUrl||'').trim(); const branch=String(req.query.branch||'main').trim(); if(!repoUrl) return res.status(400).json({error:'Enter a GitHub repository URL first.'}); const d=await getManifest(repoUrl,branch); res.json({repository:d.info.url,branch:d.info.branch,manifest:d.manifest}); }));
 app.get('/api/app-name/suggest',requireAuth,asyncRoute(async(req,res)=>{ const prefix=normalizeAppPrefix(req.query.prefix); for(let a=0;a<12;a++){ const suffix=crypto.randomBytes(3).toString('hex'); const name=`${prefix}-${suffix}`.slice(0,30).replace(/-+$/,''); if(!validateHerokuAppName(name)) continue; if(await Deployment.exists({appName:name,status:{$ne:'deleted'}})) continue; if(await herokuAppNameAvailable(name)) return res.json({available:true,name,prefix:`${prefix}-`,scope:'connected-account'}); } return res.status(503).json({error:'Could not find an available Heroku name right now. Try another prefix.'}); }));
 app.get('/api/app-name/check',requireAuth,asyncRoute(async(req,res)=>{ const name=normalizeHerokuAppName(req.query.name); if(!validateHerokuAppName(name)) return res.status(400).json({available:false,error:'Use 3–30 lowercase letters, numbers and hyphens; start with a letter and end with a letter or number.'}); if(await Deployment.exists({appName:name,status:{$ne:'deleted'}})) return res.json({available:false,name,message:'This name is already registered in TEDDY TECH BOT DEPLOYER.'}); const available=await herokuAppNameAvailable(name); return res.json({available,name,message:available?'This name is not present in the connected Heroku account. Heroku will make the final global availability check when deployment starts.':'This name is already taken in the connected Heroku account.'}); }));
 async function canAccessDeployment(req,appName){ const q={appName:String(appName).toLowerCase(),status:{$ne:'deleted'}}; if(req.user.role!=='admin') q.userId=req.user._id; const d=await Deployment.findOne(q); if(req.user.role!=='admin'&&!d){ const e=new Error('This application does not belong to your account.'); e.status=403; throw e; } return d; }
-// DEPLOY - TEDDY-XMD ONLY
+// DEPLOY - ALL 3 BOTS, configs ONLY for TEDDY-XMD
 app.post('/api/deploy',requireAuth,asyncRoute(async(req,res)=>{
   const name=normalizeHerokuAppName(req.body.name);
-  const botId=ONLY_BOT_ID;
+  const botId=String(req.body.botId||'').trim();
   const botConfig=(config.BOT_REPOSITORIES||{})[botId];
-  if(!botConfig) return res.status(400).json({error:'TEDDY-XMD is not configured. Check BOT_REPOSITORIES in config.js.'});
+  if(!botConfig) return res.status(400).json({error:'Select one of the supported bots: TEDDY-XMD, JUNE ULTRA or CYPHERX.'});
   const botName=botConfig.name; const repoUrl=botConfig.repoUrl; const branch=String(botConfig.branch||'main').trim();
   const supplied=req.body.env||{};
   if(!validateHerokuAppName(name)) return res.status(400).json({error:'Heroku app name must be 3–30 characters, start with a letter and end with a letter or number.'});
@@ -229,7 +226,12 @@ app.post('/api/deploy',requireAuth,asyncRoute(async(req,res)=>{
   const sessionId=String(supplied.SESSION_ID||'').trim();
   if(!sessionId) return res.status(400).json({error:'WhatsApp SESSION_ID is required. Use the Get SESSION_ID link in the dashboard to generate one.'});
   const {info}=await getManifest(repoUrl,branch);
-  const overrides=buildEnvOverrides(supplied); overrides.SESSION_ID=sessionId;
+  // KEY FIX: TEDDY-XMD = SESSION_ID + configs, JUNE / CYPHERX = SESSION_ID only
+  let overrides = { SESSION_ID: sessionId };
+  if(botId === 'teddy-xmd-ultra'){
+    overrides = buildEnvOverrides(supplied);
+    overrides.SESSION_ID = sessionId;
+  }
   const existing=await Deployment.findOne({appName:name});
   if(existing&&existing.status!=='deleted') return res.status(409).json({error:'That Heroku app name is already registered in the deployer.'});
   if(await herokuAppNameAvailable(name)===false) return res.status(409).json({error:`The Heroku app name "${name}" is already taken. Choose another name or use Suggest available name.`});

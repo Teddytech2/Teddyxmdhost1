@@ -35,28 +35,31 @@ module.exports = {
     process.env.PAIRING_WEBSITE_URL ||
     'https://teddyxmdpair-60b69f1c4cee.herokuapp.com/',
 
-  // ALL 3 BOTS RESTORED
+  // ALL 3 BOTS — TEDDY-XMD = full configs, JUNE / CYPHERX = SESSION_ID only
   BOT_REPOSITORIES: {
     'teddy-xmd-ultra': {
       name: 'TEDDY-XMD ULTRA',
       repoUrl: 'https://github.com/Teddyxmd/TEDDY-XMD',
       branch: 'main',
       pairingUrl: 'https://teddyxmdpair-60b69f1c4cee.herokuapp.com/',
-      description: 'Teddy Tech WhatsApp automation bot'
+      description: 'Teddy Tech WhatsApp automation bot',
+      envMode: 'full' // SESSION_ID + all 26 TEDDY-XMD vars from app.json
     },
     'june-ultra': {
       name: 'JUNE ULTRA',
       repoUrl: 'https://github.com/Vinpink2/June-Ultra',
       branch: 'main',
       pairingUrl: 'https://pair-junex.onrender.com/',
-      description: 'June Ultra WhatsApp bot'
+      description: 'June Ultra WhatsApp bot',
+      envMode: 'session-only' // SESSION_ID only
     },
     'cypherx': {
       name: 'CYPHERX BOT',
       repoUrl: 'https://github.com/Dark-Xploit/CypherX',
       branch: 'main',
       pairingUrl: 'https://pair.cypherxbot.space/',
-      description: 'CypherX WhatsApp automation bot'
+      description: 'CypherX WhatsApp automation bot',
+      envMode: 'session-only' // SESSION_ID only
     }
   },
 

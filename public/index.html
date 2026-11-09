@@ -10,155 +10,238 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0A0A12; --bg2:#0E0E1A;
-  --panel:rgba(255,255,255,.06); --panel2:rgba(255,255,255,.09); --panel-solid:#14141F;
-  --line:rgba(255,255,255,.12); --line2:rgba(255,255,255,.18);
-  --violet:#8B5CF6; --purple:#A855F7; --pink:#EC4899; --cyan:#22D3EE; --blue:#3B82F6;
-  --green:#22C55E; --green2:#86EFAC; --gold:#FACC15; --binance:#F0B90B;
-  --text:#FFFFFF; --muted:#A1A1AA; --muted2:#71717A;
-  --red:#F87171; --yellow:#FBBF24;
-  --shadow:0 24px 70px rgba(0,0,0,.6); --radius:24px;
+  --bg:#0A0A12;
+  --line:rgba(255,255,255,.12);
+  --line2:rgba(255,255,255,.18);
+  --cyan:#22D3EE;
+  --green:#22C55E;
+  --red:#F87171;
+  --yellow:#FBBF24;
+  --shadow:0 24px 70px rgba(0,0,0,.6);
   --grad:linear-gradient(135deg,#8B5CF6,#EC4899,#22D3EE);
   --grad-btn:linear-gradient(135deg,#7C3AED,#DB2777,#0891B2);
   --grad-binance:linear-gradient(135deg,#F0B90B,#F8D33A);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;min-height:100%;background:
-  radial-gradient(ellipse at 10% 0%,#7C3AED33 0,transparent 45%),
-  radial-gradient(ellipse at 90% 20%,#EC489933 0,transparent 40%),
-  radial-gradient(ellipse at 50% 100%,#0891B233 0,transparent 45%),
-  var(--bg);color:var(--text);font-family:'Inter','DM Sans',sans-serif}
+html,body{
+  margin:0;min-height:100%;
+  background:
+    radial-gradient(ellipse at 10% 0%,#7C3AED33 0,transparent 45%),
+    radial-gradient(ellipse at 90% 20%,#EC489933 0,transparent 40%),
+    radial-gradient(ellipse at 50% 100%,#0891B233 0,transparent 45%),
+    var(--bg);
+  color:#fff;
+  font-family:'Inter','DM Sans',sans-serif;
+}
 body{font-size:15px;min-width:320px}
-button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;touch-action:manipulation}a{color:inherit}
-.hidden{display:none!important}.muted{color:var(--muted)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;border:0;touch-action:manipulation}
+a{color:inherit}
+.hidden{display:none!important}
+.muted{color:#A1A1AA}
 .eyebrow{font-size:11px;font-weight:800;letter-spacing:.18em;color:var(--cyan);text-transform:uppercase}
-.brand{font:800 22px 'Space Grotesk',sans-serif;letter-spacing:-.02em}.brand span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.btn{min-height:48px;padding:12px 18px;border-radius:16px;font-size:14px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;text-align:center;transition:.2s}
+.brand{font:800 22px 'Space Grotesk',sans-serif;letter-spacing:-.02em}
+.brand span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.btn{
+  min-height:48px;padding:12px 18px;border-radius:16px;
+  font-size:14px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  text-decoration:none;text-align:center;transition:.2s
+}
 .btn:hover{transform:translateY(-2px) scale(1.01);filter:brightness(1.1)}
 .primary{background:var(--grad-btn);color:#fff;box-shadow:0 12px 30px #7C3AED44}
-.secondary{background:rgba(255,255,255,.08);border:1px solid var(--line);color:#fff;backdrop-filter:blur(12px)}
-.danger{background:rgba(248,113,113,.15);border:1px solid #F8717144;color:#FCA5A5}
-.btn:disabled{opacity:.55;cursor:not-allowed}.full{width:100%}
-.btn.binance{background:var(--grad-binance);color:#1A1A00;box-shadow:0 12px 30px #F0B90B33}
+.secondary{background:rgba(255,255,255,.08);border:1px solid var(--line);color:#fff}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.full{width:100%}
+.btn.binance{background:var(--grad-binance);color:#1A1A00}
 .btn.binance:disabled{opacity:.7;filter:grayscale(.3)}
-.field{display:grid;gap:8px;margin:15px 0}.field label{font-size:13px;font-weight:700;color:#E4E4E7}
-.field input,.field select,.field textarea{width:100%;min-width:0;min-height:50px;border:1px solid var(--line);border-radius:16px;background:rgba(0,0,0,.35);color:var(--text);padding:12px 14px;outline:none;font-size:16px;backdrop-filter:blur(10px)}
+.field{display:grid;gap:8px;margin:15px 0}
+.field label{font-size:13px;font-weight:700;color:#E4E4E7}
+.field input,.field select,.field textarea{
+  width:100%;min-width:0;min-height:50px;border:1px solid var(--line);border-radius:16px;
+  background:rgba(0,0,0,.35);color:#fff;padding:12px 14px;outline:none;font-size:16px
+}
 .field textarea{min-height:90px;resize:vertical}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:#A855F7;box-shadow:0 0 0 4px #A855F733}
-.hint{font-size:12px;line-height:1.6;color:var(--muted);overflow-wrap:anywhere}
+.hint{font-size:12px;line-height:1.6;color:#A1A1AA;overflow-wrap:anywhere}
 .error{color:#FCA5A5;font-size:13px;line-height:1.5;min-height:18px}
+
+/* AUTH */
 .login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}
 #authView{min-height:100svh;padding:clamp(18px,4vw,48px);display:grid;place-items:center}
 #authView .auth-shell{width:min(1140px,100%);display:grid;grid-template-columns:minmax(0,1.05fr) minmax(340px,.85fr);gap:clamp(28px,6vw,64px);align-items:center}
-#authView .auth-showcase{position:relative;overflow:hidden;min-height:560px;padding:clamp(28px,5vw,56px);border:1px solid var(--line);border-radius:32px;background:linear-gradient(145deg,rgba(124,58,237,.28),rgba(236,72,153,.18) 45%,rgba(8,145,178,.22));backdrop-filter:blur(20px);box-shadow:0 30px 90px #0008;display:flex;flex-direction:column;justify-content:space-between}
-#authView .auth-showcase:before{content:"";position:absolute;width:420px;height:420px;right:-140px;top:-160px;border-radius:50%;background:radial-gradient(circle,#EC489955,transparent 70%);pointer-events:none}
-#authView .auth-showcase:after{content:"";position:absolute;width:320px;height:320px;left:-100px;bottom:-120px;border-radius:50%;background:radial-gradient(circle,#22D3EE55,transparent 70%);pointer-events:none}
+#authView .auth-showcase{
+  position:relative;overflow:hidden;min-height:560px;padding:clamp(28px,5vw,56px);
+  border:1px solid var(--line);border-radius:32px;
+  background:linear-gradient(145deg,rgba(124,58,237,.28),rgba(236,72,153,.18) 45%,rgba(8,145,178,.22));
+  box-shadow:0 30px 90px #0008;display:flex;flex-direction:column;justify-content:space-between
+}
 #authView .auth-brand{display:flex;align-items:center;gap:12px;font:800 17px 'Space Grotesk',sans-serif;letter-spacing:.08em;position:relative;z-index:1}
-#authView .auth-brand-mark{width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:var(--grad);color:#fff;font-size:21px;box-shadow:0 10px 28px #A855F755}
+#authView .auth-brand-mark{width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:var(--grad);color:#fff;font-size:21px}
 #authView .auth-kicker{display:inline-flex;align-items:center;gap:8px;margin-top:52px;color:#22D3EE;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;position:relative;z-index:1}
-#authView .auth-kicker:before{content:"";width:22px;height:2px;background:var(--grad);border-radius:2px}
 #authView .auth-showcase h2{max-width:580px;margin:17px 0 15px;font:800 clamp(34px,5vw,58px)/1.05 'Space Grotesk',sans-serif;letter-spacing:-.04em;position:relative;z-index:1}
 #authView .auth-showcase h2 span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 #authView .auth-showcase-copy{max-width:480px;color:#D4D4D8;font-size:15px;line-height:1.8;position:relative;z-index:1}
 #authView .auth-feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-top:34px;position:relative;z-index:1}
-#authView .auth-feature{display:flex;gap:11px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(0,0,0,.3);backdrop-filter:blur(12px);color:#fff;font-size:12px;font-weight:700}
+#authView .auth-feature{display:flex;gap:11px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(0,0,0,.3);color:#fff;font-size:12px;font-weight:700}
 #authView .auth-feature i{width:30px;height:30px;flex:none;display:grid;place-items:center;border-radius:10px;background:var(--grad);color:#fff;font-style:normal;font-size:15px}
 #authView .auth-showcase-foot{display:flex;align-items:center;gap:9px;margin-top:40px;color:#A1A1AA;font-size:11px;letter-spacing:.08em;text-transform:uppercase;position:relative;z-index:1}
 #authView .auth-live-dot{width:8px;height:8px;border-radius:50%;background:#22C55E;box-shadow:0 0 14px #22C55E}
-#authView .login-card{width:100%;max-width:440px;justify-self:end;padding:clamp(24px,4vw,36px);border:1px solid var(--line);border-radius:28px;background:rgba(20,20,31,.85);backdrop-filter:blur(24px);box-shadow:0 28px 80px #0009}
+#authView .login-card{width:100%;max-width:440px;justify-self:end;padding:clamp(24px,4vw,36px);border:1px solid var(--line);border-radius:28px;background:rgba(20,20,31,.85);box-shadow:0 28px 80px #0009}
 #authView .logo{width:56px;height:56px;border-radius:16px;border:1px solid var(--line);object-fit:cover;margin-bottom:16px}
-#authView .eyebrow{color:#22D3EE}
 #authView .login-card h1{font:800 clamp(25px,3vw,31px) 'Space Grotesk',sans-serif;letter-spacing:-.03em;margin:7px 0}
 #authView .login-card h1 span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text!important}
 #authView .login-card p{color:#A1A1AA;font-size:14px;line-height:1.65}
 #authView .tabs{display:flex;gap:5px;padding:5px;border:1px solid var(--line);border-radius:16px;background:rgba(0,0,0,.35);margin:22px 0 12px}
 #authView .tab{flex:1;padding:12px;border-radius:12px;background:transparent;color:#A1A1AA;font-weight:800}
-#authView .tab.active{background:var(--grad-btn);color:#fff;box-shadow:0 8px 20px #7C3AED44}
-#authView .field input{border-color:var(--line);background:rgba(0,0,0,.35)}
-#authView .btn.primary{background:var(--grad-btn);border-radius:16px}
+#authView .tab.active{background:var(--grad-btn);color:#fff}
 #authView .login-foot{margin-top:20px;text-align:center;font-size:11px;letter-spacing:.12em;color:#71717A}
 #authView .login-support{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:13px;width:100%;min-height:44px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.07);color:#fff;text-decoration:none;font-size:13px;font-weight:800}
-.login-card{width:min(460px,100%);padding:clamp(22px,5vw,36px);border:1px solid var(--line);border-radius:28px;background:#14141F;box-shadow:var(--shadow)}
 .logo{width:64px;height:64px;border-radius:18px;object-fit:cover;border:1px solid var(--line);margin-bottom:16px}
-.login-card h1{font:800 clamp(25px,5vw,32px) 'Space Grotesk',sans-serif;margin:7px 0}
-.login-card p{font-size:14px;color:var(--muted);line-height:1.65}
-.tabs{display:flex;gap:8px;margin:22px 0 12px}.tab{flex:1;padding:12px;border-radius:12px;background:rgba(255,255,255,.06);color:#A1A1AA;font-weight:800}.tab.active{background:var(--grad-btn);color:#fff}
-.login-foot{margin-top:20px;text-align:center;font-size:11px;letter-spacing:.12em;color:#71717A}
+
+/* LAYOUT */
 .layout{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:100vh}
-.side{position:sticky;top:0;height:100vh;padding:28px 18px;background:rgba(14,14,26,.9);backdrop-filter:blur(20px);border-right:1px solid var(--line);display:flex;flex-direction:column;z-index:5}
+.side{position:sticky;top:0;height:100vh;padding:28px 18px;background:rgba(14,14,26,.9);border-right:1px solid var(--line);display:flex;flex-direction:column;z-index:5}
 .side-brand{padding:3px 10px 30px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .navlabel{font-size:10px;letter-spacing:.18em;color:#71717A;font-weight:800;padding:12px 10px}
-.nav{display:flex;align-items:center;gap:12px;min-height:50px;padding:12px 14px;margin:3px 0;border:1px solid transparent;border-radius:16px;color:#A1A1AA;text-decoration:none;font-size:14px;font-weight:700;cursor:pointer;transition:.2s}
-.nav b{width:22px;text-align:center;font-size:18px}.nav.active,.nav:hover{background:rgba(139,92,246,.18);border-color:rgba(168,85,247,.4);color:#fff;box-shadow:inset 3px 0 #A855F7}.nav.active b{color:#C084FC}
+.nav{display:flex;align-items:center;gap:12px;min-height:50px;padding:12px 14px;margin:3px 0;border:1px solid transparent;border-radius:16px;color:#A1A1AA;text-decoration:none;font-size:14px;font-weight:700;cursor:pointer}
+.nav b{width:22px;text-align:center;font-size:18px}
+.nav.active,.nav:hover{background:rgba(139,92,246,.18);border-color:rgba(168,85,247,.4);color:#fff}
 .side-foot{margin-top:auto;border-top:1px solid var(--line);padding:17px 10px 0;color:#71717A;font-size:12px;line-height:1.8}
 .main{width:100%;max-width:1550px;min-width:0;margin:auto;padding:30px clamp(16px,4vw,48px) 120px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:24px;padding:24px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(110deg,rgba(124,58,237,.22),rgba(236,72,153,.12) 50%,rgba(34,211,238,.14));backdrop-filter:blur(16px);box-shadow:0 14px 45px #0004}
-.top h1{font:800 clamp(25px,3vw,36px) 'Space Grotesk',sans-serif;margin:6px 0 5px;letter-spacing:-.03em}.top p{margin:0;color:#D4D4D8;font-size:13px;line-height:1.6}
+.top{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:24px;padding:24px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(110deg,rgba(124,58,237,.22),rgba(236,72,153,.12) 50%,rgba(34,211,238,.14));box-shadow:0 14px 45px #0004}
+.top h1{font:800 clamp(25px,3vw,36px) 'Space Grotesk',sans-serif;margin:6px 0 5px;letter-spacing:-.03em}
+.top p{margin:0;color:#D4D4D8;font-size:13px;line-height:1.6}
 .top-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-.user-chip,.wallet-chip{display:flex;align-items:center;gap:9px;padding:11px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.3);backdrop-filter:blur(12px);font-size:12px;font-weight:800}
+.user-chip,.wallet-chip{display:flex;align-items:center;gap:9px;padding:11px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.3);font-size:12px;font-weight:800}
 .coin{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:18px}
-.stat,.card{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:24px;padding:22px;min-width:0;position:relative;overflow:hidden;backdrop-filter:blur(16px);box-shadow:0 12px 35px #0003;transition:.2s}
-.stat:hover,.card:hover{border-color:rgba(168,85,247,.5);box-shadow:0 18px 44px #0005;transform:translateY(-1px)}
-.stat small{color:var(--muted);font-size:12px}.stat strong{display:block;margin-top:8px;font:800 clamp(24px,3vw,32px) 'Space Grotesk',sans-serif;overflow-wrap:anywhere}
+.stat,.card{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:24px;padding:22px;min-width:0;position:relative;overflow:hidden;box-shadow:0 12px 35px #0003}
+.stat small{color:#A1A1AA;font-size:12px}
+.stat strong{display:block;margin-top:8px;font:800 clamp(24px,3vw,32px) 'Space Grotesk',sans-serif;overflow-wrap:anywhere}
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:28px 0 15px}.section-head h2{font:700 20px 'Space Grotesk',sans-serif;margin:0;letter-spacing:-.02em}.card{margin-bottom:16px}
-.wallet-hero{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;min-height:190px;background:linear-gradient(135deg,#7C3AED,#DB2777 55%,#0891B2)!important;border:none!important;box-shadow:0 20px 50px #7C3AED44!important}
-.wallet-hero .eyebrow{color:#FDE68A}.wallet-hero .hint{color:#FCE7F3!important}
-.wallet-balance{font:800 44px 'Space Grotesk',sans-serif;color:#fff;letter-spacing:-.04em;text-shadow:0 4px 20px #0004}
-.tag{display:inline-flex;align-items:center;padding:7px 12px;border-radius:30px;background:rgba(0,0,0,.28);color:#fff;border:1px solid rgba(255,255,255,.25);font-size:11px;font-weight:800;backdrop-filter:blur(8px)}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:28px 0 15px}
+.section-head h2{font:700 20px 'Space Grotesk',sans-serif;margin:0}
+.card{margin-bottom:16px}
+.wallet-hero{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;min-height:190px;background:linear-gradient(135deg,#7C3AED,#DB2777 55%,#0891B2)!important;border:none!important}
+.wallet-hero .hint{color:#FCE7F3!important}
+.wallet-balance{font:800 44px 'Space Grotesk',sans-serif;color:#fff;letter-spacing:-.04em}
+.tag{display:inline-flex;align-items:center;padding:7px 12px;border-radius:30px;background:rgba(0,0,0,.28);color:#fff;border:1px solid rgba(255,255,255,.25);font-size:11px;font-weight:800}
 .tag.coming-soon{background:var(--grad-binance);color:#1A1A00;border-color:#F0B90B}
-.tag.binance{background:rgba(240,185,11,.18);color:#FDE68A;border-color:rgba(240,185,11,.5)}
+
+/* BOTS */
 .bot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.bot-option{display:flex;align-items:flex-start;gap:12px;padding:18px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.04);cursor:pointer;text-align:left;color:var(--text);transition:.2s;width:100%}
-.bot-option:hover{border-color:#A855F7;transform:translateY(-2px)}.bot-option.active{border-color:#A855F7;background:linear-gradient(145deg,rgba(124,58,237,.3),rgba(236,72,153,.18));box-shadow:0 0 0 2px #A855F733}
-.bot-icon{width:44px;height:44px;flex:none;display:grid;place-items:center;border-radius:14px;background:var(--grad);color:#fff;font-size:18px;box-shadow:0 8px 20px #A855F744}
-.bot-option strong{display:block;font-size:13px;margin:1px 0 5px}.bot-option small{display:block;color:var(--muted);font-size:11px;line-height:1.5}
+.bot-option{display:flex;align-items:flex-start;gap:12px;padding:18px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.04);cursor:pointer;text-align:left;color:#fff;width:100%}
+.bot-option.active{border-color:#A855F7;background:linear-gradient(145deg,rgba(124,58,237,.3),rgba(236,72,153,.18))}
+.bot-icon{width:44px;height:44px;flex:none;display:grid;place-items:center;border-radius:14px;background:var(--grad);color:#fff;font-size:18px}
+.bot-option strong{display:block;font-size:13px;margin:1px 0 5px}
+.bot-option small{display:block;color:#A1A1AA;font-size:11px;line-height:1.5}
 .price-pill{margin-left:auto;white-space:nowrap;color:#fff;font-size:11px;font-weight:900;background:var(--grad-btn);padding:6px 10px;border-radius:20px}
-.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}.field.full-field{grid-column:1/-1}
-.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:650px}th{text-align:left;padding:12px;color:#71717A;border-bottom:1px solid var(--line);font-size:10px;text-transform:uppercase;letter-spacing:.1em}td{padding:13px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}tr:last-child td{border-bottom:0}
-.app-name{font-weight:800;overflow-wrap:anywhere}.sub{font-size:11px;color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
-.status{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;white-space:nowrap}.status i{width:8px;height:8px;border-radius:50%;background:var(--yellow)}.status.running i{background:var(--green)}.status.offline i,.status.failed i{background:var(--red)}.status.building i,.status.deploying i{background:var(--yellow);animation:pulse 1.2s infinite}@keyframes pulse{50%{opacity:.35}}
-.actions{display:flex;gap:6px;flex-wrap:wrap}.mini{min-height:34px;padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.08);color:#fff;font-size:11px;font-weight:800;border:1px solid var(--line)}.mini:hover{border-color:#A855F7;background:rgba(168,85,247,.25)}.mini.danger{background:rgba(248,113,113,.15);color:#FCA5A5;border-color:#F8717144}
-.empty{text-align:center;color:var(--muted);padding:30px 14px;line-height:1.6;border:1px dashed var(--line);border-radius:18px;background:rgba(0,0,0,.2)}
-.mobile-list{display:none;gap:12px}.app-card{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:20px;padding:17px;backdrop-filter:blur(12px)}.app-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.app-card-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:15px 0}.app-card-info small{display:block;color:var(--muted);font-size:10px}.app-card-info strong{display:block;font-size:12px;margin-top:4px;overflow-wrap:anywhere}
-.history-list{display:grid;gap:9px}.history-row{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px}.history-row:last-child{border:0}.positive{color:#86EFAC}.negative{color:#FCA5A5}
-.modal-root:empty{display:none}.modal-bg{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:16px;backdrop-filter:blur(10px)}.modal{width:min(800px,100%);max-height:90vh;overflow:auto;background:#17171F;border:1px solid var(--line2);border-radius:24px;padding:22px;box-shadow:var(--shadow)}.modal h2{font:800 19px 'Space Grotesk',sans-serif;margin:0 0 16px}.modal-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:16px}.logbox{background:#05050A;border:1px solid var(--line);border-radius:14px;padding:13px;color:#A5F3FC;white-space:pre-wrap;overflow:auto;max-height:48vh;font:12px/1.55 ui-monospace,monospace}
-.toast{position:fixed;z-index:40;bottom:100px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;max-width:min(90vw,520px);background:#1A1A28;border:1px solid #A855F7;color:#fff;border-radius:14px;padding:12px 16px;font-size:13px;transition:.2s;box-shadow:0 12px 30px #0008}.toast.show{opacity:1;transform:translate(-50%,0)}
-.admin-only{display:none!important}.is-admin .admin-only{display:block!important}.admin-only.nav{display:none!important}.is-admin .admin-only.nav{display:flex!important}
+.bot-option-wrap{display:flex;flex-direction:column;gap:7px;min-width:0}
+.bot-option-wrap .bot-option{width:100%;min-height:72px}
+.get-session{align-self:flex-start;border:1px solid var(--line);background:transparent;color:#C084FC;padding:7px 11px;border-radius:10px;cursor:pointer}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}
+.field.full-field{grid-column:1/-1}
+
+/* TABLES / CARDS */
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th{text-align:left;padding:12px;color:#71717A;border-bottom:1px solid var(--line);font-size:10px;text-transform:uppercase;letter-spacing:.1em}
+td{padding:13px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+.app-name{font-weight:800;overflow-wrap:anywhere}
+.sub{font-size:11px;color:#A1A1AA;margin-top:4px;overflow-wrap:anywhere}
+.status{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;white-space:nowrap}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--yellow)}
+.status.running i{background:var(--green)}
+.status.offline i,.status.failed i{background:var(--red)}
+.status.building i,.status.deploying i{background:var(--yellow);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.mini{min-height:34px;padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.08);color:#fff;font-size:11px;font-weight:800;border:1px solid var(--line)}
+.mini.danger{background:rgba(248,113,113,.15);color:#FCA5A5;border-color:#F8717144}
+.empty{text-align:center;color:#A1A1AA;padding:30px 14px;line-height:1.6;border:1px dashed var(--line);border-radius:18px;background:rgba(0,0,0,.2)}
+.mobile-list{display:none;gap:12px}
+.app-card{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:20px;padding:17px}
+.app-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.app-card-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:15px 0}
+.app-card-info small{display:block;color:#A1A1AA;font-size:10px}
+.app-card-info strong{display:block;font-size:12px;margin-top:4px;overflow-wrap:anywhere}
+.history-list{display:grid;gap:9px}
+.history-row{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px}
+.positive{color:#86EFAC}
+.negative{color:#FCA5A5}
+
+/* MODAL / TOAST / ADMIN */
+.modal-root:empty{display:none}
+.modal-bg{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:16px}
+.modal{width:min(800px,100%);max-height:90vh;overflow:auto;background:#17171F;border:1px solid var(--line2);border-radius:24px;padding:22px;box-shadow:var(--shadow)}
+.modal h2{font:800 19px 'Space Grotesk',sans-serif;margin:0 0 16px}
+.modal-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:16px}
+.logbox{background:#05050A;border:1px solid var(--line);border-radius:14px;padding:13px;color:#A5F3FC;white-space:pre-wrap;overflow:auto;max-height:48vh;font:12px/1.55 ui-monospace,monospace}
+.toast{position:fixed;z-index:40;bottom:100px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;max-width:min(90vw,520px);background:#1A1A28;border:1px solid #A855F7;color:#fff;border-radius:14px;padding:12px 16px;font-size:13px;transition:.2s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.admin-only{display:none!important}
+.is-admin .admin-only{display:block!important}
+.admin-only.nav{display:none!important}
+.is-admin .admin-only.nav{display:flex!important}
 .muted-link{color:#C084FC;font-size:12px;text-decoration:none}
-.coin-pack{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:14px;padding:13px;margin:9px 0;background:rgba(0,0,0,.25)}.coin-pack strong{display:block}.coin-pack small{color:var(--muted);font-size:11px}.coin-pack button{flex:none}
-.spinner{width:15px;height:15px;border:2px solid #ffffff55;border-top-color:currentColor;border-radius:50%;display:inline-block;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
-.support-fab{position:fixed;right:20px;bottom:100px;z-index:1000;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 19px;border-radius:999px;background:var(--grad-btn);color:#fff;text-decoration:none;font-size:14px;font-weight:900;box-shadow:0 12px 32px #7C3AED55;border:1px solid rgba(255,255,255,.25)}.support-fab:hover{transform:translateY(-2px);filter:brightness(1.1)}.support-fab .support-icon{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:rgba(0,0,0,.3);color:#fff;font-size:17px}
+.spinner{width:15px;height:15px;border:2px solid #ffffff55;border-top-color:currentColor;border-radius:50%;display:inline-block;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.support-fab{position:fixed;right:20px;bottom:100px;z-index:1000;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 19px;border-radius:999px;background:var(--grad-btn);color:#fff;text-decoration:none;font-size:14px;font-weight:900;box-shadow:0 12px 32px #7C3AED55;border:1px solid rgba(255,255,255,.25)}
+.support-fab .support-icon{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:rgba(0,0,0,.3);color:#fff;font-size:17px}
 .login-support{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:13px;width:100%;min-height:44px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.07);color:#fff;text-decoration:none;font-size:13px;font-weight:800}
-.bot-option-wrap{display:flex;flex-direction:column;gap:7px;min-width:0}.bot-option-wrap .bot-option{width:100%;min-height:72px}.get-session{align-self:flex-start;border:1px solid var(--line);background:transparent;color:#C084FC;padding:7px 11px;border-radius:10px;cursor:pointer}.get-session:hover{border-color:#A855F7}
 .binance-card{position:relative;overflow:hidden;border-color:rgba(240,185,11,.4)!important;background:linear-gradient(145deg,rgba(240,185,11,.12),rgba(255,255,255,.04))!important}
 .binance-card .binance-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:var(--grad-binance);color:#1A1A00;font-size:20px;font-weight:900}
-.bottom-nav{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:none;align-items:stretch;justify-content:space-between;gap:4px;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:rgba(20,20,31,.92);backdrop-filter:blur(20px);border:1px solid var(--line);border-radius:22px;box-shadow:0 16px 40px #0008}
+.bottom-nav{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;display:none;align-items:stretch;justify-content:space-between;gap:4px;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:rgba(20,20,31,.92);border:1px solid var(--line);border-radius:22px;box-shadow:0 16px 40px #0008}
 .bottom-nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;border-radius:14px;color:#71717A;font-size:10px;font-weight:800;cursor:pointer;text-decoration:none}
 .bottom-nav a b{font-size:19px;line-height:1}
 .bottom-nav a.active{color:#fff;background:var(--grad-btn)}
-.bottom-nav a.active b{color:#fff}
-@media(max-width:820px){#authView .auth-shell{grid-template-columns:1fr;max-width:520px;gap:18px}#authView .auth-showcase{min-height:0;padding:25px;border-radius:24px}#authView .auth-kicker{margin-top:25px}#authView .auth-showcase h2{font-size:34px}#authView .auth-showcase-copy{font-size:13px;margin-bottom:0}#authView .auth-feature-grid{margin-top:20px}#authView .auth-showcase-foot{margin-top:22px}#authView .login-card{justify-self:stretch;max-width:none}}
-@media(max-width:480px){#authView{padding:13px}#authView .auth-showcase{padding:21px}#authView .auth-showcase h2{font-size:30px}#authView .auth-feature-grid{grid-template-columns:1fr 1fr;gap:8px}#authView .auth-feature{padding:10px;font-size:11px}#authView .login-card{padding:23px 19px}}
+
+@media(max-width:820px){
+  #authView .auth-shell{grid-template-columns:1fr;max-width:520px;gap:18px}
+  #authView .auth-showcase{min-height:0;padding:25px}
+  #authView .auth-kicker{margin-top:25px}
+  #authView .auth-showcase h2{font-size:34px}
+  #authView .login-card{justify-self:stretch;max-width:none}
+}
 @media(max-width:900px){
-  .layout{display:block}.side{position:sticky;top:0;height:auto;padding:12px 14px;border-right:0;border-bottom:1px solid var(--line);background:rgba(14,14,26,.95)}.side-brand{padding:2px 5px 12px}.side-brand .brand{font-size:20px}.navlabel,.side-foot{display:none}.navs{display:flex;gap:7px;overflow-x:auto;padding:2px 0 4px}.nav{min-height:43px;padding:10px 13px;background:rgba(255,255,255,.06);flex:none}.main{padding:20px 17px 120px}.top{padding:19px;margin-bottom:19px}.top-right{max-width:none}
+  .layout{display:block}
+  .side{position:sticky;top:0;height:auto;padding:12px 14px;border-right:0;border-bottom:1px solid var(--line)}
+  .side-brand{padding:2px 5px 12px}
+  .navlabel,.side-foot{display:none}
+  .navs{display:flex;gap:7px;overflow-x:auto;padding:2px 0 4px}
+  .nav{min-height:43px;padding:10px 13px;background:rgba(255,255,255,.06);flex:none}
+  .main{padding:20px 17px 120px}
   .bottom-nav{display:flex}
   .support-fab{bottom:100px;right:16px}
 }
 @media(max-width:650px){
-  .main{padding:15px 12px 120px}.top{border-radius:20px;padding:18px 16px;display:block}.top h1{font-size:29px}.top-right{gap:7px;margin-top:14px;justify-content:flex-start}.wallet-chip,.user-chip{font-size:11px;padding:9px 10px}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.stat{padding:15px 14px;min-height:98px;border-radius:18px}.stat small{font-size:10px}.stat strong{font-size:28px;margin-top:9px}.stats .stat:last-child{grid-column:1/-1}.grid2,.form-grid{grid-template-columns:1fr}.bot-grid{grid-template-columns:1fr}.table-wrap{display:none}.mobile-list{display:grid}.section-head h2{font-size:17px}.wallet-balance{font-size:37px}.card{padding:17px;border-radius:20px}.wallet-hero{min-height:160px;align-items:flex-start}.wallet-hero .btn.primary{width:100%;min-width:0;background:#fff;color:#7C3AED}.section-head{margin:22px 1px 12px}.section-head .btn{min-height:39px;padding:9px 12px;font-size:12px}.support-fab{right:13px;bottom:100px;min-height:48px;padding:0 15px;font-size:12px}.app-card{border-radius:18px}.empty{padding:27px 14px}.coin-pack{align-items:flex-start}.coin-pack button{min-width:110px}
-  .bottom-nav{left:10px;right:10px;bottom:10px}
+  .main{padding:15px 12px 120px}
+  .top{border-radius:20px;padding:18px 16px;display:block}
+  .top h1{font-size:29px}
+  .top-right{gap:7px;margin-top:14px;justify-content:flex-start}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .stat{padding:15px 14px}
+  .grid2,.form-grid{grid-template-columns:1fr}
+  .bot-grid{grid-template-columns:1fr}
+  .table-wrap{display:none}
+  .mobile-list{display:grid}
+  .wallet-balance{font-size:37px}
+  .card{padding:17px}
+  .wallet-hero .btn.primary{width:100%;background:#fff;color:#7C3AED}
 }
-@media(max-width:370px){.nav{font-size:12px;padding:9px}.nav b{display:none}.main{padding-left:10px;padding-right:10px}.stat strong{font-size:22px}.btn{padding:10px 12px;font-size:13px}.wallet-balance{font-size:33px}}
 </style>
 </head>
 <body>
+
+<!-- ================= AUTH ================= -->
 <div id="authView" class="login-wrap">
   <div class="auth-shell">
-    <section class="auth-showcase" aria-label="Teddy Tech hosting platform">
+    <section class="auth-showcase">
       <div>
-        <div class="auth-brand"><span class="auth-brand-mark">T</span><span>TEDDY TECH <span style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">CLOUD</span></span></div>
+        <div class="auth-brand">
+          <span class="auth-brand-mark">T</span>
+          <span>TEDDY TECH <span style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">CLOUD</span></span>
+        </div>
         <div class="auth-kicker">WhatsApp bot hosting</div>
         <h2>Deploy your bots.<br><span>Run your automation.</span></h2>
         <p class="auth-showcase-copy">One workspace to launch, monitor and manage your WhatsApp bots. Choose a built-in bot, connect your session and let Teddy Tech handle the deployment flow.</p>
@@ -171,33 +254,41 @@ button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;touch-a
       </div>
       <div class="auth-showcase-foot"><span class="auth-live-dot"></span> Secure hosting workspace · Powered by Teddy Tech</div>
     </section>
+
     <div class="login-card">
-    <img class="logo" src="https://url.bmbxmd.workers.dev/1JNK9.jpg" alt="Teddy Tech logo" onerror="this.style.display='none'">
-    <div class="eyebrow">KING OF AUTOMATION</div>
-    <h1>TEDDY TECH<br><span>BOT DEPLOYER</span></h1>
-    <p>Create an account, top up Teddy Coins and deploy WhatsApp bots to Heroku. Every deployment costs <b class="coin">10 coins</b>.</p>
-    <div class="tabs"><button class="tab active" id="loginTab" type="button">Sign in</button><button class="tab" id="registerTab" type="button">Sign up</button></div>
-    <form id="loginForm">
-      <div class="field"><label>Email address</label><input id="loginEmail" type="email" autocomplete="username" required placeholder="you@example.com"></div>
-      <div class="field"><label>Password</label><input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Your password"></div>
-      <button class="btn primary full" id="loginBtn">Sign in</button>
-    </form>
-    <form id="registerForm" class="hidden">
-      <div class="field"><label>Your name</label><input id="registerName" autocomplete="name" required minlength="2" maxlength="80" placeholder="Full name"></div>
-      <div class="field"><label>Email address</label><input id="registerEmail" type="email" autocomplete="email" required placeholder="you@example.com"></div>
-      <div class="field"><label>Create password</label><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters"></div>
-      <button class="btn primary full" id="registerBtn">Create account</button>
-    </form>
-    <div id="authError" class="error"></div>
-    <div class="login-foot">POWERED BY TEDDY TECH · SECURE HEROKU DEPLOYMENT</div>
-    <a class="login-support" id="loginSupportLink" href="https://wa.me/254799963583?text=Hello%20Teddy%20Tech%20Support" target="_blank" rel="noopener noreferrer">💬 Contact support on WhatsApp</a>
+      <img class="logo" src="https://url.bmbxmd.workers.dev/1JNK9.jpg" alt="Teddy Tech logo" onerror="this.style.display='none'">
+      <div class="eyebrow">KING OF AUTOMATION</div>
+      <h1>TEDDY TECH<br><span>BOT DEPLOYER</span></h1>
+      <p>Create an account, top up Teddy Coins and deploy WhatsApp bots to Heroku. Every deployment costs <b class="coin">10 coins</b>.</p>
+      <div class="tabs">
+        <button class="tab active" id="loginTab" type="button">Sign in</button>
+        <button class="tab" id="registerTab" type="button">Sign up</button>
+      </div>
+      <form id="loginForm">
+        <div class="field"><label>Email address</label><input id="loginEmail" type="email" autocomplete="username" required placeholder="you@example.com"></div>
+        <div class="field"><label>Password</label><input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Your password"></div>
+        <button class="btn primary full" id="loginBtn">Sign in</button>
+      </form>
+      <form id="registerForm" class="hidden">
+        <div class="field"><label>Your name</label><input id="registerName" autocomplete="name" required minlength="2" maxlength="80" placeholder="Full name"></div>
+        <div class="field"><label>Email address</label><input id="registerEmail" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+        <div class="field"><label>Create password</label><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters"></div>
+        <button class="btn primary full" id="registerBtn">Create account</button>
+      </form>
+      <div id="authError" class="error"></div>
+      <div class="login-foot">POWERED BY TEDDY TECH · SECURE HEROKU DEPLOYMENT</div>
+      <a class="login-support" id="loginSupportLink" href="https://wa.me/254799963583?text=Hello%20Teddy%20Tech%20Support" target="_blank" rel="noopener noreferrer">💬 Contact support on WhatsApp</a>
     </div>
   </div>
 </div>
 
+<!-- ================= APP ================= -->
 <div id="appView" class="layout hidden">
   <aside class="side">
-    <div class="side-brand"><div class="brand">TEDDY<span> TECH</span></div><button class="mini" id="logoutBtn">↪ Logout</button></div>
+    <div class="side-brand">
+      <div class="brand">TEDDY<span> TECH</span></div>
+      <button class="mini" id="logoutBtn">↪ Logout</button>
+    </div>
     <div class="navlabel">YOUR WORKSPACE</div>
     <div class="navs">
       <a class="nav active" data-page="overview"><b>▦</b> Overview</a>
@@ -208,62 +299,164 @@ button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;touch-a
     </div>
     <div class="side-foot">TEDDY TECH<br><span style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">KING OF AUTOMATION</span><br><span id="sideEmail"></span></div>
   </aside>
+
   <main class="main">
     <header class="top">
-      <div><div class="eyebrow">TEDDY TECH CLOUD</div><h1 id="pageTitle">Overview</h1><p id="pageSubtitle">Your bot deployments and Teddy Coin wallet.</p></div>
-      <div class="top-right"><div class="wallet-chip">◉ <span class="coin" id="headerCoins">0 coins</span></div><div class="user-chip"><span>●</span><span id="headerUser">User</span><span class="tag" id="headerRole">USER</span></div></div>
+      <div>
+        <div class="eyebrow">TEDDY TECH CLOUD</div>
+        <h1 id="pageTitle">Overview</h1>
+        <p id="pageSubtitle">Your bot deployments and Teddy Coin wallet.</p>
+      </div>
+      <div class="top-right">
+        <div class="wallet-chip">◉ <span class="coin" id="headerCoins">0 coins</span></div>
+        <div class="user-chip"><span>●</span><span id="headerUser">User</span><span class="tag" id="headerRole">USER</span></div>
+      </div>
     </header>
 
+    <!-- OVERVIEW -->
     <section id="overviewPage">
-      <div class="stats"><div class="stat"><small>Your deployed apps</small><strong id="statApps">—</strong></div><div class="stat"><small>Running bots</small><strong id="statRunning">—</strong></div><div class="stat"><small>Offline / failed</small><strong id="statOffline">—</strong></div></div>
-      <div class="grid2">
-        <div class="card wallet-hero"><div><div class="eyebrow">YOUR TEDDY WALLET</div><div class="wallet-balance"><span id="overviewCoins">0</span> <span style="font-size:15px">COINS</span></div><div class="hint">10 coins = KSh 50 · 10 coins = $0.40</div></div><button class="btn primary" onclick="goPage('wallet')">＋ Buy coins</button></div>
-        <div class="card"><div class="eyebrow">DEPLOYMENT PRICE</div><div style="font:800 27px 'Space Grotesk';margin:8px 0">10 COINS</div><div class="hint">TEDDY-XMD ULTRA, JUNE ULTRA and CYPHERX all cost the same.</div><button class="btn secondary" style="margin-top:14px" onclick="goPage('deploy')">Deploy a bot →</button></div>
+      <div class="stats">
+        <div class="stat"><small>Your deployed apps</small><strong id="statApps">—</strong></div>
+        <div class="stat"><small>Running bots</small><strong id="statRunning">—</strong></div>
+        <div class="stat"><small>Offline / failed</small><strong id="statOffline">—</strong></div>
       </div>
-      <div class="section-head"><div><h2>Your deployed bots</h2><div class="hint">All bots linked to your account appear here.</div></div><button class="btn secondary" onclick="loadApps()">↻ Refresh</button></div>
+      <div class="grid2">
+        <div class="card wallet-hero">
+          <div>
+            <div class="eyebrow">YOUR TEDDY WALLET</div>
+            <div class="wallet-balance"><span id="overviewCoins">0</span> <span style="font-size:15px">COINS</span></div>
+            <div class="hint">10 coins = KSh 50 · 10 coins = $0.40</div>
+          </div>
+          <button class="btn primary" onclick="goPage('wallet')">＋ Buy coins</button>
+        </div>
+        <div class="card">
+          <div class="eyebrow">DEPLOYMENT PRICE</div>
+          <div style="font:800 27px 'Space Grotesk';margin:8px 0">10 COINS</div>
+          <div class="hint">TEDDY-XMD ULTRA, JUNE ULTRA and CYPHERX all cost the same.</div>
+          <button class="btn secondary" style="margin-top:14px" onclick="goPage('deploy')">Deploy a bot →</button>
+        </div>
+      </div>
+      <div class="section-head">
+        <div><h2>Your deployed bots</h2><div class="hint">All bots linked to your account appear here.</div></div>
+        <button class="btn secondary" onclick="loadApps()">↻ Refresh</button>
+      </div>
       <div id="overviewApps" class="mobile-list"><div class="empty">Loading your applications…</div></div>
     </section>
 
+    <!-- DEPLOY -->
     <section id="deployPage" class="hidden">
       <div class="card">
         <div class="section-head" style="margin-top:0"><h2>Choose bot type</h2><span class="tag">10 COINS EACH</span></div>
         <div id="botGrid" class="bot-grid">
-          <div class="bot-option-wrap"><button class="bot-option active" data-bot="teddy-xmd-ultra"><span class="bot-icon">🧸</span><span><strong>TEDDY-XMD ULTRA</strong><small>Teddy Tech WhatsApp bot</small></span><span class="price-pill">10 coins</span></button><button class="mini get-session" type="button" data-get-session="teddy-xmd-ultra">Get SESSION_ID ↗</button></div>
-          <div class="bot-option-wrap"><button class="bot-option" data-bot="june-ultra"><span class="bot-icon">✦</span><span><strong>JUNE ULTRA</strong><small>June Ultra WhatsApp bot</small></span><span class="price-pill">10 coins</span></button><button class="mini get-session" type="button" data-get-session="june-ultra">Get SESSION_ID ↗</button></div>
-          <div class="bot-option-wrap"><button class="bot-option" data-bot="cypherx"><span class="bot-icon">⌘</span><span><strong>CYPHERX BOT</strong><small>CypherX WhatsApp bot</small></span><span class="price-pill">10 coins</span></button><button class="mini get-session" type="button" data-get-session="cypherx">Get SESSION_ID ↗</button></div>
+          <div class="bot-option-wrap">
+            <button class="bot-option active" data-bot="teddy-xmd-ultra"><span class="bot-icon">🧸</span><span><strong>TEDDY-XMD ULTRA</strong><small>Teddy Tech WhatsApp bot</small></span><span class="price-pill">10 coins</span></button>
+            <button class="mini get-session" type="button" data-get-session="teddy-xmd-ultra">Get SESSION_ID ↗</button>
+          </div>
+          <div class="bot-option-wrap">
+            <button class="bot-option" data-bot="june-ultra"><span class="bot-icon">✦</span><span><strong>JUNE ULTRA</strong><small>June Ultra WhatsApp bot</small></span><span class="price-pill">10 coins</span></button>
+            <button class="mini get-session" type="button" data-get-session="june-ultra">Get SESSION_ID ↗</button>
+          </div>
+          <div class="bot-option-wrap">
+            <button class="bot-option" data-bot="cypherx"><span class="bot-icon">⌘</span><span><strong>CYPHERX BOT</strong><small>CypherX WhatsApp bot</small></span><span class="price-pill">10 coins</span></button>
+            <button class="mini get-session" type="button" data-get-session="cypherx">Get SESSION_ID ↗</button>
+          </div>
         </div>
       </div>
+
       <div class="card">
         <div class="section-head" style="margin-top:0"><h2>Bot connection and app settings</h2><span class="tag">BUILT-IN REPOSITORY</span></div>
         <div class="hint" id="manifestInfo" style="margin:0 0 12px">Select a bot. Its official repository and app.json are loaded automatically.</div>
         <div class="form-grid">
-          <div class="field"><label>Heroku app name prefix</label><input id="appPrefix" maxlength="20" value="teddyxhost" placeholder="teddyxhost"><div class="hint">Choose your own prefix, for example teddyxhost. We add a random suffix and check your connected Heroku account.</div></div>
-          <div class="field"><label>Heroku application name</label><input id="appName" maxlength="30" placeholder="Tap Suggest available name"><div class="hint">You can use the suggested name or type your own custom Heroku app name.</div><div class="actions"><button class="btn secondary" id="suggestNameBtn" type="button">Suggest available name</button><button class="btn secondary" id="checkNameBtn" type="button">Check custom name</button></div><div id="nameAvailability" class="hint" aria-live="polite">A name will be suggested using your prefix. Heroku confirms global availability during deployment.</div></div>
-          <div class="field full-field"><label>WhatsApp SESSION_ID</label><textarea id="sessionId" rows="3" autocomplete="off" placeholder="Paste your SESSION_ID here"></textarea><div class="hint">Need a SESSION_ID? Use the Get SESSION_ID button on your selected bot. The selected bot's official pairing website opens in a new tab.</div></div>
+          <div class="field">
+            <label>Heroku app name prefix</label>
+            <input id="appPrefix" maxlength="20" value="teddyxhost" placeholder="teddyxhost">
+            <div class="hint">Choose your own prefix. We add a random suffix and check your connected Heroku account.</div>
+          </div>
+          <div class="field">
+            <label>Heroku application name</label>
+            <input id="appName" maxlength="30" placeholder="Tap Suggest available name">
+            <div class="hint">You can use the suggested name or type your own custom Heroku app name.</div>
+            <div class="actions">
+              <button class="btn secondary" id="suggestNameBtn" type="button">Suggest available name</button>
+              <button class="btn secondary" id="checkNameBtn" type="button">Check custom name</button>
+            </div>
+            <div id="nameAvailability" class="hint">A name will be suggested using your prefix. Heroku confirms global availability during deployment.</div>
+          </div>
+          <div class="field full-field">
+            <label>WhatsApp SESSION_ID</label>
+            <textarea id="sessionId" rows="3" placeholder="Paste your SESSION_ID here"></textarea>
+            <div class="hint">Need a SESSION_ID? Use the Get SESSION_ID button on your selected bot.</div>
+          </div>
         </div>
-        <div class="card" style="background:rgba(0,0,0,.25);margin-top:18px;margin-bottom:0">
-          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><b>Deployment cost</b><b class="coin">10 coins</b></div>
-          <div class="hint" style="margin-top:6px">Coins are charged when the deployment is submitted to Heroku. If Heroku rejects the setup or the build fails, the 10 coins are automatically refunded.</div>
-          <div id="deployMessage" class="hint" style="margin-top:10px"></div>
-          <button class="btn primary full" id="deployBtn" style="margin-top:14px">Deploy to Heroku →</button>
+      </div>
+
+      <!-- ADVANCED SETTINGS - matches app.json -->
+      <div class="card">
+        <div class="section-head" style="margin-top:0"><h2>Advanced bot settings</h2><span class="tag">OPTIONAL</span></div>
+        <div class="hint" style="margin-bottom:12px">Leave blank to use app.json defaults. These are sent to Heroku on deploy.</div>
+        <div class="form-grid">
+          <div class="field"><label>Bot Mode</label><select id="env_BOT_MODE"><option value="">Default (public)</option><option value="public">public</option><option value="private">private</option><option value="group">group</option><option value="pm">pm</option></select></div>
+          <div class="field"><label>Prefix</label><input id="env_PREFIX" maxlength="5" placeholder=". (default)"></div>
+          <div class="field"><label>Owner Number</label><input id="env_OWNER_NUMBER" inputmode="numeric" placeholder="254799963583 (optional)"></div>
+          <div class="field"><label>Timezone</label><input id="env_TIMEZONE" placeholder="Africa/Nairobi" value="Africa/Nairobi"></div>
+          <div class="field"><label>Anti-Delete Mode</label><select id="env_ANTIDELETE_MODE"><option value="">Default (off)</option><option value="off">off</option><option value="chat">chat</option><option value="private">private</option></select></div>
+          <div class="field"><label>Status Mode / Presence</label><select id="env_STATUS_MODE"><option value="">Default (off)</option><option value="off">off</option><option value="typing">typing</option><option value="recording">recording</option><option value="recordtype">recordtype</option></select></div>
+          <div class="field"><label>Anti-Link Action (new groups)</label><select id="env_ANTILINK_ACTION"><option value="">Default (off)</option><option value="off">off</option><option value="delete">delete</option><option value="kick">kick</option></select></div>
+          <div class="field"><label>Auto Status View</label><select id="env_AUTOSTATUSVIEW"><option value="">Default (false)</option><option value="true">true</option><option value="false">false</option></select></div>
+          <div class="field"><label>Auto React Status</label><select id="env_AUTOREACTSTATUS"><option value="">Default (false)</option><option value="true">true</option><option value="false">false</option></select></div>
+          <div class="field"><label>Status React Emoji</label><input id="env_AUTOREACTSTATUS_EMOJI" placeholder="💙" value="💙"></div>
+          <div class="field"><label>Random Status Emoji</label><select id="env_AUTOREACTSTATUS_RANDOM"><option value="">Default (false)</option><option value="true">true</option><option value="false">false</option></select></div>
         </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><b>Deployment cost</b><b class="coin">10 coins</b></div>
+        <div class="hint" style="margin-top:6px">Coins are charged when the deployment is submitted to Heroku. If Heroku rejects the setup or the build fails, the 10 coins are automatically refunded.</div>
+        <div id="deployMessage" class="hint" style="margin-top:10px"></div>
+        <button class="btn primary full" id="deployBtn" style="margin-top:14px">Deploy to Heroku →</button>
       </div>
     </section>
 
+    <!-- APPS -->
     <section id="appsPage" class="hidden">
       <div class="section-head" style="margin-top:0"><h2 id="appsHeading">Your applications</h2><button class="btn secondary" onclick="loadApps()">↻ Refresh</button></div>
       <div id="appsList" class="mobile-list"><div class="empty">Loading applications…</div></div>
-      <div class="card table-wrap"><table><thead><tr><th>Application</th><th>Owner</th><th>Status</th><th>Repository</th><th>Actions</th></tr></thead><tbody id="appsTable"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody></table></div>
+      <div class="card table-wrap">
+        <table>
+          <thead><tr><th>Application</th><th>Owner</th><th>Status</th><th>Repository</th><th>Actions</th></tr></thead>
+          <tbody id="appsTable"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
     </section>
 
+    <!-- WALLET -->
     <section id="walletPage" class="hidden">
-      <div class="card wallet-hero"><div><div class="eyebrow">AVAILABLE BALANCE</div><div class="wallet-balance"><span id="walletCoins">0</span> <span style="font-size:15px">COINS</span></div><div class="hint">Each deployment costs 10 coins.</div></div><span class="tag">10 COINS = KSH 50 · $0.40</span></div>
+      <div class="card wallet-hero">
+        <div>
+          <div class="eyebrow">AVAILABLE BALANCE</div>
+          <div class="wallet-balance"><span id="walletCoins">0</span> <span style="font-size:15px">COINS</span></div>
+          <div class="hint">Each deployment costs 10 coins.</div>
+        </div>
+        <span class="tag">10 COINS = KSH 50 · $0.40</span>
+      </div>
       <div class="grid2">
-        <div class="card"><div class="eyebrow">KES CHECKOUT</div><h2 style="margin:8px 0">Pay in Kenyan Shillings</h2><div class="hint">Paystack checkout can show the payment methods enabled for your account, including card and supported local methods.</div><div class="field"><label>Choose coins</label><select id="kesCoins"><option value="10">10 coins — KSh 50</option><option value="20">20 coins — KSh 100</option><option value="50">50 coins — KSh 250</option><option value="100">100 coins — KSh 500</option><option value="200">200 coins — KSh 1,000</option><option value="500">500 coins — KSh 2,500</option></select></div><button class="btn primary full" onclick="buyCoins('KES')">Pay with KES →</button></div>
-        <div class="card"><div class="eyebrow">USD CARD CHECKOUT</div><h2 style="margin:8px 0">Pay in US Dollars</h2><div class="hint">USD payments are card-only. Minimum card top-up is 10 coins for $0.40. Rate: 1 coin = $0.04.</div><div class="field"><label>Choose coins</label><select id="usdCoins"><option value="10">10 coins — $0.40</option><option value="20">20 coins — $0.80</option><option value="50">50 coins — $2.00</option><option value="100">100 coins — $4.00</option><option value="200">200 coins — $8.00</option><option value="500">500 coins — $20.00</option></select></div><button class="btn primary full" onclick="buyCoins('USD')">Pay by card in USD →</button></div>
+        <div class="card">
+          <div class="eyebrow">KES CHECKOUT</div>
+          <h2 style="margin:8px 0">Pay in Kenyan Shillings</h2>
+          <div class="hint">Paystack checkout can show the payment methods enabled for your account, including card and supported local methods.</div>
+          <div class="field"><label>Choose coins</label><select id="kesCoins"><option value="10">10 coins — KSh 50</option><option value="20">20 coins — KSh 100</option><option value="50">50 coins — KSh 250</option><option value="100">100 coins — KSh 500</option><option value="200">200 coins — KSh 1,000</option><option value="500">500 coins — KSh 2,500</option></select></div>
+          <button class="btn primary full" onclick="buyCoins('KES')">Pay with KES →</button>
+        </div>
+        <div class="card">
+          <div class="eyebrow">USD CARD CHECKOUT</div>
+          <h2 style="margin:8px 0">Pay in US Dollars</h2>
+          <div class="hint">USD payments are card-only. Minimum card top-up is 10 coins for $0.40. Rate: 1 coin = $0.04.</div>
+          <div class="field"><label>Choose coins</label><select id="usdCoins"><option value="10">10 coins — $0.40</option><option value="20">20 coins — $0.80</option><option value="50">50 coins — $2.00</option><option value="100">100 coins — $4.00</option><option value="200">200 coins — $8.00</option><option value="500">500 coins — $20.00</option></select></div>
+          <button class="btn primary full" onclick="buyCoins('USD')">Pay by card in USD →</button>
+        </div>
       </div>
 
-      <!-- BINANCE PAY — COMING SOON -->
+      <!-- BINANCE PAY COMING SOON -->
       <div class="card binance-card" style="margin-top:18px">
         <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
           <div style="display:flex;gap:14px;align-items:flex-start">
@@ -288,13 +481,31 @@ button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;touch-a
       <div class="card"><div id="walletHistory" class="history-list"><div class="empty">Loading transactions…</div></div></div>
     </section>
 
+    <!-- ADMIN -->
     <section id="adminPage" class="hidden">
-      <div class="eyebrow">ADMIN CONTROL CENTER</div><div class="stats" style="margin-top:12px"><div class="stat"><small>Registered users</small><strong id="adminUsersCount">—</strong></div><div class="stat"><small>Total deployments</small><strong id="adminDeploymentsCount">—</strong></div><div class="stat"><small>Coins in wallets</small><strong id="adminCoinsCount">—</strong></div></div>
+      <div class="eyebrow">ADMIN CONTROL CENTER</div>
+      <div class="stats" style="margin-top:12px">
+        <div class="stat"><small>Registered users</small><strong id="adminUsersCount">—</strong></div>
+        <div class="stat"><small>Total deployments</small><strong id="adminDeploymentsCount">—</strong></div>
+        <div class="stat"><small>Coins in wallets</small><strong id="adminCoinsCount">—</strong></div>
+      </div>
       <div class="section-head"><h2>All users</h2><button class="btn secondary" onclick="loadAdmin()">↻ Refresh</button></div>
       <div id="adminUsersList" class="mobile-list"><div class="empty">Loading users…</div></div>
-      <div class="card table-wrap"><table><thead><tr><th>User</th><th>Email</th><th>Coins</th><th>Joined</th><th>Wallet action</th></tr></thead><tbody id="adminUsersTable"></tbody></table></div>
-      <div class="section-head"><h2>Recent Paystack payments</h2></div><div class="card table-wrap"><table><thead><tr><th>User</th><th>Reference</th><th>Coins</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody id="adminPaymentsTable"></tbody></table></div>
-      <div class="section-head"><h2>All deployments</h2></div><div id="adminDeploymentsList" class="mobile-list"></div>
+      <div class="card table-wrap">
+        <table>
+          <thead><tr><th>User</th><th>Email</th><th>Coins</th><th>Joined</th><th>Wallet action</th></tr></thead>
+          <tbody id="adminUsersTable"></tbody>
+        </table>
+      </div>
+      <div class="section-head"><h2>Recent Paystack payments</h2></div>
+      <div class="card table-wrap">
+        <table>
+          <thead><tr><th>User</th><th>Reference</th><th>Coins</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="adminPaymentsTable"></tbody>
+        </table>
+      </div>
+      <div class="section-head"><h2>All deployments</h2></div>
+      <div id="adminDeploymentsList" class="mobile-list"></div>
     </section>
   </main>
 </div>
@@ -307,66 +518,556 @@ button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;touch-a
   <a data-page="admin" class="admin-only"><b>♛</b><span>Admin</span></a>
 </nav>
 
-<a class="support-fab" id="supportFab" href="https://wa.me/254799963583?text=Hello%20Teddy%20Tech%20Support" target="_blank" rel="noopener noreferrer" aria-label="Contact Teddy Tech support on WhatsApp"><span class="support-icon">✆</span><span>WhatsApp Support</span></a>
-<div id="modalRoot" class="modal-root"></div><div id="toast" class="toast"></div>
+<a class="support-fab" id="supportFab" href="https://wa.me/254799963583?text=Hello%20Teddy%20Tech%20Support" target="_blank" rel="noopener noreferrer"><span class="support-icon">✆</span><span>WhatsApp Support</span></a>
+<div id="modalRoot" class="modal-root"></div>
+<div id="toast" class="toast"></div>
+
 <script>
-const $=id=>document.getElementById(id);let currentUser=null,selectedBot='teddy-xmd-ultra',manifestData=null,appsCache=[],buildLogAbortController=null,buildLogRetryTimer=null;
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-async function api(url,options={}){const response=await fetch(url,{credentials:'same-origin',...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...(options.headers||{})}});const type=response.headers.get('content-type')||'';let data;if(type.includes('application/json'))data=await response.json();else data=await response.text();if(!response.ok)throw new Error(typeof data==='string'?data:(data.error||`Request failed (${response.status})`));return data;}
-let pairingWebsiteUrl='https://teddyxmdpair-60b69f1c4cee.herokuapp.com/';async function loadSupportContact(){try{const cfg=await api('/api/public-config');pairingWebsiteUrl=String(cfg.pairingWebsiteUrl||'');const digits=String(cfg.supportWhatsApp||'').replace(/\D/g,'');if(digits){const url=`https://wa.me/${digits}?text=${encodeURIComponent('Hello Teddy Tech Support, I need help with the bot deployer.')}`;['supportFab','loginSupportLink'].forEach(id=>{const link=$(id);if(link)link.href=url;});}}catch(error){}}
-async function openPairingWebsite(botId){try{const catalogue=await api('/api/catalogue');const bot=catalogue.bots.find(item=>item.id===botId);const url=String(bot?.pairingUrl||'').trim();if(!url){toast('Pairing website is not configured for this bot.');return;}window.open(url,'_blank','noopener,noreferrer');}catch(error){toast(error.message||'Could not open the pairing website.');}}
+const $ = id => document.getElementById(id);
+let currentUser = null;
+let selectedBot = 'teddy-xmd-ultra';
+let manifestData = null;
+let appsCache = [];
+let buildLogAbortController = null;
+let buildLogRetryTimer = null;
+
+function esc(v){
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function api(url, options = {}){
+  const r = await fetch(url, {
+    credentials: 'same-origin',
+    ...options,
+    headers: { ...(options.body ? {'Content-Type':'application/json'} : {}), ...(options.headers || {}) }
+  });
+  const t = r.headers.get('content-type') || '';
+  let d;
+  if(t.includes('application/json')) d = await r.json();
+  else d = await r.text();
+  if(!r.ok) throw new Error(typeof d === 'string' ? d : (d.error || `Request failed (${r.status})`));
+  return d;
+}
+
+let pairingWebsiteUrl = 'https://teddyxmdpair-60b69f1c4cee.herokuapp.com/';
+async function loadSupportContact(){
+  try{
+    const cfg = await api('/api/public-config');
+    pairingWebsiteUrl = String(cfg.pairingWebsiteUrl || '');
+    const digits = String(cfg.supportWhatsApp || '').replace(/\D/g,'');
+    if(digits){
+      const url = `https://wa.me/${digits}?text=${encodeURIComponent('Hello Teddy Tech Support, I need help with the bot deployer.')}`;
+      ['supportFab','loginSupportLink'].forEach(id => { const l = $(id); if(l) l.href = url; });
+    }
+  }catch(e){}
+}
+
+async function openPairingWebsite(botId){
+  try{
+    const c = await api('/api/catalogue');
+    const bot = c.bots.find(i => i.id === botId);
+    const url = String(bot?.pairingUrl || '').trim();
+    if(!url){ toast('Pairing website is not configured for this bot.'); return; }
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }catch(e){ toast(e.message || 'Could not open the pairing website.'); }
+}
 loadSupportContact();
-function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.remove('show'),3500);}
-function setAuthMode(mode){const login=mode==='login';$('loginForm').classList.toggle('hidden',!login);$('registerForm').classList.toggle('hidden',login);$('loginTab').classList.toggle('active',login);$('registerTab').classList.toggle('active',!login);$('authError').textContent='';}
-$('loginTab').onclick=()=>setAuthMode('login');$('registerTab').onclick=()=>setAuthMode('register');
-$('loginForm').onsubmit=async e=>{e.preventDefault();$('authError').textContent='';$('loginBtn').disabled=true;$('loginBtn').innerHTML='<span class="spinner"></span> Signing in';try{await api('/api/login',{method:'POST',body:JSON.stringify({email:$('loginEmail').value,password:$('loginPassword').value})});await checkAuth();}catch(err){$('authError').textContent=err.message;}finally{$('loginBtn').disabled=false;$('loginBtn').textContent='Sign in';}};
-$('registerForm').onsubmit=async e=>{e.preventDefault();$('authError').textContent='';$('registerBtn').disabled=true;$('registerBtn').innerHTML='<span class="spinner"></span> Creating account';try{await api('/api/register',{method:'POST',body:JSON.stringify({name:$('registerName').value,email:$('registerEmail').value,password:$('registerPassword').value})});await checkAuth();}catch(err){$('authError').textContent=err.message;}finally{$('registerBtn').disabled=false;$('registerBtn').textContent='Create account';}};
-$('logoutBtn').onclick=async()=>{try{await api('/api/logout',{method:'POST'});}catch{}location.reload();};
-async function checkAuth(){try{const data=await api('/api/me');if(!data.authenticated){$('authView').classList.remove('hidden');$('appView').classList.add('hidden');return;}currentUser=data.user;showApp();}catch{$('authView').classList.remove('hidden');$('appView').classList.add('hidden');}}
+
+function toast(m){
+  $('toast').textContent = m;
+  $('toast').classList.add('show');
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => $('toast').classList.remove('show'), 3500);
+}
+
+function setAuthMode(mode){
+  const login = mode === 'login';
+  $('loginForm').classList.toggle('hidden', !login);
+  $('registerForm').classList.toggle('hidden', login);
+  $('loginTab').classList.toggle('active', login);
+  $('registerTab').classList.toggle('active', !login);
+  $('authError').textContent = '';
+}
+$('loginTab').onclick = () => setAuthMode('login');
+$('registerTab').onclick = () => setAuthMode('register');
+
+$('loginForm').onsubmit = async e => {
+  e.preventDefault();
+  $('authError').textContent = '';
+  $('loginBtn').disabled = true;
+  $('loginBtn').innerHTML = '<span class="spinner"></span> Signing in';
+  try{
+    await api('/api/login', {method:'POST', body: JSON.stringify({email:$('loginEmail').value, password:$('loginPassword').value})});
+    await checkAuth();
+  }catch(err){ $('authError').textContent = err.message; }
+  finally{ $('loginBtn').disabled = false; $('loginBtn').textContent = 'Sign in'; }
+};
+
+$('registerForm').onsubmit = async e => {
+  e.preventDefault();
+  $('authError').textContent = '';
+  $('registerBtn').disabled = true;
+  $('registerBtn').innerHTML = '<span class="spinner"></span> Creating account';
+  try{
+    await api('/api/register', {method:'POST', body: JSON.stringify({name:$('registerName').value, email:$('registerEmail').value, password:$('registerPassword').value})});
+    await checkAuth();
+  }catch(err){ $('authError').textContent = err.message; }
+  finally{ $('registerBtn').disabled = false; $('registerBtn').textContent = 'Create account'; }
+};
+
+$('logoutBtn').onclick = async () => {
+  try{ await api('/api/logout', {method:'POST'}); }catch{}
+  location.reload();
+};
+
+async function checkAuth(){
+  try{
+    const d = await api('/api/me');
+    if(!d.authenticated){
+      $('authView').classList.remove('hidden');
+      $('appView').classList.add('hidden');
+      return;
+    }
+    currentUser = d.user;
+    showApp();
+  }catch{
+    $('authView').classList.remove('hidden');
+    $('appView').classList.add('hidden');
+  }
+}
+
 function showApp(){
-  $('authView').classList.add('hidden');$('appView').classList.remove('hidden');
-  // ADMIN VISIBILITY — only admin sees admin. Normal users: admin links are REMOVED completely, not just hidden.
-  if(currentUser.role==='admin'){
+  $('authView').classList.add('hidden');
+  $('appView').classList.remove('hidden');
+  if(currentUser.role === 'admin'){
     $('appView').classList.add('is-admin');
-  } else {
+  }else{
     $('appView').classList.remove('is-admin');
-    document.querySelectorAll('.admin-only').forEach(el=>el.remove());
-    // Safety: never show admin page to non-admin, even if called directly
+    document.querySelectorAll('.admin-only').forEach(el => el.remove());
     if($('adminPage')) $('adminPage').classList.add('hidden');
   }
-  $('headerUser').textContent=currentUser.name;$('headerRole').textContent=currentUser.role.toUpperCase();$('sideEmail').textContent=currentUser.email;updateCoins(currentUser.coins);loadApps();loadWallet();if(currentUser.role==='admin')loadAdmin();selectBot(selectedBot);const params=new URLSearchParams(location.search);if(params.has('payment')){const p=params.get('payment');toast(p==='success'?'Payment verified. Coins added to your wallet.':p==='pending'?'Payment is still processing. Refresh your wallet shortly.':'Payment was not completed.');history.replaceState({},'',location.pathname);loadWallet();}
+  $('headerUser').textContent = currentUser.name;
+  $('headerRole').textContent = currentUser.role.toUpperCase();
+  $('sideEmail').textContent = currentUser.email;
+  updateCoins(currentUser.coins);
+  loadApps();
+  loadWallet();
+  if(currentUser.role === 'admin') loadAdmin();
+  selectBot(selectedBot);
+  const p = new URLSearchParams(location.search);
+  if(p.has('payment')){
+    const v = p.get('payment');
+    toast(v === 'success' ? 'Payment verified. Coins added to your wallet.' : v === 'pending' ? 'Payment is still processing. Refresh your wallet shortly.' : 'Payment was not completed.');
+    history.replaceState({}, '', location.pathname);
+    loadWallet();
+  }
 }
-function updateCoins(n){const value=Number(n||0);$('headerCoins').textContent=`${value} coins`;$('overviewCoins').textContent=value;$('walletCoins').textContent=value;currentUser.coins=value;}
-const pages={overview:['Overview','Your bot deployments and Teddy Coin wallet.'],deploy:['Deploy a bot','Choose a bot repository and deploy it to Heroku.'],apps:['My applications','Only your own deployed bots appear here.'],wallet:['Teddy Coin wallet','Top up your wallet securely through Paystack.'],admin:['Admin panel','Manage users, wallets, payments and every deployment.']};
-document.querySelectorAll('.nav[data-page]').forEach(n=>n.onclick=()=>goPage(n.dataset.page));
-document.querySelectorAll('.bottom-nav a[data-page]').forEach(n=>n.onclick=()=>goPage(n.dataset.page));
-function goPage(page){if(page==='admin'&&(!currentUser||currentUser.role!=='admin')){toast('Access denied.');return;}Object.keys(pages).forEach(p=>$(`${p}Page`).classList.toggle('hidden',p!==page));document.querySelectorAll('.nav[data-page]').forEach(n=>n.classList.toggle('active',n.dataset.page===page));document.querySelectorAll('.bottom-nav a[data-page]').forEach(n=>n.classList.toggle('active',n.dataset.page===page));$('pageTitle').textContent=pages[page][0];$('pageSubtitle').textContent=pages[page][1];window.scrollTo({top:0,behavior:'smooth'});if(page==='apps')loadApps();if(page==='wallet')loadWallet();if(page==='admin')loadAdmin();}
-async function selectBot(botId){selectedBot=botId;$('botGrid').querySelectorAll('.bot-option').forEach(b=>b.classList.toggle('active',b.dataset.bot===botId));manifestData=null;$('manifestInfo').textContent='Loading the built-in repository and app.json…';try{const catalogue=await api('/api/catalogue');const bot=catalogue.bots.find(item=>item.id===botId);if(!bot)throw new Error('This bot is not configured.');manifestData=await api(`/api/manifest?repoUrl=${encodeURIComponent(bot.repository)}&branch=${encodeURIComponent(bot.branch||'main')}`);const sessionSpec=(manifestData.manifest.env||{}).SESSION_ID||{};$('sessionId').required=true;$('sessionId').placeholder=sessionSpec.description||'Paste the SESSION_ID for this bot';$('manifestInfo').innerHTML=`<b>${esc(bot.name)}</b> · ${esc(manifestData.repository)} · branch ${esc(manifestData.branch)}<br>${esc(manifestData.manifest.description||'Repository loaded automatically.')}`;}catch(err){manifestData=null;$('manifestInfo').textContent=`Could not load this bot repository: ${err.message}`;}}
-$('botGrid').querySelectorAll('.bot-option').forEach(button=>button.onclick=()=>selectBot(button.dataset.bot));document.querySelectorAll('[data-get-session]').forEach(button=>button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openPairingWebsite(button.dataset.getSession);}));
-async function suggestAppName(){const button=$('suggestNameBtn');button.disabled=true;button.innerHTML='<span class="spinner"></span> Finding name';$('nameAvailability').textContent='Checking available names on Heroku…';try{const prefix=$('appPrefix').value.trim()||'teddyxhost';const result=await api(`/api/app-name/suggest?prefix=${encodeURIComponent(prefix)}`);$('appName').value=result.name;$('nameAvailability').innerHTML=`<span class="positive">✓ ${esc(result.name)} is not listed in your connected Heroku account. You can edit it; Heroku confirms global availability during deployment.</span>`;toast('Available Heroku app name suggested.');}catch(err){$('nameAvailability').textContent=err.message;toast(err.message);}finally{button.disabled=false;button.textContent='Suggest available name';}}
-async function checkCustomAppName(){const name=$('appName').value.trim().toLowerCase();if(!name)return toast('Enter a custom app name first.');const button=$('checkNameBtn');button.disabled=true;button.textContent='Checking…';$('nameAvailability').textContent='Checking this name on Heroku…';try{const result=await api(`/api/app-name/check?name=${encodeURIComponent(name)}`);$('nameAvailability').innerHTML=result.available?`<span class="positive">✓ ${esc(result.message)}</span>`:`<span class="error">✕ ${esc(result.message)}</span>`;}catch(err){$('nameAvailability').textContent=err.message;}finally{button.disabled=false;button.textContent='Check custom name';}}
-$('suggestNameBtn').onclick=suggestAppName;$('checkNameBtn').onclick=checkCustomAppName;
-$('deployBtn').onclick=deployApp;async function deployApp(){let name=$('appName').value.trim().toLowerCase();if(!name){await suggestAppName();name=$('appName').value.trim().toLowerCase();if(!name)return;}if(!/^[a-z][a-z0-9-]{1,28}[a-z0-9]$/.test(name))return toast('Enter a valid Heroku app name.');if(!manifestData)return toast('The selected bot repository has not loaded yet. Please wait or select the bot again.');const sessionId=$('sessionId').value.trim();const sessionSpec=(manifestData.manifest.env||{}).SESSION_ID||{};if(!sessionId)return toast('Enter the WhatsApp SESSION_ID for this bot. Use Get SESSION_ID if you do not have one yet.');const env={SESSION_ID:sessionId};$('deployBtn').disabled=true;$('deployBtn').innerHTML='<span class="spinner"></span> Starting deployment';$('deployMessage').textContent='Checking wallet and submitting to Heroku…';try{const data=await api('/api/deploy',{method:'POST',body:JSON.stringify({name,botId:selectedBot,env})});updateCoins(data.balance);$('deployMessage').textContent=`Heroku accepted the deployment. ${data.coinsCharged} coins charged.`;$('sessionId').value='';toast('Deployment started. Opening build logs…');if(data.setup?.id)watchSetup(data.setup.id);loadApps();loadWallet();}catch(err){$('deployMessage').textContent=err.message;toast(err.message);if(err.message.toLowerCase().includes('coins'))goPage('wallet');}finally{$('deployBtn').disabled=false;$('deployBtn').textContent='Deploy to Heroku →';}}
-function statusHTML(app){const status=String(app.status||'unknown').toLowerCase();const label=({running:'Running',offline:'Offline',failed:'Failed',building:'Building',deploying:'Deploying',starting:'Starting',maintenance:'Maintenance','scaled-down':'Scaled down',unknown:'Unknown'})[status]||status;return `<span class="status ${esc(status)}"><i></i>${esc(label)}</span>`;}
-function appActions(app){const name=esc(app.name);return `<div class="actions">${app.build_id?`<button class="mini" onclick="watchBuild('${esc(app.name)}','${esc(app.build_id)}')">Build logs</button>`:app.setup_id?`<button class="mini" onclick="watchSetup('${esc(app.setup_id)}')">Build logs</button>`:''}<button class="mini" onclick="viewLogs('${name}')">Runtime logs</button><button class="mini" onclick="editEnvironment('${name}')">Environment variables</button><button class="mini" onclick="restartApp('${name}')">Restart</button><button class="mini danger" onclick="deleteApp('${name}')">Delete</button></div>`;}
-function appCard(app){const url=app.web_url?`<a class="muted-link" href="${esc(app.web_url)}" target="_blank" rel="noopener">Open app ↗</a>`:'<span class="muted">No web URL</span>';return `<article class="app-card"><div class="app-card-head"><div><div class="app-name">${esc(app.name)}</div><div class="sub">${esc(app.bot_name||'Bot application')} · ${url}</div>${app.owner_email?`<div class="sub">Owner: ${esc(app.owner_email)}</div>`:''}</div>${statusHTML(app)}</div><div class="app-card-info"><div><small>Region</small><strong>${esc(app.region||'—')}</strong></div><div><small>Running dynos</small><strong>${Number(app.running_dynos||0)}</strong></div><div><small>Desired dynos</small><strong>${Number(app.desired_web_dynos||0)}</strong></div><div><small>Repository</small><strong>${esc(app.repo_url||'—')}</strong></div></div>${appActions(app)}</article>`;}
-function appRow(app){return `<tr><td><b>${esc(app.name)}</b><div class="sub">${esc(app.bot_name||'Bot')}</div></td><td>${esc(app.owner_email||currentUser.email)}</td><td>${statusHTML(app)}</td><td><a class="muted-link" href="${esc(app.repo_url||'#')}" target="_blank" rel="noopener">${esc(app.repo_url||'—')}</a></td><td>${appActions(app)}</td></tr>`;}
-async function loadApps(){try{const apps=await api('/api/apps');appsCache=apps;$('statApps').textContent=apps.length;$('statRunning').textContent=apps.filter(a=>a.status==='running').length;$('statOffline').textContent=apps.filter(a=>['offline','failed','scaled-down'].includes(a.status)).length;$('overviewApps').innerHTML=apps.map(appCard).join('')||'<div class="empty">No bots deployed yet. Choose Deploy a bot to get started.</div>';$('appsList').innerHTML=apps.map(appCard).join('')||'<div class="empty">No applications found.</div>';$('appsTable').innerHTML=apps.map(appRow).join('')||'<tr><td colspan="5" class="empty">No applications found.</td></tr>';$('appsHeading').textContent=currentUser.role==='admin'?'All Heroku applications':'Your applications';}catch(err){toast(err.message);$('overviewApps').innerHTML=`<div class="empty">${esc(err.message)}</div>`;}}
-async function loadWallet(){try{const data=await api('/api/wallet');updateCoins(data.coins);$('walletHistory').innerHTML=(data.transactions||[]).map(t=>`<div class="history-row"><div><b>${esc(t.description||t.type)}</b><div class="sub">${new Date(t.createdAt).toLocaleString()}</div></div><div style="text-align:right"><b class="${t.delta>=0?'positive':'negative'}">${t.delta>0?'+':''}${t.delta} coins</b><div class="sub">Balance: ${t.balanceAfter}</div></div></div>`).join('')||'<div class="empty">No wallet transactions yet.</div>';}catch(err){toast(err.message);}}
-async function buyCoins(currency){const coins=Number($(currency==='KES'?'kesCoins':'usdCoins').value);try{const data=await api('/api/payments/initialize',{method:'POST',body:JSON.stringify({coins,currency})});location.href=data.authorizationUrl;}catch(err){toast(err.message);}}
-async function buyBinancePay(){toast('Binance Pay is coming soon. Please use KES or USD card for now.');return;}
-async function loadAdmin(){if(!currentUser||currentUser.role!=='admin')return;try{const [summary,users,payments,deployments]=await Promise.all([api('/api/admin/summary'),api('/api/admin/users'),api('/api/admin/payments'),api('/api/deployments')]);$('adminUsersCount').textContent=summary.users;$('adminDeploymentsCount').textContent=summary.deployments;$('adminCoinsCount').textContent=summary.coinsInWallets;const normalUsers=(users||[]).filter(u=>u.role!=='admin');$('adminUsersTable').innerHTML=normalUsers.map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.email)}</td><td><b class="coin">${u.coins}</b></td><td>${new Date(u.createdAt).toLocaleDateString()}</td><td><button class="mini" onclick="adjustCoins('${esc(u._id)}','${esc(u.email)}')">Adjust coins</button></td></tr>`).join('');$('adminUsersList').innerHTML=normalUsers.map(u=>`<article class="app-card"><div class="app-card-head"><div><b>${esc(u.name)}</b><div class="sub">${esc(u.email)}</div></div><b class="coin">${u.coins} coins</b></div><div class="actions" style="margin-top:12px"><button class="mini" onclick="adjustCoins('${esc(u._id)}','${esc(u.email)}')">Adjust wallet</button></div></article>`).join('');$('adminPaymentsTable').innerHTML=payments.map(p=>`<tr><td>${esc(p.user?.email||'—')}</td><td>${esc(p.reference)}</td><td>${p.coins}</td><td>${(p.amountMinor/100).toFixed(2)} ${esc(p.currency)}</td><td>${esc(p.status)}</td><td>${new Date(p.createdAt).toLocaleDateString()}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">No payments yet.</td></tr>';$('adminDeploymentsList').innerHTML=deployments.map(d=>`<article class="app-card"><div class="app-card-head"><div><b>${esc(d.appName)}</b><div class="sub">${esc(d.botName)} · ${esc(d.user?.email||'')}</div></div><span class="tag">${esc(d.status)}</span></div><div class="sub">${esc(d.repoUrl)}</div>${d.buildId?`<div class="actions" style="margin-top:10px"><button class="mini" onclick="watchBuild('${esc(d.appName)}','${esc(d.buildId)}')">Build logs</button></div>`:d.setupId?`<div class="actions" style="margin-top:10px"><button class="mini" onclick="watchSetup('${esc(d.setupId)}')">Build logs</button></div>`:''}</article>`).join('')||'<div class="empty">No deployments yet.</div>';}catch(err){toast(err.message);}}
-async function adjustCoins(id,email){const raw=prompt(`Adjust Teddy Coins for ${email}. Enter a positive number to add or negative number to remove:`);if(raw===null)return;const delta=Number(raw);if(!Number.isInteger(delta)||delta===0)return toast('Enter a non-zero whole number.');const reason=prompt('Reason for this wallet adjustment:','Admin wallet adjustment')||'Admin wallet adjustment';try{await api(`/api/admin/users/${encodeURIComponent(id)}/coins`,{method:'POST',body:JSON.stringify({delta,reason})});toast('Wallet updated.');loadAdmin();}catch(err){toast(err.message);}}
-async function editEnvironment(name){modal(`${name} · Environment variables`,'<p class="hint">Loading editable application variables…</p>');try{const data=await api(`/api/apps/${encodeURIComponent(name)}`);const vars=data.configVars||{};const safe=Object.fromEntries(Object.entries(vars).filter(([k])=>!['HEROKU_API_KEY','PAYSTACK_SECRET_KEY','MONGODB_URI','SESSION_SECRET'].includes(k)));$('modalContent').innerHTML=`<p class="hint">Edit this app's own environment variables. Teddy Tech platform credentials are protected and never shown here.</p><textarea id="envEditor" rows="12" spellcheck="false" style="width:100%;font-family:monospace">${esc(JSON.stringify(safe,null,2))}</textarea><p class="hint">Use a JSON object with KEY: VALUE pairs. Set a value to null to remove it. Do not include platform credentials.</p><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveEnvironment('${esc(name)}')">Save variables</button></div>`;}catch(err){$('modalContent').innerHTML=`<p class="error">${esc(err.message)}</p><div class="modal-actions"><button class="btn primary" onclick="closeModal()">Close</button></div>`;}}
-async function saveEnvironment(name){let vars;try{vars=JSON.parse($('envEditor').value);}catch(e){return toast('Invalid JSON. Please check the format.');}if(!vars||typeof vars!=='object'||Array.isArray(vars))return toast('Enter a JSON object.');try{const result=await api(`/api/apps/${encodeURIComponent(name)}/config-vars`,{method:'PUT',body:JSON.stringify({vars})});toast(result.message||'Environment variables saved.');closeModal();}catch(err){toast(err.message);}}
-async function restartApp(name){if(!confirm(`Restart ${name}?`))return;try{const data=await api(`/api/apps/${encodeURIComponent(name)}/restart`,{method:'POST',body:'{}'});toast(data.message||'Restart requested');setTimeout(loadApps,2500);}catch(err){toast(err.message);}}
-async function deleteApp(name){if(!confirm(`Permanently delete ${name} from Heroku?`))return;const typed=prompt(`Type ${name} to confirm deletion:`);if(typed!==name)return toast('Deletion cancelled.');try{await api(`/api/apps/${encodeURIComponent(name)}`,{method:'DELETE',body:JSON.stringify({confirm:typed})});toast('Application deleted.');loadApps();}catch(err){toast(err.message);}}
-async function watchBuild(name,buildId){if(buildLogAbortController)buildLogAbortController.abort();if(buildLogRetryTimer)clearTimeout(buildLogRetryTimer);modal(`${name} · Build logs`,`<p class="hint" id="buildLogState">Connecting to Heroku…</p><pre class="logbox" id="buildLogOutput">Waiting for build output…</pre><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Close</button><button class="btn primary" onclick="watchBuild('${esc(name)}','${esc(buildId)}')">Refresh logs</button></div>`);streamAppBuildLogs(name,buildId);}
-async function streamAppBuildLogs(name,buildId){const output=$('buildLogOutput'),state=$('buildLogState');if(!output||!state)return;buildLogAbortController=new AbortController();const controller=buildLogAbortController;try{const response=await fetch(`/api/apps/${encodeURIComponent(name)}/build-logs/${encodeURIComponent(buildId)}`,{credentials:'same-origin',headers:{Accept:'text/plain'},signal:controller.signal});if(response.status===202){state.textContent='Heroku is preparing build output. Checking again shortly…';output.textContent=await response.text();buildLogRetryTimer=setTimeout(()=>streamAppBuildLogs(name,buildId),4000);return;}if(!response.ok)throw new Error(await response.text());state.textContent='Live build logs · connected to Heroku';output.textContent='';if(!response.body){output.textContent=await response.text();return;}const reader=response.body.getReader(),decoder=new TextDecoder();while(true){const {done,value}=await reader.read();if(done)break;output.textContent+=decoder.decode(value,{stream:true}).replace(/\u0000/g,'');output.scrollTop=output.scrollHeight;}state.textContent='Build log stream finished.';}catch(err){if(err.name!=='AbortError'&&$('buildLogState'))$('buildLogState').textContent='Could not load build logs: '+err.message;}}
-async function viewLogs(name){modal(`${name} · Runtime logs`,'<p class="muted">Fetching Heroku logs…</p>');try{const response=await fetch(`/api/apps/${encodeURIComponent(name)}/logs`,{credentials:'same-origin'});const text=await response.text();if(!response.ok)throw new Error(text);$('modalContent').innerHTML=`<pre class="logbox">${esc(text||'No logs returned.')}</pre><div class="modal-actions"><button class="btn secondary" onclick="viewLogs('${esc(name)}')">Refresh</button><button class="btn primary" onclick="closeModal()">Close</button></div>`;}catch(err){$('modalContent').innerHTML=`<p class="error">${esc(err.message)}</p><div class="modal-actions"><button class="btn primary" onclick="closeModal()">Close</button></div>`;}}
-async function watchSetup(id){if(buildLogAbortController)buildLogAbortController.abort();if(buildLogRetryTimer)clearTimeout(buildLogRetryTimer);modal('Deployment status',`<div id="setupStatus">Checking Heroku…</div><h3>Build logs</h3><p class="hint" id="buildLogState">Connecting to Heroku…</p><pre class="logbox" id="buildLogOutput">Waiting for build output…</pre><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Close</button><button class="btn primary" onclick="watchSetup('${esc(id)}')">Refresh status and logs</button></div>`);try{const data=await api(`/api/setups/${encodeURIComponent(id)}`);const s=data.setup,b=data.setup.build||{};$('setupStatus').innerHTML=`<p><b>App:</b> ${esc(s.app?.name||'Preparing app')}</p><p><b>Setup:</b> ${esc(s.status||'pending')}</p><p><b>Build:</b> ${esc(b.status||'waiting')}</p>${s.failure_message?`<p class="error">${esc(s.failure_message)}</p>`:''}${data.deployment?.refunded?'<p class="positive"><b>10 coins refunded to your wallet.</b></p>':''}`;streamBuildLogs(id);}catch(err){$('setupStatus').textContent=err.message;}}
-async function streamBuildLogs(id){const output=$('buildLogOutput'),state=$('buildLogState');if(!output||!state)return;buildLogAbortController=new AbortController();const controller=buildLogAbortController;try{const response=await fetch(`/api/setups/${encodeURIComponent(id)}/build-logs`,{credentials:'same-origin',headers:{Accept:'text/plain'},signal:controller.signal});if(response.status===202){const text=await response.text();state.textContent='Heroku is preparing the build. Checking again shortly…';output.textContent=text;buildLogRetryTimer=setTimeout(()=>streamBuildLogs(id),4000);return;}if(!response.ok)throw new Error(await response.text());state.textContent='Live build logs · connected to Heroku';output.textContent='';if(!response.body){output.textContent=await response.text();return;}const reader=response.body.getReader(),decoder=new TextDecoder();while(true){const {done,value}=await reader.read();if(done)break;output.textContent+=decoder.decode(value,{stream:true}).replace(/\u0000/g,'');output.scrollTop=output.scrollHeight;}state.textContent='Build log stream finished.';}catch(err){if(err.name!=='AbortError'&&$('buildLogState'))$('buildLogState').textContent='Could not load build logs: '+err.message;}}
-function modal(title,content){$('modalRoot').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal"><h2>${esc(title)}</h2><div id="modalContent">${content}</div></div></div>`;}function closeModal(){if(buildLogAbortController)buildLogAbortController.abort();if(buildLogRetryTimer)clearTimeout(buildLogRetryTimer);$('modalRoot').innerHTML='';}
+
+function updateCoins(n){
+  const v = Number(n || 0);
+  $('headerCoins').textContent = `${v} coins`;
+  $('overviewCoins').textContent = v;
+  $('walletCoins').textContent = v;
+  currentUser.coins = v;
+}
+
+const pages = {
+  overview: ['Overview','Your bot deployments and Teddy Coin wallet.'],
+  deploy: ['Deploy a bot','Choose a bot repository and deploy it to Heroku.'],
+  apps: ['My applications','Only your own deployed bots appear here.'],
+  wallet: ['Teddy Coin wallet','Top up your wallet securely through Paystack.'],
+  admin: ['Admin panel','Manage users, wallets, payments and every deployment.']
+};
+
+document.querySelectorAll('.nav[data-page]').forEach(n => n.onclick = () => goPage(n.dataset.page));
+document.querySelectorAll('.bottom-nav a[data-page]').forEach(n => n.onclick = () => goPage(n.dataset.page));
+
+function goPage(page){
+  if(page === 'admin' && (!currentUser || currentUser.role !== 'admin')){ toast('Access denied.'); return; }
+  Object.keys(pages).forEach(p => $(`${p}Page`).classList.toggle('hidden', p !== page));
+  document.querySelectorAll('.nav[data-page]').forEach(n => n.classList.toggle('active', n.dataset.page === page));
+  document.querySelectorAll('.bottom-nav a[data-page]').forEach(n => n.classList.toggle('active', n.dataset.page === page));
+  $('pageTitle').textContent = pages[page][0];
+  $('pageSubtitle').textContent = pages[page][1];
+  window.scrollTo({top:0, behavior:'smooth'});
+  if(page === 'apps') loadApps();
+  if(page === 'wallet') loadWallet();
+  if(page === 'admin') loadAdmin();
+}
+
+async function selectBot(botId){
+  selectedBot = botId;
+  $('botGrid').querySelectorAll('.bot-option').forEach(b => b.classList.toggle('active', b.dataset.bot === botId));
+  manifestData = null;
+  $('manifestInfo').textContent = 'Loading the built-in repository and app.json…';
+  try{
+    const c = await api('/api/catalogue');
+    const bot = c.bots.find(i => i.id === botId);
+    if(!bot) throw new Error('This bot is not configured.');
+    manifestData = await api(`/api/manifest?repoUrl=${encodeURIComponent(bot.repository)}&branch=${encodeURIComponent(bot.branch || 'main')}`);
+    $('sessionId').placeholder = (manifestData.manifest.env?.SESSION_ID?.description || 'Paste the SESSION_ID for this bot');
+    $('manifestInfo').innerHTML = `<b>${esc(bot.name)}</b> · ${esc(manifestData.repository)} · branch ${esc(manifestData.branch)}<br>${esc(manifestData.manifest.description || 'Repository loaded automatically.')}`;
+  }catch(e){
+    manifestData = null;
+    $('manifestInfo').textContent = `Could not load this bot repository: ${e.message}`;
+  }
+}
+
+$('botGrid').querySelectorAll('.bot-option').forEach(b => b.onclick = () => selectBot(b.dataset.bot));
+document.querySelectorAll('[data-get-session]').forEach(b => b.addEventListener('click', e => {
+  e.preventDefault(); e.stopPropagation();
+  openPairingWebsite(b.dataset.getSession);
+}));
+
+async function suggestAppName(){
+  const btn = $('suggestNameBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Finding name';
+  $('nameAvailability').textContent = 'Checking available names on Heroku…';
+  try{
+    const prefix = $('appPrefix').value.trim() || 'teddyxhost';
+    const r = await api(`/api/app-name/suggest?prefix=${encodeURIComponent(prefix)}`);
+    $('appName').value = r.name;
+    $('nameAvailability').innerHTML = `<span class="positive">✓ ${esc(r.name)} is not listed in your connected Heroku account.</span>`;
+    toast('Available Heroku app name suggested.');
+  }catch(e){ $('nameAvailability').textContent = e.message; toast(e.message); }
+  finally{ btn.disabled = false; btn.textContent = 'Suggest available name'; }
+}
+
+async function checkCustomAppName(){
+  const name = $('appName').value.trim().toLowerCase();
+  if(!name) return toast('Enter a custom app name first.');
+  const btn = $('checkNameBtn');
+  btn.disabled = true; btn.textContent = 'Checking…';
+  $('nameAvailability').textContent = 'Checking this name on Heroku…';
+  try{
+    const r = await api(`/api/app-name/check?name=${encodeURIComponent(name)}`);
+    $('nameAvailability').innerHTML = r.available ? `<span class="positive">✓ ${esc(r.message)}</span>` : `<span class="error">✕ ${esc(r.message)}</span>`;
+  }catch(e){ $('nameAvailability').textContent = e.message; }
+  finally{ btn.disabled = false; btn.textContent = 'Check custom name'; }
+}
+$('suggestNameBtn').onclick = suggestAppName;
+$('checkNameBtn').onclick = checkCustomAppName;
+
+$('deployBtn').onclick = deployApp;
+
+async function deployApp(){
+  let name = $('appName').value.trim().toLowerCase();
+  if(!name){
+    await suggestAppName();
+    name = $('appName').value.trim().toLowerCase();
+    if(!name) return;
+  }
+  if(!/^[a-z][a-z0-9-]{1,28}[a-z0-9]$/.test(name)) return toast('Enter a valid Heroku app name.');
+  if(!manifestData) return toast('The selected bot repository has not loaded yet. Please wait or select the bot again.');
+  const sessionId = $('sessionId').value.trim();
+  if(!sessionId) return toast('Enter the WhatsApp SESSION_ID for this bot. Use Get SESSION_ID if you do not have one yet.');
+
+  const env = {
+    SESSION_ID: sessionId,
+    BOT_MODE: $('env_BOT_MODE').value,
+    PREFIX: $('env_PREFIX').value.trim(),
+    OWNER_NUMBER: $('env_OWNER_NUMBER').value.trim(),
+    TIMEZONE: $('env_TIMEZONE').value.trim(),
+    ANTIDELETE_MODE: $('env_ANTIDELETE_MODE').value,
+    STATUS_MODE: $('env_STATUS_MODE').value,
+    ANTILINK_ACTION: $('env_ANTILINK_ACTION').value,
+    AUTOSTATUSVIEW: $('env_AUTOSTATUSVIEW').value,
+    AUTOREACTSTATUS: $('env_AUTOREACTSTATUS').value,
+    AUTOREACTSTATUS_EMOJI: $('env_AUTOREACTSTATUS_EMOJI').value.trim(),
+    AUTOREACTSTATUS_RANDOM: $('env_AUTOREACTSTATUS_RANDOM').value
+  };
+  for(const k of Object.keys(env)) if(!String(env[k] || '').trim()) delete env[k];
+  env.SESSION_ID = sessionId;
+
+  $('deployBtn').disabled = true;
+  $('deployBtn').innerHTML = '<span class="spinner"></span> Starting deployment';
+  $('deployMessage').textContent = 'Checking wallet and submitting to Heroku…';
+  try{
+    const data = await api('/api/deploy', {method:'POST', body: JSON.stringify({name, botId:selectedBot, env})});
+    updateCoins(data.balance);
+    $('deployMessage').textContent = `Heroku accepted the deployment. ${data.coinsCharged} coins charged.`;
+    $('sessionId').value = '';
+    toast('Deployment started. Opening build logs…');
+    if(data.setup?.id) watchSetup(data.setup.id);
+    loadApps();
+    loadWallet();
+  }catch(e){
+    $('deployMessage').textContent = e.message;
+    toast(e.message);
+    if(e.message.toLowerCase().includes('coins')) goPage('wallet');
+  }finally{
+    $('deployBtn').disabled = false;
+    $('deployBtn').textContent = 'Deploy to Heroku →';
+  }
+}
+
+function statusHTML(app){
+  const s = String(app.status || 'unknown').toLowerCase();
+  const label = ({running:'Running',offline:'Offline',failed:'Failed',building:'Building',deploying:'Deploying',starting:'Starting',maintenance:'Maintenance','scaled-down':'Scaled down',unknown:'Unknown'})[s] || s;
+  return `<span class="status ${esc(s)}"><i></i>${esc(label)}</span>`;
+}
+
+function appActions(app){
+  const n = esc(app.name);
+  return `<div class="actions">
+    ${app.build_id ? `<button class="mini" onclick="watchBuild('${esc(app.name)}','${esc(app.build_id)}')">Build logs</button>` : app.setup_id ? `<button class="mini" onclick="watchSetup('${esc(app.setup_id)}')">Build logs</button>` : ''}
+    <button class="mini" onclick="viewLogs('${n}')">Runtime logs</button>
+    <button class="mini" onclick="editEnvironment('${n}')">Environment variables</button>
+    <button class="mini" onclick="restartApp('${n}')">Restart</button>
+    <button class="mini danger" onclick="deleteApp('${n}')">Delete</button>
+  </div>`;
+}
+
+function appCard(app){
+  const url = app.web_url ? `<a class="muted-link" href="${esc(app.web_url)}" target="_blank" rel="noopener">Open app ↗</a>` : '<span class="muted">No web URL</span>';
+  return `<article class="app-card">
+    <div class="app-card-head">
+      <div>
+        <div class="app-name">${esc(app.name)}</div>
+        <div class="sub">${esc(app.bot_name || 'Bot application')} · ${url}</div>
+        ${app.owner_email ? `<div class="sub">Owner: ${esc(app.owner_email)}</div>` : ''}
+      </div>
+      ${statusHTML(app)}
+    </div>
+    <div class="app-card-info">
+      <div><small>Region</small><strong>${esc(app.region || '—')}</strong></div>
+      <div><small>Running dynos</small><strong>${Number(app.running_dynos || 0)}</strong></div>
+      <div><small>Desired dynos</small><strong>${Number(app.desired_web_dynos || 0)}</strong></div>
+      <div><small>Repository</small><strong>${esc(app.repo_url || '—')}</strong></div>
+    </div>
+    ${appActions(app)}
+  </article>`;
+}
+
+function appRow(app){
+  return `<tr>
+    <td><b>${esc(app.name)}</b><div class="sub">${esc(app.bot_name || 'Bot')}</div></td>
+    <td>${esc(app.owner_email || currentUser.email)}</td>
+    <td>${statusHTML(app)}</td>
+    <td><a class="muted-link" href="${esc(app.repo_url || '#')}" target="_blank" rel="noopener">${esc(app.repo_url || '—')}</a></td>
+    <td>${appActions(app)}</td>
+  </tr>`;
+}
+
+async function loadApps(){
+  try{
+    const apps = await api('/api/apps');
+    appsCache = apps;
+    $('statApps').textContent = apps.length;
+    $('statRunning').textContent = apps.filter(a => a.status === 'running').length;
+    $('statOffline').textContent = apps.filter(a => ['offline','failed','scaled-down'].includes(a.status)).length;
+    $('overviewApps').innerHTML = apps.map(appCard).join('') || '<div class="empty">No bots deployed yet. Choose Deploy a bot to get started.</div>';
+    $('appsList').innerHTML = apps.map(appCard).join('') || '<div class="empty">No applications found.</div>';
+    $('appsTable').innerHTML = apps.map(appRow).join('') || '<tr><td colspan="5" class="empty">No applications found.</td></tr>';
+    $('appsHeading').textContent = currentUser.role === 'admin' ? 'All Heroku applications' : 'Your applications';
+  }catch(e){
+    toast(e.message);
+    $('overviewApps').innerHTML = `<div class="empty">${esc(e.message)}</div>`;
+  }
+}
+
+async function loadWallet(){
+  try{
+    const d = await api('/api/wallet');
+    updateCoins(d.coins);
+    $('walletHistory').innerHTML = (d.transactions || []).map(t => `<div class="history-row"><div><b>${esc(t.description || t.type)}</b><div class="sub">${new Date(t.createdAt).toLocaleString()}</div></div><div style="text-align:right"><b class="${t.delta >= 0 ? 'positive' : 'negative'}">${t.delta > 0 ? '+' : ''}${t.delta} coins</b><div class="sub">Balance: ${t.balanceAfter}</div></div></div>`).join('') || '<div class="empty">No wallet transactions yet.</div>';
+  }catch(e){ toast(e.message); }
+}
+
+async function buyCoins(currency){
+  const coins = Number($(currency === 'KES' ? 'kesCoins' : 'usdCoins').value);
+  try{
+    const d = await api('/api/payments/initialize', {method:'POST', body: JSON.stringify({coins, currency})});
+    location.href = d.authorizationUrl;
+  }catch(e){ toast(e.message); }
+}
+
+async function buyBinancePay(){
+  toast('Binance Pay is coming soon. Please use KES or USD card for now.');
+  return;
+}
+
+async function loadAdmin(){
+  if(!currentUser || currentUser.role !== 'admin') return;
+  try{
+    const [summary, users, payments, deployments] = await Promise.all([
+      api('/api/admin/summary'),
+      api('/api/admin/users'),
+      api('/api/admin/payments'),
+      api('/api/deployments')
+    ]);
+    $('adminUsersCount').textContent = summary.users;
+    $('adminDeploymentsCount').textContent = summary.deployments;
+    $('adminCoinsCount').textContent = summary.coinsInWallets;
+    const normalUsers = (users || []).filter(u => u.role !== 'admin');
+    $('adminUsersTable').innerHTML = normalUsers.map(u => `<tr><td>${esc(u.name)}</td><td>${esc(u.email)}</td><td><b class="coin">${u.coins}</b></td><td>${new Date(u.createdAt).toLocaleDateString()}</td><td><button class="mini" onclick="adjustCoins('${esc(u._id)}','${esc(u.email)}')">Adjust coins</button></td></tr>`).join('');
+    $('adminUsersList').innerHTML = normalUsers.map(u => `<article class="app-card"><div class="app-card-head"><div><b>${esc(u.name)}</b><div class="sub">${esc(u.email)}</div></div><b class="coin">${u.coins} coins</b></div><div class="actions" style="margin-top:12px"><button class="mini" onclick="adjustCoins('${esc(u._id)}','${esc(u.email)}')">Adjust wallet</button></div></article>`).join('');
+    $('adminPaymentsTable').innerHTML = payments.map(p => `<tr><td>${esc(p.user?.email || '—')}</td><td>${esc(p.reference)}</td><td>${p.coins}</td><td>${(p.amountMinor/100).toFixed(2)} ${esc(p.currency)}</td><td>${esc(p.status)}</td><td>${new Date(p.createdAt).toLocaleDateString()}</td></tr>`).join('') || '<tr><td colspan="6" class="empty">No payments yet.</td></tr>';
+    $('adminDeploymentsList').innerHTML = deployments.map(d => `<article class="app-card"><div class="app-card-head"><div><b>${esc(d.appName)}</b><div class="sub">${esc(d.botName)} · ${esc(d.user?.email || '')}</div></div><span class="tag">${esc(d.status)}</span></div><div class="sub">${esc(d.repoUrl)}</div>${d.buildId ? `<div class="actions" style="margin-top:10px"><button class="mini" onclick="watchBuild('${esc(d.appName)}','${esc(d.buildId)}')">Build logs</button></div>` : d.setupId ? `<div class="actions" style="margin-top:10px"><button class="mini" onclick="watchSetup('${esc(d.setupId)}')">Build logs</button></div>` : ''}</article>`).join('') || '<div class="empty">No deployments yet.</div>';
+  }catch(e){ toast(e.message); }
+}
+
+async function adjustCoins(id, email){
+  const raw = prompt(`Adjust Teddy Coins for ${email}. Enter a positive number to add or negative number to remove:`);
+  if(raw === null) return;
+  const delta = Number(raw);
+  if(!Number.isInteger(delta) || delta === 0) return toast('Enter a non-zero whole number.');
+  const reason = prompt('Reason for this wallet adjustment:', 'Admin wallet adjustment') || 'Admin wallet adjustment';
+  try{
+    await api(`/api/admin/users/${encodeURIComponent(id)}/coins`, {method:'POST', body: JSON.stringify({delta, reason})});
+    toast('Wallet updated.');
+    loadAdmin();
+  }catch(e){ toast(e.message); }
+}
+
+async function editEnvironment(name){
+  modal(`${name} · Environment variables`, '<p class="hint">Loading editable application variables…</p>');
+  try{
+    const d = await api(`/api/apps/${encodeURIComponent(name)}`);
+    const vars = d.configVars || {};
+    const safe = Object.fromEntries(Object.entries(vars).filter(([k]) => !['HEROKU_API_KEY','PAYSTACK_SECRET_KEY','MONGODB_URI','SESSION_SECRET'].includes(k)));
+    $('modalContent').innerHTML = `<p class="hint">Edit this app's own environment variables.</p><textarea id="envEditor" rows="12" spellcheck="false" style="width:100%;font-family:monospace">${esc(JSON.stringify(safe, null, 2))}</textarea><p class="hint">Use a JSON object with KEY: VALUE pairs. Set a value to null to remove it.</p><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveEnvironment('${esc(name)}')">Save variables</button></div>`;
+  }catch(e){
+    $('modalContent').innerHTML = `<p class="error">${esc(e.message)}</p><div class="modal-actions"><button class="btn primary" onclick="closeModal()">Close</button></div>`;
+  }
+}
+
+async function saveEnvironment(name){
+  let vars;
+  try{ vars = JSON.parse($('envEditor').value); }catch{ return toast('Invalid JSON. Please check the format.'); }
+  if(!vars || typeof vars !== 'object' || Array.isArray(vars)) return toast('Enter a JSON object.');
+  try{
+    const r = await api(`/api/apps/${encodeURIComponent(name)}/config-vars`, {method:'PUT', body: JSON.stringify({vars})});
+    toast(r.message || 'Environment variables saved.');
+    closeModal();
+  }catch(e){ toast(e.message); }
+}
+
+async function restartApp(name){
+  if(!confirm(`Restart ${name}?`)) return;
+  try{
+    const d = await api(`/api/apps/${encodeURIComponent(name)}/restart`, {method:'POST', body:'{}'});
+    toast(d.message || 'Restart requested');
+    setTimeout(loadApps, 2500);
+  }catch(e){ toast(e.message); }
+}
+
+async function deleteApp(name){
+  if(!confirm(`Permanently delete ${name} from Heroku?`)) return;
+  const typed = prompt(`Type ${name} to confirm deletion:`);
+  if(typed !== name) return toast('Deletion cancelled.');
+  try{
+    await api(`/api/apps/${encodeURIComponent(name)}`, {method:'DELETE', body: JSON.stringify({confirm:typed})});
+    toast('Application deleted.');
+    loadApps();
+  }catch(e){ toast(e.message); }
+}
+
+async function watchBuild(name, buildId){
+  if(buildLogAbortController) buildLogAbortController.abort();
+  if(buildLogRetryTimer) clearTimeout(buildLogRetryTimer);
+  modal(`${name} · Build logs`, `<p class="hint" id="buildLogState">Connecting to Heroku…</p><pre class="logbox" id="buildLogOutput">Waiting for build output…</pre><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Close</button><button class="btn primary" onclick="watchBuild('${esc(name)}','${esc(buildId)}')">Refresh logs</button></div>`);
+  streamAppBuildLogs(name, buildId);
+}
+
+async function streamAppBuildLogs(name, buildId){
+  const o = $('buildLogOutput'), s = $('buildLogState');
+  if(!o || !s) return;
+  buildLogAbortController = new AbortController();
+  const c = buildLogAbortController;
+  try{
+    const r = await fetch(`/api/apps/${encodeURIComponent(name)}/build-logs/${encodeURIComponent(buildId)}`, {credentials:'same-origin', headers:{Accept:'text/plain'}, signal:c.signal});
+    if(r.status === 202){
+      s.textContent = 'Heroku is preparing build output. Checking again shortly…';
+      o.textContent = await r.text();
+      buildLogRetryTimer = setTimeout(() => streamAppBuildLogs(name, buildId), 4000);
+      return;
+    }
+    if(!r.ok) throw new Error(await r.text());
+    s.textContent = 'Live build logs · connected to Heroku';
+    o.textContent = '';
+    if(!r.body){ o.textContent = await r.text(); return; }
+    const reader = r.body.getReader(), dec = new TextDecoder();
+    while(true){
+      const {done, value} = await reader.read();
+      if(done) break;
+      o.textContent += dec.decode(value, {stream:true}).replace(/\u0000/g,'');
+      o.scrollTop = o.scrollHeight;
+    }
+    s.textContent = 'Build log stream finished.';
+  }catch(e){
+    if(e.name !== 'AbortError' && $('buildLogState')) $('buildLogState').textContent = 'Could not load build logs: ' + e.message;
+  }
+}
+
+async function viewLogs(name){
+  modal(`${name} · Runtime logs`, '<p class="muted">Fetching Heroku logs…</p>');
+  try{
+    const r = await fetch(`/api/apps/${encodeURIComponent(name)}/logs`, {credentials:'same-origin'});
+    const t = await r.text();
+    if(!r.ok) throw new Error(t);
+    $('modalContent').innerHTML = `<pre class="logbox">${esc(t || 'No logs returned.')}</pre><div class="modal-actions"><button class="btn secondary" onclick="viewLogs('${esc(name)}')">Refresh</button><button class="btn primary" onclick="closeModal()">Close</button></div>`;
+  }catch(e){
+    $('modalContent').innerHTML = `<p class="error">${esc(e.message)}</p><div class="modal-actions"><button class="btn primary" onclick="closeModal()">Close</button></div>`;
+  }
+}
+
+async function watchSetup(id){
+  if(buildLogAbortController) buildLogAbortController.abort();
+  if(buildLogRetryTimer) clearTimeout(buildLogRetryTimer);
+  modal('Deployment status', `<div id="setupStatus">Checking Heroku…</div><h3>Build logs</h3><p class="hint" id="buildLogState">Connecting to Heroku…</p><pre class="logbox" id="buildLogOutput">Waiting for build output…</pre><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Close</button><button class="btn primary" onclick="watchSetup('${esc(id)}')">Refresh status and logs</button></div>`);
+  try{
+    const d = await api(`/api/setups/${encodeURIComponent(id)}`);
+    const s = d.setup, b = d.setup.build || {};
+    $('setupStatus').innerHTML = `<p><b>App:</b> ${esc(s.app?.name || 'Preparing app')}</p><p><b>Setup:</b> ${esc(s.status || 'pending')}</p><p><b>Build:</b> ${esc(b.status || 'waiting')}</p>${s.failure_message ? `<p class="error">${esc(s.failure_message)}</p>` : ''}${d.deployment?.refunded ? '<p class="positive"><b>10 coins refunded to your wallet.</b></p>' : ''}`;
+    streamBuildLogs(id);
+  }catch(e){
+    $('setupStatus').textContent = e.message;
+  }
+}
+
+async function streamBuildLogs(id){
+  const o = $('buildLogOutput'), s = $('buildLogState');
+  if(!o || !s) return;
+  buildLogAbortController = new AbortController();
+  const c = buildLogAbortController;
+  try{
+    const r = await fetch(`/api/setups/${encodeURIComponent(id)}/build-logs`, {credentials:'same-origin', headers:{Accept:'text/plain'}, signal:c.signal});
+    if(r.status === 202){
+      const t = await r.text();
+      s.textContent = 'Heroku is preparing the build. Checking again shortly…';
+      o.textContent = t;
+      buildLogRetryTimer = setTimeout(() => streamBuildLogs(id), 4000);
+      return;
+    }
+    if(!r.ok) throw new Error(await r.text());
+    s.textContent = 'Live build logs · connected to Heroku';
+    o.textContent = '';
+    if(!r.body){ o.textContent = await r.text(); return; }
+    const reader = r.body.getReader(), dec = new TextDecoder();
+    while(true){
+      const {done, value} = await reader.read();
+      if(done) break;
+      o.textContent += dec.decode(value, {stream:true}).replace(/\u0000/g,'');
+      o.scrollTop = o.scrollHeight;
+    }
+    s.textContent = 'Build log stream finished.';
+  }catch(e){
+    if(e.name !== 'AbortError' && $('buildLogState')) $('buildLogState').textContent = 'Could not load build logs: ' + e.message;
+  }
+}
+
+function modal(title, content){
+  $('modalRoot').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal"><h2>${esc(title)}</h2><div id="modalContent">${content}</div></div></div>`;
+}
+
+function closeModal(){
+  if(buildLogAbortController) buildLogAbortController.abort();
+  if(buildLogRetryTimer) clearTimeout(buildLogRetryTimer);
+  $('modalRoot').innerHTML = '';
+}
+
 checkAuth();
 </script>
 </body>

@@ -19,15 +19,14 @@ const KES_PER_10_COINS = Number(config.KES_PER_10_COINS || 50);
 const USD_PER_10_COINS = Number(config.USD_PER_10_COINS || 0.4);
 const USD_MINIMUM = Number(config.PAYSTACK_USD_MINIMUM || 0.4);
 
-// Binance Pay MANUAL - no Binance API. User sends USDT to UID/Email, uploads receipt, admin approves on Telegram. Approval NEVER expires.
+// FIX: read from process.env FIRST - works even if config.js is old
 const BINANCE_PAY_ENABLED = true;
 const BINANCE_PAY_COMING_SOON = false;
-const BINANCE_PAY_UID = config.BINANCE_PAY_UID || config.BINANCE_PAY_ID || '';
-const BINANCE_PAY_EMAIL = config.BINANCE_PAY_EMAIL || '';
-const TELEGRAM_BOT_TOKEN = config.TELEGRAM_BOT_TOKEN || '';
-const TELEGRAM_ADMIN_CHAT_ID = config.TELEGRAM_ADMIN_CHAT_ID || '';
+const BINANCE_PAY_UID = process.env.BINANCE_PAY_UID || config.BINANCE_PAY_UID || config.BINANCE_PAY_ID || '';
+const BINANCE_PAY_EMAIL = process.env.BINANCE_PAY_EMAIL || config.BINANCE_PAY_EMAIL || '';
+const TELEGRAM_BOT_TOKEN = (process.env.TELEGRAM_BOT_TOKEN || config.TELEGRAM_BOT_TOKEN || '').trim();
+const TELEGRAM_ADMIN_CHAT_ID = (process.env.TELEGRAM_ADMIN_CHAT_ID || config.TELEGRAM_ADMIN_CHAT_ID || '').trim();
 
-// Allowed env vars — ONLY for TEDDY-XMD, full app.json 26 vars
 const ALLOWED_ENV_KEYS = [
   'SESSION_ID',
   'BOT_MODE','ANTIDELETE_MODE','STATUS_MODE','ANTILINK_ACTION','PREFIX','OWNER_NUMBER','TIMEZONE',
@@ -360,7 +359,7 @@ app.post('/api/payments/webhook',asyncRoute(async(req,res)=>{
   res.sendStatus(200);
 }));
 
-// ================= BINANCE PAY MANUAL =================
+// ================= BINANCE PAY MANUAL - FIXED =================
 app.post('/api/binance-pay/initialize', requireAuth, asyncRoute(async(req,res)=>{
   const coins = Number(req.body.coins);
   if(!Number.isInteger(coins) || coins < 10 || coins % 10 !== 0 || coins > 100000)
@@ -393,34 +392,45 @@ app.post('/api/binance-pay/upload-receipt', requireAuth, asyncRoute(async(req,re
   await sendBinanceReceiptToTelegram(p, user);
   res.json({ok:true, message:'Receipt sent. Pending - Waiting for Approval.', status:p.status});
 }));
-app.post('/api/telegram/webhook', asyncRoute(async(req,res)=>{
+// FIXED TELEGRAM WEBHOOK - answers FIRST so it never spins
+app.post('/api/telegram/webhook', async (req,res)=>{
+  const cb = req.body?.callback_query;
+  // 1. Answer Telegram IMMEDIATELY - stops loading spinner
+  if(cb && TELEGRAM_BOT_TOKEN){
+    try{
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerCallbackQuery`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({callback_query_id:cb.id, text:'Processing...'})});
+    }catch(e){ console.error('answerCallback failed:', e.message); }
+  }
+  // 2. Tell Telegram we got it
   res.sendStatus(200);
+  // 3. Then do the work
   try{
-    const cb = req.body?.callback_query;
     if(!cb || !cb.data) return;
-    if(String(cb.from?.id) !== String(TELEGRAM_ADMIN_CHAT_ID)) return;
+    console.log('Telegram callback from:', cb.from?.id, 'expected admin:', TELEGRAM_ADMIN_CHAT_ID, 'data:', cb.data, 'token set:', !!TELEGRAM_BOT_TOKEN);
+    if(String(cb.from?.id) !== String(TELEGRAM_ADMIN_CHAT_ID)){
+      if(TELEGRAM_BOT_TOKEN) await sendTelegramMessage(cb.from.id, `❌ Not admin. Your ID: ${cb.from.id} | Expected: ${TELEGRAM_ADMIN_CHAT_ID}. Fix TELEGRAM_ADMIN_CHAT_ID in Heroku.`);
+      return;
+    }
     const [action, reference] = String(cb.data).split(':');
     if(!['bn_approve','bn_reject'].includes(action) || !reference) return;
     const payment = await Payment.findOne({reference});
-    if(!payment) return;
+    if(!payment){ await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, `❌ Payment not found: ${reference}`); return; }
     if(action === 'bn_approve'){
-      if(payment.credited) return;
+      if(payment.credited){ await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, `Already credited: ${reference}`); return; }
       await creditPaymentByReference(reference, 'Binance Pay (Telegram Manual)');
       const u = await User.findById(payment.userId).select('coins');
-      await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, `✅ Approved <code>${reference}</code> - ${payment.coins} coins added. New balance: ${u?.coins}`);
+      await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, `✅ Approved ${reference} - ${payment.coins} coins added. New balance: ${u?.coins}`);
       await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageReplyMarkup`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cb.message.chat.id, message_id:cb.message.message_id, reply_markup:{inline_keyboard:[[{text:'✅ APPROVED', callback_data:'done'}]]}})});
     } else {
       if(payment.credited) return;
       payment.status = 'rejected'; payment.adminNote = 'Receipt not valid. Send correct payment and upload again.'; await payment.save();
-      await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, `❌ Rejected <code>${reference}</code>`);
+      await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, `❌ Rejected ${reference}`);
       await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageReplyMarkup`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cb.message.chat.id, message_id:cb.message.message_id, reply_markup:{inline_keyboard:[[{text:'❌ REJECTED', callback_data:'done'}]]}})});
     }
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerCallbackQuery`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({callback_query_id:cb.id, text: action==='bn_approve' ? 'Approved!' : 'Rejected!'})});
   }catch(e){ console.error('Telegram webhook error:', e.message); }
-}));
+});
 app.post('/api/binance-pay/webhook', asyncRoute(async(req,res)=>{ return res.json({ok:true, message:'Binance Pay is manual. Use Telegram approve.'}); }));
 app.get('/api/binance-pay/callback', asyncRoute(async(req,res)=>{ return res.redirect('/?payment=pending&provider=binance-pay'); }));
-// Admin backup approve - also never expires
 app.post('/api/admin/binance-pay/:reference/approve', requireAuth, requireAdmin, asyncRoute(async(req,res)=>{
   const p = await Payment.findOne({reference:req.params.reference});
   if(!p) return res.status(404).json({error:'Payment not found.'});
@@ -454,7 +464,7 @@ async function start(){
   if(!config.MONGODB_URI||String(config.MONGODB_URI).includes('PASTE_YOUR_')){ console.error('Set MONGODB_URI in Heroku Settings > Config Vars.'); process.exit(1); }
   if(!config.SESSION_SECRET||String(config.SESSION_SECRET).length<32||String(config.SESSION_SECRET).startsWith('REPLACE_WITH_')){ console.error('Set SESSION_SECRET in Heroku Config Vars to a unique random value of at least 32 characters.'); process.exit(1); }
   if(!config.ADMIN?.EMAIL||String(config.ADMIN.EMAIL).startsWith('YOUR_')||!config.ADMIN?.PASSWORD||String(config.ADMIN.PASSWORD).startsWith('CHANGE_THIS')||String(config.ADMIN.PASSWORD).length<8){ console.error('Set ADMIN_EMAIL and ADMIN_PASSWORD in Heroku Config Vars (password at least 8 characters).'); process.exit(1); }
-  await mongoose.connect(config.MONGODB_URI); console.log('Connected to MongoDB Atlas.'); console.log(`Binance Pay: MANUAL + LIVE | Configured: ${isBinancePayConfigured()} | UID: ${BINANCE_PAY_UID ? 'set' : 'MISSING'} | Email: ${BINANCE_PAY_EMAIL ? 'set' : 'MISSING'} | Telegram: ${TELEGRAM_BOT_TOKEN ? 'set' : 'MISSING'} | Approval: NEVER EXPIRES`);
+  await mongoose.connect(config.MONGODB_URI); console.log('Connected to MongoDB Atlas.'); console.log(`Binance Pay: MANUAL + LIVE | Configured: ${isBinancePayConfigured()} | UID: ${BINANCE_PAY_UID ? 'set' : 'MISSING'} | Email: ${BINANCE_PAY_EMAIL ? 'set' : 'MISSING'} | Telegram: ${TELEGRAM_BOT_TOKEN ? 'set' : 'MISSING'} | AdminChat: ${TELEGRAM_ADMIN_CHAT_ID || 'MISSING'} | Approval: NEVER EXPIRES`);
   try{ const idx=await User.collection.indexes(); for(const name of ['username_1','referralCode_1','number_1']){ if(idx.some(i=>i.name===name)){ await User.collection.dropIndex(name); console.log(`Removed obsolete MongoDB users.${name} index.`); } } }catch(e){ if(![26,27].includes(e.code)&&!/not found|ns does not exist/i.test(e.message||'')) throw e; }
   const adminEmail=String(config.ADMIN.EMAIL||'').trim().toLowerCase(); const adminPassword=String(config.ADMIN.PASSWORD||''); if(!adminEmail||adminPassword.length<8) throw new Error('Set ADMIN_EMAIL and ADMIN_PASSWORD (at least 8 characters).');
   let admin=await User.findOne({email:adminEmail}); if(!admin){ admin=await User.create({name:'Teddy Tech Admin',email:adminEmail,passwordHash:await bcrypt.hash(adminPassword,12),role:'admin',coins:0}); console.log(`Created administrator account: ${adminEmail}`); } else if(admin.role!=='admin'){ admin.role='admin'; await admin.save(); }

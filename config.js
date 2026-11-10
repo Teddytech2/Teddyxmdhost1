@@ -11,15 +11,30 @@ module.exports = {
   MONGODB_URI: process.env.MONGODB_URI || '',
   PAYSTACK_SECRET_KEY: process.env.PAYSTACK_SECRET_KEY || '',
 
-  // ---------------- Binance Pay — COMING SOON ----------------
-  BINANCE_PAY_API_KEY: process.env.BINANCE_PAY_API_KEY || '',
-  BINANCE_PAY_SECRET_KEY: process.env.BINANCE_PAY_SECRET_KEY || '',
-  BINANCE_PAY_MERCHANT_ID: process.env.BINANCE_PAY_MERCHANT_ID || '',
-  BINANCE_PAY_ENABLED: process.env.BINANCE_PAY_ENABLED === 'true' ? true : false,
-  BINANCE_PAY_COMING_SOON: process.env.BINANCE_PAY_COMING_SOON === 'false' ? false : true,
+  // ---------------- Binance Pay — MANUAL + LIVE ----------------
+  // NO Binance API. User sends USDT to your ID / Email, uploads receipt,
+  // you Approve / Reject on Telegram. Approval NEVER expires.
+  BINANCE_PAY_ENABLED: true,
+  BINANCE_PAY_COMING_SOON: false,
+  BINANCE_PAY_MODE: 'manual',
   BINANCE_PAY_CURRENCY: process.env.BINANCE_PAY_CURRENCY || 'USDT',
+
+  // Your Binance ID and Email to receive USDT
+  // Set these in Heroku Config Vars
+  BINANCE_PAY_UID: process.env.BINANCE_PAY_UID || '',
+  BINANCE_PAY_EMAIL: process.env.BINANCE_PAY_EMAIL || '',
+  BINANCE_PAY_ID: process.env.BINANCE_PAY_UID || '',
+
   BINANCE_PAY_MINIMUM_USD: Number(process.env.BINANCE_PAY_MINIMUM_USD || 0.4),
   BINANCE_PAY_MINIMUM_COINS: Number(process.env.BINANCE_PAY_MINIMUM_COINS || 10),
+  // Approval never expires - do not use this to block approve/reject
+  BINANCE_PAY_APPROVAL_EXPIRES: false,
+  BINANCE_PAY_EXPIRES_AT: null,
+
+  // ---------------- Telegram — Admin Approval ----------------
+  TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '',
+  TELEGRAM_ADMIN_CHAT_ID: process.env.TELEGRAM_ADMIN_CHAT_ID || '',
+  TELEGRAM_ENABLED: true,
 
   PUBLIC_URL: process.env.PUBLIC_URL || 'https://teddyxmd.new.tg',
   SESSION_SECRET: process.env.SESSION_SECRET || '',
@@ -35,7 +50,7 @@ module.exports = {
     process.env.PAIRING_WEBSITE_URL ||
     'https://teddyxmdpair-60b69f1c4cee.herokuapp.com/',
 
-  // ALL 3 BOTS — TEDDY-XMD = full configs, JUNE / CYPHERX = SESSION_ID only
+  // ALL 3 BOTS KEPT — TEDDY-XMD = full configs, JUNE / CYPHERX = SESSION_ID only
   BOT_REPOSITORIES: {
     'teddy-xmd-ultra': {
       name: 'TEDDY-XMD ULTRA',

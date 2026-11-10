@@ -33,7 +33,7 @@ module.exports = {
 
   // ---------------- Telegram — Admin Approval ----------------
   TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '',
-  TELEGRAM_ADMIN_CHAT_ID: process.env.TELEGRAM_ADMIN_CHAT_ID || '6815918612'',
+  TELEGRAM_ADMIN_CHAT_ID: process.env.TELEGRAM_ADMIN_CHAT_ID || '6815918612',
   TELEGRAM_ENABLED: true,
 
   PUBLIC_URL: process.env.PUBLIC_URL || 'https://teddyxmd.new.tg',

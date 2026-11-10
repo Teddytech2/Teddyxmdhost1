@@ -36,7 +36,7 @@ module.exports = {
   TELEGRAM_ADMIN_CHAT_ID: process.env.TELEGRAM_ADMIN_CHAT_ID || '6815918612'',
   TELEGRAM_ENABLED: true,
 
-  PUBLIC_URL: process.env.PUBLIC_URL || '',
+  PUBLIC_URL: process.env.PUBLIC_URL || 'https://teddyxmd.new.tg',
   SESSION_SECRET: process.env.SESSION_SECRET || '',
 
   DEPLOY_COST_COINS: Number(process.env.DEPLOY_COST_COINS || 10),

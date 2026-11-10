@@ -14,15 +14,18 @@ const app = express();
 const PORT = process.env.PORT || config.PORT || 3000;
 const HEROKU_API = 'https://api.heroku.com';
 const PAYSTACK_API = 'https://api.paystack.co';
-const BINANCE_PAY_API = 'https://bpay.binanceapi.com';
 const DEPLOY_COST = Number(config.DEPLOY_COST_COINS || 10);
 const KES_PER_10_COINS = Number(config.KES_PER_10_COINS || 50);
 const USD_PER_10_COINS = Number(config.USD_PER_10_COINS || 0.4);
 const USD_MINIMUM = Number(config.PAYSTACK_USD_MINIMUM || 0.4);
 
-// Binance Pay — Coming Soon. Controlled from config.js
-const BINANCE_PAY_ENABLED = config.BINANCE_PAY_ENABLED === true;
-const BINANCE_PAY_COMING_SOON = config.BINANCE_PAY_COMING_SOON !== false;
+// Binance Pay MANUAL - no Binance API. User sends USDT to UID/Email, uploads receipt, admin approves on Telegram. Approval NEVER expires.
+const BINANCE_PAY_ENABLED = true;
+const BINANCE_PAY_COMING_SOON = false;
+const BINANCE_PAY_UID = config.BINANCE_PAY_UID || config.BINANCE_PAY_ID || '';
+const BINANCE_PAY_EMAIL = config.BINANCE_PAY_EMAIL || '';
+const TELEGRAM_BOT_TOKEN = config.TELEGRAM_BOT_TOKEN || '';
+const TELEGRAM_ADMIN_CHAT_ID = config.TELEGRAM_ADMIN_CHAT_ID || '';
 
 // Allowed env vars — ONLY for TEDDY-XMD, full app.json 26 vars
 const ALLOWED_ENV_KEYS = [
@@ -82,7 +85,9 @@ const paymentSchema = new mongoose.Schema({
   currency: { type: String, enum: ['KES', 'USD', 'BINANCE_USD'], required: true },
   provider: { type: String, enum: ['paystack', 'binance-pay'], default: 'paystack' },
   status: { type: String, default: 'pending' }, credited: { type: Boolean, default: false },
-  authorizationUrl: String, binancePrepayId: String, binanceCheckoutUrl: String,
+  authorizationUrl: String,
+  receiptImage: String, receiptUploadedAt: Date, adminNote: String,
+  binanceUid: String, binanceEmail: String,
   createdAt: { type: Date, default: Date.now }, paidAt: Date
 }, { versionKey: false });
 const walletTransactionSchema = new mongoose.Schema({
@@ -98,7 +103,7 @@ const WalletTransaction = mongoose.model('WalletTransaction', walletTransactionS
 
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(express.json({ limit: '1mb', verify: (req, res, buffer) => { if (req.originalUrl.startsWith('/api/payments/webhook') || req.originalUrl.startsWith('/api/binance-pay/webhook')) req.rawBody = Buffer.from(buffer); } }));
+app.use(express.json({ limit: '10mb', verify: (req, res, buffer) => { if (req.originalUrl.startsWith('/api/payments/webhook') || req.originalUrl.startsWith('/api/binance-pay/webhook')) req.rawBody = Buffer.from(buffer); } }));
 app.use(express.urlencoded({ extended: false }));
 app.use(session({
   name: 'teddy_deployer_sid', secret: config.SESSION_SECRET, resave: false, saveUninitialized: false,
@@ -163,17 +168,33 @@ async function paystackRequest(pathname,options={}){
   if(!response.ok||data.status===false){ const e=new Error(data.message||`Paystack returned ${response.status}`); e.status=response.status||502; throw e; }
   return data.data;
 }
-function isBinancePayConfigured(){ return Boolean(config.BINANCE_PAY_API_KEY&&config.BINANCE_PAY_SECRET_KEY&&config.BINANCE_PAY_MERCHANT_ID); }
-function binancePayComingSoonError(){ const e=new Error('Binance Pay is coming soon. Please use KES or USD card for now.'); e.status=503; e.code='BINANCE_PAY_COMING_SOON'; return e; }
-async function binancePayRequest(pathname,body={}){
-  if(!BINANCE_PAY_ENABLED||BINANCE_PAY_COMING_SOON) throw binancePayComingSoonError();
-  if(!isBinancePayConfigured()){ const e=new Error('Binance Pay is not configured yet.'); e.status=503; throw e; }
-  const timestamp=Date.now(); const nonce=crypto.randomBytes(16).toString('hex'); const payload=JSON.stringify(body);
-  const signature=crypto.createHmac('sha512',config.BINANCE_PAY_SECRET_KEY).update(`${timestamp}\n${nonce}\n${payload}\n`).digest('hex').toUpperCase();
-  const response=await fetch(`${BINANCE_PAY_API}${pathname}`,{method:'POST',headers:{'Content-Type':'application/json','BinancePay-Timestamp':String(timestamp),'BinancePay-Nonce':nonce,'BinancePay-Certificate-SN':config.BINANCE_PAY_API_KEY,'BinancePay-Signature':signature},body:payload});
-  const data=await response.json().catch(()=>({}));
-  if(!response.ok||data.status!=='SUCCESS'){ const e=new Error(data.errorMessage||`Binance Pay returned ${response.status}`); e.status=502; throw e; }
-  return data.data;
+function isBinancePayConfigured(){ return Boolean(BINANCE_PAY_UID || BINANCE_PAY_EMAIL); }
+async function sendTelegramMessage(chatId, text, replyMarkup){
+  if(!TELEGRAM_BOT_TOKEN || !chatId) return;
+  try{ await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chat_id: chatId, text, parse_mode:'HTML', reply_markup: replyMarkup})}); }catch(e){ console.error('Telegram send failed:', e.message); }
+}
+async function sendBinanceReceiptToTelegram(payment, user){
+  if(!TELEGRAM_BOT_TOKEN || !TELEGRAM_ADMIN_CHAT_ID) return;
+  const caption = `🧾 <b>New Binance Pay Receipt</b>\n\n👤 User: ${user.name} (${user.email})\n💰 Coins: ${payment.coins}\n💵 Amount: $${(payment.amountMinor/100).toFixed(2)} USDT\n🔖 Ref: <code>${payment.reference}</code>\n⏳ Status: Pending - Waiting for Approval\n\nTap APPROVE to add coins, REJECT to decline. This never expires.`;
+  const replyMarkup = { inline_keyboard: [[ { text:'✅ APPROVE', callback_data:`bn_approve:${payment.reference}` }, { text:'❌ REJECT', callback_data:`bn_reject:${payment.reference}` } ]]};
+  try{
+    let imgBuffer = null;
+    if(payment.receiptImage && payment.receiptImage.startsWith('data:image')){
+      const base64 = payment.receiptImage.split(',')[1];
+      imgBuffer = Buffer.from(base64, 'base64');
+    }
+    if(imgBuffer){
+      const form = new FormData();
+      form.append('chat_id', TELEGRAM_ADMIN_CHAT_ID);
+      form.append('caption', caption);
+      form.append('parse_mode', 'HTML');
+      form.append('reply_markup', JSON.stringify(replyMarkup));
+      form.append('photo', new Blob([imgBuffer], {type:'image/jpeg'}), 'receipt.jpg');
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`,{method:'POST', body: form});
+    } else {
+      await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, caption, replyMarkup);
+    }
+  }catch(e){ console.error('Telegram receipt failed:', e.message); }
 }
 async function addWalletCredit(paymentId,paystackData){
   const payment=await Payment.findById(paymentId); if(!payment||payment.credited) return false;
@@ -187,7 +208,7 @@ async function addWalletCredit(paymentId,paystackData){
 async function creditPaymentByReference(reference,providerLabel){
   const payment=await Payment.findOne({reference}); if(!payment||payment.credited) return payment;
   const s=await mongoose.startSession();
-  try{ await s.withTransaction(async()=>{ const cur=await Payment.findOne({_id:payment._id,credited:false,status:'pending'}).session(s); if(!cur) return; const u=await User.findByIdAndUpdate(cur.userId,{$inc:{coins:cur.coins}},{new:true,session:s}); if(!u) throw new Error('Wallet account not found.'); cur.status='success'; cur.credited=true; cur.paidAt=new Date(); await cur.save({session:s}); await WalletTransaction.create([{userId:cur.userId,type:'purchase',delta:cur.coins,balanceAfter:u.coins,reference:cur.reference,description:`Purchased ${cur.coins} Teddy Coins through ${providerLabel}`}],{session:s}); }); }finally{ await s.endSession(); }
+  try{ await s.withTransaction(async()=>{ const cur=await Payment.findOne({_id:payment._id,credited:false,status:{$in:['pending','pending_receipt','awaiting_verification']}}).session(s); if(!cur) return; const u=await User.findByIdAndUpdate(cur.userId,{$inc:{coins:cur.coins}},{new:true,session:s}); if(!u) throw new Error('Wallet account not found.'); cur.status='success'; cur.credited=true; cur.paidAt=new Date(); await cur.save({session:s}); await WalletTransaction.create([{userId:cur.userId,type:'purchase',delta:cur.coins,balanceAfter:u.coins,reference:cur.reference,description:`Purchased ${cur.coins} Teddy Coins through ${providerLabel}`}],{session:s}); }); }finally{ await s.endSession(); }
   return Payment.findById(payment._id);
 }
 async function verifyPaystackReference(reference){
@@ -239,10 +260,7 @@ app.post('/api/deploy',requireAuth,asyncRoute(async(req,res)=>{
   if(!sessionId) return res.status(400).json({error:'WhatsApp SESSION_ID is required. Use the Get SESSION_ID link in the dashboard to generate one.'});
   const {info}=await getManifest(repoUrl,branch);
   let overrides = { SESSION_ID: sessionId };
-  if(botId === 'teddy-xmd-ultra'){
-    overrides = buildEnvOverrides(supplied);
-    overrides.SESSION_ID = sessionId;
-  }
+  if(botId === 'teddy-xmd-ultra'){ overrides = buildEnvOverrides(supplied); overrides.SESSION_ID = sessionId; }
   const existing=await Deployment.findOne({appName:name});
   if(existing&&existing.status!=='deleted') return res.status(409).json({error:'That Heroku app name is already registered in the deployer.'});
   if(await herokuAppNameAvailable(name)===false) return res.status(409).json({error:`The Heroku app name "${name}" is already taken. Choose another name or use Suggest available name.`});
@@ -341,9 +359,83 @@ app.post('/api/payments/webhook',asyncRoute(async(req,res)=>{
   if(ev.event==='charge.success'&&ev.data?.reference){ try{ await verifyPaystackReference(ev.data.reference); }catch(e){ console.warn('Paystack webhook fulfillment deferred:',e.message); } }
   res.sendStatus(200);
 }));
-app.post('/api/binance-pay/initialize',requireAuth,asyncRoute(async(req,res)=>{ return res.status(503).json({ok:false,code:'BINANCE_PAY_COMING_SOON',error:'Binance Pay is coming soon. Please use KES or USD card for now.',binancePay:{enabled:false,comingSoon:true}}); }));
-app.get('/api/binance-pay/callback',asyncRoute(async(req,res)=>{ return res.redirect('/?payment=failed&provider=binance-pay'); }));
-app.post('/api/binance-pay/webhook',asyncRoute(async(req,res)=>{ return res.status(503).json({ok:false,code:'BINANCE_PAY_COMING_SOON',error:'Binance Pay is coming soon.'}); }));
+
+// ================= BINANCE PAY MANUAL =================
+app.post('/api/binance-pay/initialize', requireAuth, asyncRoute(async(req,res)=>{
+  const coins = Number(req.body.coins);
+  if(!Number.isInteger(coins) || coins < 10 || coins % 10 !== 0 || coins > 100000)
+    return res.status(400).json({error:'Choose coins in multiples of 10 (minimum 10).'});
+  if(!isBinancePayConfigured())
+    return res.status(503).json({error:'Binance Pay is not configured yet. Set BINANCE_PAY_UID and BINANCE_PAY_EMAIL.'});
+  const packs = coins / 10;
+  const amountMinor = Math.round(packs * USD_PER_10_COINS * 100);
+  const usdAmount = (amountMinor/100).toFixed(2);
+  const reference = `THP-BN-${Date.now()}${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+  await Payment.create({ userId:req.user._id, reference, coins, amountMinor, currency:'BINANCE_USD', provider:'binance-pay', status:'pending_receipt', binanceUid:BINANCE_PAY_UID, binanceEmail:BINANCE_PAY_EMAIL });
+  res.json({ok:true, reference, coins, amountMinor, usdAmount, currency:'USDT', binanceUid:BINANCE_PAY_UID, binanceEmail:BINANCE_PAY_EMAIL, status:'pending_receipt'});
+}));
+app.get('/api/binance-pay/order/:reference', requireAuth, asyncRoute(async(req,res)=>{
+  const p = await Payment.findOne({reference:req.params.reference, userId:req.user._id});
+  if(!p) return res.status(404).json({error:'Payment not found.'});
+  const user = await User.findById(req.user._id).select('coins');
+  res.json({ok:true, reference:p.reference, coins:p.coins, usdAmount:(p.amountMinor/100).toFixed(2), binanceUid:p.binanceUid || BINANCE_PAY_UID, binanceEmail:p.binanceEmail || BINANCE_PAY_EMAIL, status:p.status, credited:p.credited, adminNote:p.adminNote || '', currentBalance:user?.coins || 0});
+}));
+app.post('/api/binance-pay/upload-receipt', requireAuth, asyncRoute(async(req,res)=>{
+  const {reference, receiptImage} = req.body;
+  if(!reference || !receiptImage) return res.status(400).json({error:'Reference and receipt screenshot are required.'});
+  const p = await Payment.findOne({reference, userId:req.user._id});
+  if(!p) return res.status(404).json({error:'Payment not found.'});
+  if(p.credited) return res.status(400).json({error:'This payment was already credited.'});
+  if(p.status === 'awaiting_verification') return res.status(400).json({error:'Receipt already sent. Pending - Waiting for Approval.'});
+  p.receiptImage = receiptImage; p.receiptUploadedAt = new Date(); p.status = 'awaiting_verification'; p.adminNote = '';
+  await p.save();
+  const user = await User.findById(req.user._id).select('name email');
+  await sendBinanceReceiptToTelegram(p, user);
+  res.json({ok:true, message:'Receipt sent. Pending - Waiting for Approval.', status:p.status});
+}));
+app.post('/api/telegram/webhook', asyncRoute(async(req,res)=>{
+  res.sendStatus(200);
+  try{
+    const cb = req.body?.callback_query;
+    if(!cb || !cb.data) return;
+    if(String(cb.from?.id) !== String(TELEGRAM_ADMIN_CHAT_ID)) return;
+    const [action, reference] = String(cb.data).split(':');
+    if(!['bn_approve','bn_reject'].includes(action) || !reference) return;
+    const payment = await Payment.findOne({reference});
+    if(!payment) return;
+    if(action === 'bn_approve'){
+      if(payment.credited) return;
+      await creditPaymentByReference(reference, 'Binance Pay (Telegram Manual)');
+      const u = await User.findById(payment.userId).select('coins');
+      await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, `✅ Approved <code>${reference}</code> - ${payment.coins} coins added. New balance: ${u?.coins}`);
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageReplyMarkup`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cb.message.chat.id, message_id:cb.message.message_id, reply_markup:{inline_keyboard:[[{text:'✅ APPROVED', callback_data:'done'}]]}})});
+    } else {
+      if(payment.credited) return;
+      payment.status = 'rejected'; payment.adminNote = 'Receipt not valid. Send correct payment and upload again.'; await payment.save();
+      await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, `❌ Rejected <code>${reference}</code>`);
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageReplyMarkup`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cb.message.chat.id, message_id:cb.message.message_id, reply_markup:{inline_keyboard:[[{text:'❌ REJECTED', callback_data:'done'}]]}})});
+    }
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerCallbackQuery`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({callback_query_id:cb.id, text: action==='bn_approve' ? 'Approved!' : 'Rejected!'})});
+  }catch(e){ console.error('Telegram webhook error:', e.message); }
+}));
+app.post('/api/binance-pay/webhook', asyncRoute(async(req,res)=>{ return res.json({ok:true, message:'Binance Pay is manual. Use Telegram approve.'}); }));
+app.get('/api/binance-pay/callback', asyncRoute(async(req,res)=>{ return res.redirect('/?payment=pending&provider=binance-pay'); }));
+// Admin backup approve - also never expires
+app.post('/api/admin/binance-pay/:reference/approve', requireAuth, requireAdmin, asyncRoute(async(req,res)=>{
+  const p = await Payment.findOne({reference:req.params.reference});
+  if(!p) return res.status(404).json({error:'Payment not found.'});
+  if(p.credited) return res.status(400).json({error:'Already credited.'});
+  await creditPaymentByReference(p.reference, 'Binance Pay (Manual)');
+  res.json({ok:true, message:`Approved. ${p.coins} coins added.`});
+}));
+app.post('/api/admin/binance-pay/:reference/reject', requireAuth, requireAdmin, asyncRoute(async(req,res)=>{
+  const p = await Payment.findOne({reference:req.params.reference});
+  if(!p) return res.status(404).json({error:'Payment not found.'});
+  if(p.credited) return res.status(400).json({error:'Already credited.'});
+  p.status='rejected'; p.adminNote=String(req.body.note||'Receipt not valid.'); await p.save();
+  res.json({ok:true, message:'Rejected.'});
+}));
+
 app.get('/api/wallet',requireAuth,asyncRoute(async(req,res)=>{ const [user,transactions,payments]=await Promise.all([User.findById(req.user._id).select('coins'),WalletTransaction.find({userId:req.user._id}).sort({createdAt:-1}).limit(50),Payment.find({userId:req.user._id}).sort({createdAt:-1}).limit(20).select('-authorizationUrl')]); res.json({coins:user.coins,transactions,payments,pricing:{kesPer10Coins:KES_PER_10_COINS,usdPer10Coins:USD_PER_10_COINS,usdMinimum:USD_MINIMUM,usdMinimumCoins:Math.ceil(USD_MINIMUM/USD_PER_10_COINS)*10},binancePay:{enabled:BINANCE_PAY_ENABLED,comingSoon:BINANCE_PAY_COMING_SOON,configured:isBinancePayConfigured(),usdPer10Coins:USD_PER_10_COINS}}); }));
 app.get('/api/admin/summary',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{ const [users,deployments,payments,coins]=await Promise.all([User.countDocuments({role:'user'}),Deployment.countDocuments({status:{$ne:'deleted'}}),Payment.countDocuments({status:'success'}),User.aggregate([{$group:{_id:null,total:{$sum:'$coins'}}}])]); res.json({users,deployments,successfulPayments:payments,coinsInWallets:coins[0]?.total||0}); }));
 app.get('/api/admin/users',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{ const users=await User.find({role:'user'}).select('-passwordHash').sort({createdAt:-1}).limit(500); res.json(users); }));
@@ -362,7 +454,7 @@ async function start(){
   if(!config.MONGODB_URI||String(config.MONGODB_URI).includes('PASTE_YOUR_')){ console.error('Set MONGODB_URI in Heroku Settings > Config Vars.'); process.exit(1); }
   if(!config.SESSION_SECRET||String(config.SESSION_SECRET).length<32||String(config.SESSION_SECRET).startsWith('REPLACE_WITH_')){ console.error('Set SESSION_SECRET in Heroku Config Vars to a unique random value of at least 32 characters.'); process.exit(1); }
   if(!config.ADMIN?.EMAIL||String(config.ADMIN.EMAIL).startsWith('YOUR_')||!config.ADMIN?.PASSWORD||String(config.ADMIN.PASSWORD).startsWith('CHANGE_THIS')||String(config.ADMIN.PASSWORD).length<8){ console.error('Set ADMIN_EMAIL and ADMIN_PASSWORD in Heroku Config Vars (password at least 8 characters).'); process.exit(1); }
-  await mongoose.connect(config.MONGODB_URI); console.log('Connected to MongoDB Atlas.'); console.log(`Binance Pay: ${BINANCE_PAY_COMING_SOON?'COMING SOON (disabled)':'ENABLED'} | Configured: ${isBinancePayConfigured()} | USD min: $${USD_MINIMUM.toFixed(2)}`);
+  await mongoose.connect(config.MONGODB_URI); console.log('Connected to MongoDB Atlas.'); console.log(`Binance Pay: MANUAL + LIVE | Configured: ${isBinancePayConfigured()} | UID: ${BINANCE_PAY_UID ? 'set' : 'MISSING'} | Email: ${BINANCE_PAY_EMAIL ? 'set' : 'MISSING'} | Telegram: ${TELEGRAM_BOT_TOKEN ? 'set' : 'MISSING'} | Approval: NEVER EXPIRES`);
   try{ const idx=await User.collection.indexes(); for(const name of ['username_1','referralCode_1','number_1']){ if(idx.some(i=>i.name===name)){ await User.collection.dropIndex(name); console.log(`Removed obsolete MongoDB users.${name} index.`); } } }catch(e){ if(![26,27].includes(e.code)&&!/not found|ns does not exist/i.test(e.message||'')) throw e; }
   const adminEmail=String(config.ADMIN.EMAIL||'').trim().toLowerCase(); const adminPassword=String(config.ADMIN.PASSWORD||''); if(!adminEmail||adminPassword.length<8) throw new Error('Set ADMIN_EMAIL and ADMIN_PASSWORD (at least 8 characters).');
   let admin=await User.findOne({email:adminEmail}); if(!admin){ admin=await User.create({name:'Teddy Tech Admin',email:adminEmail,passwordHash:await bcrypt.hash(adminPassword,12),role:'admin',coins:0}); console.log(`Created administrator account: ${adminEmail}`); } else if(admin.role!=='admin'){ admin.role='admin'; await admin.save(); }

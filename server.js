@@ -19,7 +19,7 @@ const KES_PER_10_COINS = Number(config.KES_PER_10_COINS || 50);
 const USD_PER_10_COINS = Number(config.USD_PER_10_COINS || 0.4);
 const USD_MINIMUM = Number(config.PAYSTACK_USD_MINIMUM || 0.4);
 
-// FIX: read from process.env FIRST - works even if config.js is old
+// FIX: read from process.env FIRST
 const BINANCE_PAY_ENABLED = true;
 const BINANCE_PAY_COMING_SOON = false;
 const BINANCE_PAY_UID = process.env.BINANCE_PAY_UID || config.BINANCE_PAY_UID || config.BINANCE_PAY_ID || '';
@@ -220,7 +220,7 @@ async function verifyPaystackReference(reference){
 async function refundDeployment(deployment,reason){
   if(!deployment||deployment.refunded) return false;
   const s=await mongoose.startSession(); let refunded=false;
-  try{ await s.withTransaction(async()=>{ const cur=await Deployment.findOne({_id:deployment._id,refunded:false}).session(s); if(!cur) return; const u=await User.findByIdAndUpdate(cur.userId,{$inc:{coins:cur.coinsCharged||DEPLOY_COST}},{new:true,session:s}); if(!u) throw new Error('Cannot refund deployment: user wallet is missing.'); cur.refunded=true; cur.status='failed'; cur.statusMessage=reason||'Deployment failed; coins refunded.'; cur.updatedAt=new Date(); await cur.save({session:s}); await WalletTransaction.create([{userId:cur.userId,type:'deployment_refund',delta:cur.coinsCharged||DEPLOY_COST,balanceAfter:u.coins,reference:cur.appName,description:`Refund for failed deployment ${cur.appName}: ${reason||'deployment failed'}`}],{session:s}); refunded=true; }); }finally{ await s.endSession(); }
+  try{ await s.withTransaction(async()=>{ const cur=await Deployment.findOne({_id:deployment._id,refunded:false}).session(s); if(!cur) return; const u=await User.findByIdAndUpdate(cur.userId,{$inc:{coins:cur.coinsCharged||DEPLOY_COST}},{new:true,session:s}); if(!u) throw new Error('Cannot refund deployment: user wallet is missing.'); cur.refunded=true; cur.status='failed'; cur.statusMessage=reason||'Deployment failed; coins refunded.'; cur.updatedAt=new Date(); await cur.save({session:s}); await WalletTransaction.create([{userId:cur.userId,type:'deployment_refund',delta:cur.coinsCharged||DEPLOY_COST,balanceAfter:u.coins,reference:cur.appName,description:`Refund for failed deployment ${cur.appName}: ${reason||'deployment failed'}`}],{session:s}); refunded=true; }); }finally{ await ms.endSession(); }
   return refunded;
 }
 app.get('/api/public-config',(req,res)=>{ const n=String(config.SUPPORT_WHATSAPP||'').replace(/\D/g,''); res.set('Cache-Control','no-store'); res.json({supportWhatsApp:n,pairingWebsiteUrl:config.PAIRING_WEBSITE_URL||'',binancePay:{enabled:BINANCE_PAY_ENABLED,comingSoon:BINANCE_PAY_COMING_SOON,configured:isBinancePayConfigured()},pricing:{kesPer10Coins:KES_PER_10_COINS,usdPer10Coins:USD_PER_10_COINS,usdMinimum:USD_MINIMUM,usdMinimumCoins:Math.ceil(USD_MINIMUM/USD_PER_10_COINS)*10}}); });
@@ -395,15 +395,12 @@ app.post('/api/binance-pay/upload-receipt', requireAuth, asyncRoute(async(req,re
 // FIXED TELEGRAM WEBHOOK - answers FIRST so it never spins
 app.post('/api/telegram/webhook', async (req,res)=>{
   const cb = req.body?.callback_query;
-  // 1. Answer Telegram IMMEDIATELY - stops loading spinner
   if(cb && TELEGRAM_BOT_TOKEN){
     try{
       await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerCallbackQuery`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({callback_query_id:cb.id, text:'Processing...'})});
     }catch(e){ console.error('answerCallback failed:', e.message); }
   }
-  // 2. Tell Telegram we got it
   res.sendStatus(200);
-  // 3. Then do the work
   try{
     if(!cb || !cb.data) return;
     console.log('Telegram callback from:', cb.from?.id, 'expected admin:', TELEGRAM_ADMIN_CHAT_ID, 'data:', cb.data, 'token set:', !!TELEGRAM_BOT_TOKEN);
@@ -446,7 +443,73 @@ app.post('/api/admin/binance-pay/:reference/reject', requireAuth, requireAdmin, 
   res.json({ok:true, message:'Rejected.'});
 }));
 
-app.get('/api/wallet',requireAuth,asyncRoute(async(req,res)=>{ const [user,transactions,payments]=await Promise.all([User.findById(req.user._id).select('coins'),WalletTransaction.find({userId:req.user._id}).sort({createdAt:-1}).limit(50),Payment.find({userId:req.user._id}).sort({createdAt:-1}).limit(20).select('-authorizationUrl')]); res.json({coins:user.coins,transactions,payments,pricing:{kesPer10Coins:KES_PER_10_COINS,usdPer10Coins:USD_PER_10_COINS,usdMinimum:USD_MINIMUM,usdMinimumCoins:Math.ceil(USD_MINIMUM/USD_PER_10_COINS)*10},binancePay:{enabled:BINANCE_PAY_ENABLED,comingSoon:BINANCE_PAY_COMING_SOON,configured:isBinancePayConfigured(),usdPer10Coins:USD_PER_10_COINS}}); }));
+// ================= WALLET - SHOW PENDING / REJECTED =================
+app.get('/api/wallet',requireAuth,asyncRoute(async(req,res)=>{
+  const [user,transactions,payments]=await Promise.all([
+    User.findById(req.user._id).select('coins'),
+    WalletTransaction.find({userId:req.user._id}).sort({createdAt:-1}).limit(50),
+    Payment.find({userId:req.user._id}).sort({createdAt:-1}).limit(20).select('-authorizationUrl -receiptImage')
+  ]);
+  const paymentTxns = payments.map(p => {
+    let type = 'purchase';
+    let description = '';
+    let statusLabel = '';
+    if(p.provider === 'binance-pay'){
+      if(p.credited || p.status === 'success'){
+        type = 'purchase'; statusLabel = 'Approved';
+        description = `Purchased ${p.coins} Teddy Coins through Binance Pay - APPROVED`;
+      } else if(p.status === 'rejected'){
+        type = 'purchase_rejected'; statusLabel = 'Rejected';
+        description = `Binance Pay ${p.coins} coins - REJECTED: ${p.adminNote || 'Receipt not valid'}`;
+      } else if(p.status === 'awaiting_verification'){
+        type = 'purchase_pending'; statusLabel = 'Pending Approval';
+        description = `Binance Pay ${p.coins} coins - PENDING - Waiting for Approval (${p.reference})`;
+      } else {
+        type = 'purchase_pending'; statusLabel = 'Pending Receipt';
+        description = `Binance Pay ${p.coins} coins - PENDING - Upload receipt (${p.reference})`;
+      }
+    } else {
+      if(p.credited || p.status === 'success'){
+        type = 'purchase'; statusLabel = 'Approved';
+        description = `Purchased ${p.coins} Teddy Coins through Paystack (${p.currency})`;
+      } else if(p.status === 'failed' || p.status === 'initialization_failed'){
+        type = 'purchase_rejected'; statusLabel = 'Failed';
+        description = `Paystack ${p.coins} coins - FAILED`;
+      } else {
+        type = 'purchase_pending'; statusLabel = 'Pending';
+        description = `Paystack ${p.coins} coins - PENDING (${p.reference})`;
+      }
+    }
+    return {
+      _id: `pay_${p._id}`,
+      userId: p.userId,
+      type,
+      delta: (p.credited || p.status === 'success') ? p.coins : 0,
+      balanceAfter: user.coins,
+      reference: p.reference,
+      description,
+      status: statusLabel,
+      paymentStatus: p.status,
+      provider: p.provider,
+      coins: p.coins,
+      createdAt: p.createdAt,
+      isPayment: true
+    };
+  });
+  const realRefs = new Set(transactions.filter(t => t.reference).map(t => String(t.reference)));
+  const filteredPaymentTxns = paymentTxns.filter(pt => {
+    if((pt.paymentStatus === 'success' || pt.status === 'Approved') && realRefs.has(String(pt.reference))) return false;
+    return true;
+  });
+  const allTxns = [...transactions, ...filteredPaymentTxns].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 50);
+  res.json({
+    coins: user.coins,
+    transactions: allTxns,
+    payments,
+    pricing:{kesPer10Coins:KES_PER_10_COINS,usdPer10Coins:USD_PER_10_COINS,usdMinimum:USD_MINIMUM,usdMinimumCoins:Math.ceil(USD_MINIMUM/USD_PER_10_COINS)*10},
+    binancePay:{enabled:BINANCE_PAY_ENABLED,comingSoon:BINANCE_PAY_COMING_SOON,configured:isBinancePayConfigured(),usdPer10Coins:USD_PER_10_COINS}
+  });
+}));
 app.get('/api/admin/summary',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{ const [users,deployments,payments,coins]=await Promise.all([User.countDocuments({role:'user'}),Deployment.countDocuments({status:{$ne:'deleted'}}),Payment.countDocuments({status:'success'}),User.aggregate([{$group:{_id:null,total:{$sum:'$coins'}}}])]); res.json({users,deployments,successfulPayments:payments,coinsInWallets:coins[0]?.total||0}); }));
 app.get('/api/admin/users',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{ const users=await User.find({role:'user'}).select('-passwordHash').sort({createdAt:-1}).limit(500); res.json(users); }));
 app.post('/api/admin/users/:id/coins',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{

@@ -1,0 +1,14 @@
+# Copy these into Heroku Settings > Config Vars; do NOT commit real values.
+NODE_ENV=production
+ADMIN_EMAIL=your-admin-email@example.com
+ADMIN_PASSWORD=replace-with-a-long-unique-password
+HEROKU_API_KEY=your-heroku-platform-api-key
+MONGODB_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/teddy_deployer?retryWrites=true&w=majority
+SESSION_SECRET=replace-with-at-least-32-random-characters
+PUBLIC_URL=https://YOUR-PANEL.herokuapp.com
+PAYSTACK_SECRET_KEY=sk_test_or_live_key
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_ADMIN_CHAT_ID=
+BINANCE_PAY_UID=
+BINANCE_PAY_EMAIL=
+PROTECTED_APP_NAMES=YOUR-PANEL-APP-NAME

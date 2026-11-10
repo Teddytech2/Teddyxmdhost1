@@ -8,7 +8,7 @@ It also allows the web dashboard, account registration, and sign-in to start whe
 
 1. Keep this repository private because `config.js` contains service credentials.
 2. Confirm `MONGODB_URI`, `SESSION_SECRET`, and `ADMIN.EMAIL` / `ADMIN.PASSWORD` in `config.js` are correct.
-3. Set a valid Heroku Platform API key in `config.js` (`HEROKU_API_KEY`) before deploying apps.
+3. Set a valid Heroku Platform API key in Heroku Config Vars (`HEROKU_API_KEY`) before deploying apps.
 4. Set a valid Paystack secret key before enabling wallet top-ups (`PAYSTACK_SECRET_KEY`). Paystack is not required for account registration or login.
 5. Keep `PUBLIC_URL` set to this panel's public HTTPS URL for payment callbacks.
 6. Deploy with `npm start` / `node server.js` on Node.js 20 or later.
@@ -23,4 +23,4 @@ If a deployment still fails after these code fixes, check the Heroku API respons
 
 
 ## Heroku Config Vars (required)
-Set `MONGODB_URI`, `SESSION_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `HEROKU_API_KEY`, and `PAYSTACK_SECRET_KEY` in Heroku Settings > Config Vars. The application no longer contains fallback database credentials or default admin credentials in `config.js`. Rotate the MongoDB database user's password because the previous connection string was embedded in an earlier project ZIP.
+Set `MONGODB_URI`, `SESSION_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `HEROKU_API_KEY`, and (if using top-ups) `PAYSTACK_SECRET_KEY` in Heroku Settings > Config Vars. The application no longer contains fallback database credentials or default admin credentials in `config.js`. Rotate the MongoDB database user's password because the previous connection string was embedded in an earlier project ZIP.

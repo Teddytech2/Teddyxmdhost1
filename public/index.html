@@ -10,7 +10,6 @@
 <style>
 :root{--bg:#0A0A12;--line:rgba(255,255,255,.12);--line2:rgba(255,255,255,.18);--cyan:#22D3EE;--green:#22C55E;--red:#F87171;--yellow:#FBBF24;--shadow:0 24px 70px rgba(0,0,0,.6);--grad:linear-gradient(135deg,#8B5CF6,#EC4899,#22D3EE);--grad-btn:linear-gradient(135deg,#7C3AED,#DB2777,#0891B2);--grad-binance:linear-gradient(135deg,#F0B90B,#F8D33A)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;min-height:100%;background:radial-gradient(ellipse at 10% 0%,#7C3AED33 0,transparent 45%),radial-gradient(ellipse at 90% 20%,#EC489933 0,transparent 40%),radial-gradient(ellipse at 50% 100%,#0891B233 0,transparent 45%),var(--bg);color:#fff;font-family:'Inter','DM Sans',sans-serif}body{font-size:15px;min-width:320px}button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;touch-action:manipulation}a{color:inherit}.hidden{display:none!important}.muted{color:#A1A1AA}.eyebrow{font-size:11px;font-weight:800;letter-spacing:.18em;color:var(--cyan);text-transform:uppercase}.brand{font:800 22px 'Space Grotesk',sans-serif;letter-spacing:-.02em}.brand span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}.btn{min-height:48px;padding:12px 18px;border-radius:16px;font-size:14px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;text-align:center;transition:.2s}.btn:hover{transform:translateY(-2px) scale(1.01);filter:brightness(1.1)}.primary{background:var(--grad-btn);color:#fff;box-shadow:0 12px 30px #7C3AED44}.secondary{background:rgba(255,255,255,.08);border:1px solid var(--line);color:#fff}.btn:disabled{opacity:.55;cursor:not-allowed}.full{width:100%}.btn.binance{background:var(--grad-binance);color:#1A1A00}.btn.binance:disabled{opacity:.7;filter:grayscale(.3)}.field{display:grid;gap:8px;margin:15px 0}.field label{font-size:13px;font-weight:700;color:#E4E4E7}.field input,.field select,.field textarea{width:100%;min-width:0;min-height:50px;border:1px solid var(--line);border-radius:16px;background:rgba(0,0,0,.35);color:#fff;padding:12px 14px;outline:none;font-size:16px}.field textarea{min-height:90px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:#A855F7;box-shadow:0 0 0 4px #A855F733}.hint{font-size:12px;line-height:1.6;color:#A1A1AA;overflow-wrap:anywhere}.error{color:#FCA5A5;font-size:13px;line-height:1.5;min-height:18px}.login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}#authView{min-height:100svh;padding:clamp(18px,4vw,48px);display:grid;place-items:center}#authView .auth-shell{width:min(1140px,100%);display:grid;grid-template-columns:minmax(0,1.05fr) minmax(340px,.85fr);gap:clamp(28px,6vw,64px);align-items:center}#authView .auth-showcase{position:relative;overflow:hidden;min-height:560px;padding:clamp(28px,5vw,56px);border:1px solid var(--line);border-radius:32px;background:linear-gradient(145deg,rgba(124,58,237,.28),rgba(236,72,153,.18) 45%,rgba(8,145,178,.22));box-shadow:0 30px 90px #0008;display:flex;flex-direction:column;justify-content:space-between}#authView .auth-brand{display:flex;align-items:center;gap:12px;font:800 17px 'Space Grotesk',sans-serif;letter-spacing:.08em;position:relative;z-index:1}#authView .auth-brand-mark{width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:var(--grad);color:#fff;font-size:21px}#authView .auth-kicker{display:inline-flex;align-items:center;gap:8px;margin-top:52px;color:#22D3EE;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;position:relative;z-index:1}#authView .auth-showcase h2{max-width:580px;margin:17px 0 15px;font:800 clamp(34px,5vw,58px)/1.05 'Space Grotesk',sans-serif;letter-spacing:-.04em;position:relative;z-index:1}#authView .auth-showcase h2 span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}#authView .auth-showcase-copy{max-width:480px;color:#D4D4D8;font-size:15px;line-height:1.8;position:relative;z-index:1}#authView .auth-feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-top:34px;position:relative;z-index:1}#authView .auth-feature{display:flex;gap:11px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(0,0,0,.3);color:#fff;font-size:12px;font-weight:700}#authView .auth-feature i{width:30px;height:30px;flex:none;display:grid;place-items:center;border-radius:10px;background:var(--grad);color:#fff;font-style:normal;font-size:15px}#authView .auth-showcase-foot{display:flex;align-items:center;gap:9px;margin-top:40px;color:#A1A1AA;font-size:11px;letter-spacing:.08em;text-transform:uppercase;position:relative;z-index:1}#authView .auth-live-dot{width:8px;height:8px;border-radius:50%;background:#22C55E;box-shadow:0 0 14px #22C55E}#authView .login-card{width:100%;max-width:440px;justify-self:end;padding:clamp(24px,4vw,36px);border:1px solid var(--line);border-radius:28px;background:rgba(20,20,31,.85);box-shadow:0 28px 80px #0009}#authView .logo{width:56px;height:56px;border-radius:16px;border:1px solid var(--line);object-fit:cover;margin-bottom:16px}#authView .login-card h1{font:800 clamp(25px,3vw,31px) 'Space Grotesk',sans-serif;letter-spacing:-.03em;margin:7px 0}#authView .login-card h1 span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text!important}#authView .login-card p{color:#A1A1AA;font-size:14px;line-height:1.65}#authView .tabs{display:flex;gap:5px;padding:5px;border:1px solid var(--line);border-radius:16px;background:rgba(0,0,0,.35);margin:22px 0 12px}#authView .tab{flex:1;padding:12px;border-radius:12px;background:transparent;color:#A1A1AA;font-weight:800}#authView .tab.active{background:var(--grad-btn);color:#fff}#authView .login-foot{margin-top:20px;text-align:center;font-size:11px;letter-spacing:.12em;color:#71717A}#authView .login-support{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:13px;width:100%;min-height:44px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.07);color:#fff;text-decoration:none;font-size:13px;font-weight:800}.logo{width:64px;height:64px;border-radius:18px;object-fit:cover;border:1px solid var(--line);margin-bottom:16px}.layout{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:100vh}.side{position:sticky;top:0;height:100vh;padding:28px 18px;background:rgba(14,14,26,.9);border-right:1px solid var(--line);display:flex;flex-direction:column;z-index:5}.side-brand{padding:3px 10px 30px;display:flex;align-items:center;justify-content:space-between;gap:10px}.navlabel{font-size:10px;letter-spacing:.18em;color:#71717A;font-weight:800;padding:12px 10px}.nav{display:flex;align-items:center;gap:12px;min-height:50px;padding:12px 14px;margin:3px 0;border:1px solid transparent;border-radius:16px;color:#A1A1AA;text-decoration:none;font-size:14px;font-weight:700;cursor:pointer}.nav b{width:22px;text-align:center;font-size:18px}.nav.active,.nav:hover{background:rgba(139,92,246,.18);border-color:rgba(168,85,247,.4);color:#fff}.side-foot{margin-top:auto;border-top:1px solid var(--line);padding:17px 10px 0;color:#71717A;font-size:12px;line-height:1.8}.main{width:100%;max-width:1550px;min-width:0;margin:auto;padding:30px clamp(16px,4vw,48px) 120px}.top{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:24px;padding:24px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(110deg,rgba(124,58,237,.22),rgba(236,72,153,.12) 50%,rgba(34,211,238,.14));box-shadow:0 14px 45px #0004}.top h1{font:800 clamp(25px,3vw,36px) 'Space Grotesk',sans-serif;margin:6px 0 5px;letter-spacing:-.03em}.top p{margin:0;color:#D4D4D8;font-size:13px;line-height:1.6}.top-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}.user-chip,.wallet-chip{display:flex;align-items:center;gap:9px;padding:11px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.3);font-size:12px;font-weight:800}.coin{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:18px}.stat,.card{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:24px;padding:22px;min-width:0;position:relative;overflow:hidden;box-shadow:0 12px 35px #0003}.stat small{color:#A1A1AA;font-size:12px}.stat strong{display:block;margin-top:8px;font:800 clamp(24px,3vw,32px) 'Space Grotesk',sans-serif;overflow-wrap:anywhere}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:28px 0 15px}.section-head h2{font:700 20px 'Space Grotesk',sans-serif;margin:0}.card{margin-bottom:16px}.wallet-hero{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;min-height:190px;background:linear-gradient(135deg,#7C3AED,#DB2777 55%,#0891B2)!important;border:none!important}.wallet-hero .hint{color:#FCE7F3!important}.wallet-balance{font:800 44px 'Space Grotesk',sans-serif;color:#fff;letter-spacing:-.04em}.tag{display:inline-flex;align-items:center;padding:7px 12px;border-radius:30px;background:rgba(0,0,0,.28);color:#fff;border:1px solid rgba(255,255,255,.25);font-size:11px;font-weight:800}.tag.coming-soon{background:var(--grad-binance);color:#1A1A00;border-color:#F0B90B}.tag.live{background:#22C55E;color:#fff;border-color:#22C55E}.bot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.bot-option{display:flex;align-items:flex-start;gap:12px;padding:18px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.04);cursor:pointer;text-align:left;color:#fff;width:100%}.bot-option.active{border-color:#A855F7;background:linear-gradient(145deg,rgba(124,58,237,.3),rgba(236,72,153,.18))}.bot-icon{width:44px;height:44px;flex:none;display:grid;place-items:center;border-radius:14px;background:var(--grad);color:#fff;font-size:18px}.bot-option strong{display:block;font-size:13px;margin:1px 0 5px}.bot-option small{display:block;color:#A1A1AA;font-size:11px;line-height:1.5}.price-pill{margin-left:auto;white-space:nowrap;color:#fff;font-size:11px;font-weight:900;background:var(--grad-btn);padding:6px 10px;border-radius:20px}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}.field.full-field{grid-column:1/-1}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:650px}th{text-align:left;padding:12px;color:#71717A;border-bottom:1px solid var(--line);font-size:10px;text-transform:uppercase;letter-spacing:.1em}td{padding:13px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}.app-name{font-weight:800;overflow-wrap:anywhere}.sub{font-size:11px;color:#A1A1AA;margin-top:4px;overflow-wrap:anywhere}.status{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;white-space:nowrap}.status i{width:8px;height:8px;border-radius:50%;background:var(--yellow)}.status.running i{background:var(--green)}.status.offline i,.status.failed i{background:var(--red)}.status.building i,.status.deploying i{background:var(--yellow);animation:pulse 1.2s infinite}@keyframes pulse{50%{opacity:.35}}.actions{display:flex;gap:6px;flex-wrap:wrap}.mini{min-height:34px;padding:7px 10px;border-radius:10px;background:rgba(255,255,255,.08);color:#fff;font-size:11px;font-weight:800;border:1px solid var(--line)}.mini.danger{background:rgba(248,113,113,.15);color:#FCA5A5;border-color:#F8717144}.empty{text-align:center;color:#A1A1AA;padding:30px 14px;line-height:1.6;border:1px dashed var(--line);border-radius:18px;background:rgba(0,0,0,.2)}.mobile-list{display:none;gap:12px}.app-card{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:20px;padding:17px}.app-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.app-card-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:15px 0}.app-card-info small{display:block;color:#A1A1AA;font-size:10px}.app-card-info strong{display:block;font-size:12px;margin-top:4px;overflow-wrap:anywhere}.history-list{display:grid;gap:9px}.history-row{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px}.positive{color:#86EFAC}.negative{color:#FCA5A5}
-/* PATCHED: Wallet Pending / Rejected badges */
 .txn-badge{display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}
 .txn-badge.pending{background:rgba(251,191,36,.18);color:#FBBF24;border:1px solid rgba(251,191,36,.45)}
 .txn-badge.rejected{background:rgba(248,113,113,.18);color:#F87171;border:1px solid rgba(248,113,113,.45)}
@@ -69,7 +68,7 @@
 <section id="walletPage" class="hidden">
 <div class="card wallet-hero"><div><div class="eyebrow">AVAILABLE BALANCE</div><div class="wallet-balance"><span id="walletCoins">0</span> <span style="font-size:15px">COINS</span></div><div class="hint">Each deployment costs 10 coins.</div></div><span class="tag">10 COINS = KSH 50 · $0.40</span></div>
 <div class="grid2"><div class="card"><div class="eyebrow">KES CHECKOUT</div><h2 style="margin:8px 0">Pay in Kenyan Shillings</h2><div class="hint">Paystack checkout can show the payment methods enabled for your account, including card and supported local methods.</div><div class="field"><label>Choose coins</label><select id="kesCoins"><option value="10">10 coins — KSh 50</option><option value="20">20 coins — KSh 100</option><option value="50">50 coins — KSh 250</option><option value="100">100 coins — KSh 500</option><option value="200">200 coins — KSh 1,000</option><option value="500">500 coins — KSh 2,500</option></select></div><button class="btn primary full" onclick="buyCoins('KES')">Pay with KES →</button></div><div class="card"><div class="eyebrow">USD CARD CHECKOUT</div><h2 style="margin:8px 0">Pay in US Dollars</h2><div class="hint">USD payments are card-only. Minimum card top-up is 10 coins for $0.40. Rate: 1 coin = $0.04.</div><div class="field"><label>Choose coins</label><select id="usdCoins"><option value="10">10 coins — $0.40</option><option value="20">20 coins — $0.80</option><option value="50">50 coins — $2.00</option><option value="100">100 coins — $4.00</option><option value="200">200 coins — $8.00</option><option value="500">500 coins — $20.00</option></select></div><button class="btn primary full" onclick="buyCoins('USD')">Pay by card in USD →</button></div></div>
-<div class="card binance-card" style="margin-top:18px"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start"><div style="display:flex;gap:14px;align-items:flex-start"><span class="binance-icon">₿</span><div><div class="eyebrow" style="color:#FDE68A">BINANCE PAY</div><h2 style="margin:8px 0 4px">Pay with Binance Pay</h2><div class="hint">Pay with USDT via Binance. Send to Binance ID or Email, upload receipt. Same rate — 10 coins = $0.40. Approval never expires.</div></div></div><span class="tag live">● LIVE</span></div><div class="form-grid"><div class="field"><label>Choose coins</label><select id="binanceCoins"><option value="10">10 coins — $0.40</option><option value="20">20 coins — $0.80</option><option value="50">50 coins — $2.00</option><option value="100">100 coins — $4.00</option><option value="200">200 coins — $8.00</option><option value="500">500 coins — $20.00</option></select></div><div class="field"><label>Method</label><input value="Binance ID or Email — you choose" disabled style="opacity:.9"></div></div><button class="btn binance full" onclick="buyBinancePay()">Pay with Binance Pay →</button><div class="hint" style="margin-top:10px;text-align:center">Send USDT → Upload screenshot → Admin approves on Telegram → Coins added</div></div>
+<div class="card binance-card" style="margin-top:18px"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start"><div style="display:flex;gap:14px;align-items:flex-start"><span class="binance-icon">₿</span><div><div class="eyebrow" style="color:#FDE68A">BINANCE PAY</div><h2 style="margin:8px 0 4px">Pay with Binance Pay</h2><div class="hint">Pay with USDT via Binance. Send to Binance ID or Email, upload receipt. Same rate — 10 coins = $0.40. Verified quickly.</div></div></div><span class="tag live">● LIVE</span></div><div class="form-grid"><div class="field"><label>Choose coins</label><select id="binanceCoins"><option value="10">10 coins — $0.40</option><option value="20">20 coins — $0.80</option><option value="50">50 coins — $2.00</option><option value="100">100 coins — $4.00</option><option value="200">200 coins — $8.00</option><option value="500">500 coins — $20.00</option></select></div><div class="field"><label>Method</label><input value="Binance ID or Email — you choose" disabled style="opacity:.9"></div></div><button class="btn binance full" onclick="buyBinancePay()">Pay with Binance Pay →</button><div class="hint" style="margin-top:10px;text-align:center">Send USDT → Upload screenshot → We verify → Coins added</div></div>
 <div class="section-head"><h2>Wallet transactions</h2><button class="btn secondary" onclick="loadWallet()">↻ Refresh</button></div><div class="card"><div id="walletHistory" class="history-list"><div class="empty">Loading transactions…</div></div></div>
 </section>
 <section id="adminPage" class="hidden"><div class="eyebrow">ADMIN CONTROL CENTER</div><div class="stats" style="margin-top:12px"><div class="stat"><small>Registered users</small><strong id="adminUsersCount">—</strong></div><div class="stat"><small>Total deployments</small><strong id="adminDeploymentsCount">—</strong></div><div class="stat"><small>Coins in wallets</small><strong id="adminCoinsCount">—</strong></div></div><div class="section-head"><h2>All users</h2><button class="btn secondary" onclick="loadAdmin()">↻ Refresh</button></div><div id="adminUsersList" class="mobile-list"><div class="empty">Loading users…</div></div><div class="card table-wrap"><table><thead><tr><th>User</th><th>Email</th><th>Coins</th><th>Joined</th><th>Wallet action</th></tr></thead><tbody id="adminUsersTable"></tbody></table></div><div class="section-head"><h2>Recent Paystack payments</h2></div><div class="card table-wrap"><table><thead><tr><th>User</th><th>Reference</th><th>Coins</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody id="adminPaymentsTable"></tbody></table></div><div class="section-head"><h2>All deployments</h2></div><div id="adminDeploymentsList" class="mobile-list"></div></section>
@@ -119,22 +118,21 @@ function appActions(app){const n=esc(app.name);return `<div class="actions">${ap
 function appCard(app){const url=app.web_url?`<a class="muted-link" href="${esc(app.web_url)}" target="_blank" rel="noopener">Open app ↗</a>`:'<span class="muted">No web URL</span>';return `<article class="app-card"><div class="app-card-head"><div><div class="app-name">${esc(app.name)}</div><div class="sub">${esc(app.bot_name||'Bot application')} · ${url}</div>${app.owner_email?`<div class="sub">Owner: ${esc(app.owner_email)}</div>`:''}</div>${statusHTML(app)}</div><div class="app-card-info"><div><small>Region</small><strong>${esc(app.region||'—')}</strong></div><div><small>Running dynos</small><strong>${Number(app.running_dynos||0)}</strong></div><div><small>Desired dynos</small><strong>${Number(app.desired_web_dynos||0)}</strong></div><div><small>Repository</small><strong>${esc(app.repo_url||'—')}</strong></div></div>${appActions(app)}</article>`;}
 function appRow(app){return `<tr><td><b>${esc(app.name)}</b><div class="sub">${esc(app.bot_name||'Bot')}</div></td><td>${esc(app.owner_email||currentUser.email)}</td><td>${statusHTML(app)}</td><td><a class="muted-link" href="${esc(app.repo_url||'#')}" target="_blank" rel="noopener">${esc(app.repo_url||'—')}</a></td><td>${appActions(app)}</td></tr>`;}
 async function loadApps(){try{const apps=await api('/api/apps');appsCache=apps;$('statApps').textContent=apps.length;$('statRunning').textContent=apps.filter(a=>a.status==='running').length;$('statOffline').textContent=apps.filter(a=>['offline','failed','scaled-down'].includes(a.status)).length;$('overviewApps').innerHTML=apps.map(appCard).join('')||'<div class="empty">No bots deployed yet. Choose Deploy a bot to get started.</div>';$('appsList').innerHTML=apps.map(appCard).join('')||'<div class="empty">No applications found.</div>';$('appsTable').innerHTML=apps.map(appRow).join('')||'<tr><td colspan="5" class="empty">No applications found.</td></tr>';$('appsHeading').textContent=currentUser.role==='admin'?'All Heroku applications':'Your applications';}catch(e){toast(e.message);$('overviewApps').innerHTML=`<div class="empty">${esc(e.message)}</div>`;}}
-// PATCHED loadWallet - shows PENDING / REJECTED with badges
 async function loadWallet(){
   try{
     const d=await api('/api/wallet');
     updateCoins(d.coins);
     $('walletHistory').innerHTML=(d.transactions||[]).map(t=>{
-      const isPending = t.type==='purchase_pending' || t.status==='Pending Approval' || t.status==='Pending Receipt' || t.status==='Pending';
-      const isRejected = t.type==='purchase_rejected' || t.status==='Rejected' || t.status==='Failed';
-      const isApproved = !isPending && !isRejected && (t.status==='Approved' || t.delta>0);
+      const isPending = t.type==='purchase_pending' || t.status==='Pending Verification' || t.status==='Pending Receipt' || t.status==='Pending';
+      const isRejected = t.type==='purchase_rejected' || t.status==='Not Verified' || t.status==='Failed';
+      const isApproved = !isPending && !isRejected && (t.status==='Verified' || t.delta>0);
       const isSpent = !isPending && !isRejected && !isApproved && t.delta<0;
-      const badgeText = isPending ? '⏳ PENDING' : isRejected ? '❌ REJECTED' : isApproved ? '✅ APPROVED' : isSpent ? '➖ SPENT' : 'ℹ️';
+      const badgeText = isPending ? '⏳ PENDING VERIFICATION' : isRejected ? '❌ NOT VERIFIED' : isApproved ? '✅ VERIFIED' : isSpent ? '➖ SPENT' : 'ℹ️';
       const badgeClass = isPending ? 'pending' : isRejected ? 'rejected' : isApproved ? 'approved' : 'spent';
       const amountText = (isPending || isRejected) ? `${t.coins || Math.abs(t.delta) || 0} coins` : `${t.delta>0?'+':''}${t.delta} coins`;
       const amountClass = isPending ? '' : isRejected ? 'negative' : isApproved ? 'positive' : (t.delta<0 ? 'negative' : '');
       const refText = t.reference ? ` • ${esc(t.reference)}` : '';
-      return `<div class="history-row"><div><b>${esc(t.description||t.type)}</b><div class="sub">${new Date(t.createdAt).toLocaleString()}${refText}</div></div><div style="text-align:right;min-width:130px"><span class="txn-badge ${badgeClass}">${badgeText}</span><div class="txn-amount ${amountClass}" style="margin-top:6px">${amountText}</div><div class="sub">Balance: ${t.balanceAfter}</div></div></div>`;
+      return `<div class="history-row"><div><b>${esc(t.description||t.type)}</b><div class="sub">${new Date(t.createdAt).toLocaleString()}${refText}</div></div><div style="text-align:right;min-width:150px"><span class="txn-badge ${badgeClass}">${badgeText}</span><div class="txn-amount ${amountClass}" style="margin-top:6px">${amountText}</div><div class="sub">Balance: ${t.balanceAfter}</div></div></div>`;
     }).join('')||'<div class="empty">No wallet transactions yet.</div>';
   }catch(e){toast(e.message);}
 }
@@ -147,18 +145,21 @@ async function buyBinancePay(){
     openBinanceModal(d);
   }catch(e){ toast(e.message); }
 }
+function showUploadedState(){
+  const uploadWrap = $('bnUploadWrap');
+  const uploadedWrap = $('bnUploadedWrap');
+  const pendingWrap = $('bnPendingWrap');
+  if(uploadWrap) uploadWrap.classList.add('hidden');
+  if(uploadedWrap) uploadedWrap.classList.remove('hidden');
+  if(pendingWrap) pendingWrap.classList.remove('hidden');
+}
 function openBinanceModal(d){
+  const isAlreadyUploaded = d.status === 'awaiting_verification' || d.status === 'success' || d.credited;
+  const isRejected = d.status === 'rejected';
   modal('Binance Pay Payment', `
     <div class="binance-pay-box">
-      <div style="display:flex;gap:12px;align-items:center">
-        <span class="binance-icon">₿</span>
-        <div><b>Binance Pay Payment</b><div class="hint">Reference: ${esc(d.reference)}</div></div>
-      </div>
-      <div class="binance-amount">
-        <small>AMOUNT TO SEND</small><br>
-        <b>$${esc(d.usdAmount)} USDT</b><br>
-        <span class="hint">For <b style="color:#FBBF24">${esc(d.coins)} coins</b> • 10 coins = $0.40</span>
-      </div>
+      <div style="display:flex;gap:12px;align-items:center"><span class="binance-icon">₿</span><div><b>Binance Pay Payment</b><div class="hint">Reference: ${esc(d.reference)}</div></div></div>
+      <div class="binance-amount"><small>AMOUNT TO SEND</small><br><b>$${esc(d.usdAmount)} USDT</b><br><span class="hint">For <b style="color:#FBBF24">${esc(d.coins)} coins</b> • 10 coins = $0.40</span></div>
       <div id="binanceStatus"></div>
       <div style="margin-top:14px">
         <div style="font-size:13px;font-weight:800;margin-bottom:10px">Send USDT to — Choose one:</div>
@@ -166,29 +167,20 @@ function openBinanceModal(d){
           <button class="btn secondary" id="chooseIdBtn" onclick="chooseBinanceMethod('id')" style="flex:1">🆔 Binance ID</button>
           <button class="btn secondary" id="chooseEmailBtn" onclick="chooseBinanceMethod('email')" style="flex:1">📧 Binance Email</button>
         </div>
-        <div id="bnIdBox" class="binance-row">
-          <span class="muted">Binance ID</span>
-          <span style="display:flex;gap:6px;align-items:center">
-            <span class="pill" id="bnUid">${esc(d.binanceUid)}</span>
-            <button class="mini" onclick="copyBn('bnUid')">📋 Copy</button>
-          </span>
-        </div>
-        <div id="bnEmailBox" class="binance-row hidden" style="border-bottom:0">
-          <span class="muted">Binance Email</span>
-          <span style="display:flex;gap:6px;align-items:center">
-            <span class="pill" id="bnEmail">${esc(d.binanceEmail)}</span>
-            <button class="mini" onclick="copyBn('bnEmail')">📋 Copy</button>
-          </span>
-        </div>
+        <div id="bnIdBox" class="binance-row"><span class="muted">Binance ID</span><span style="display:flex;gap:6px;align-items:center"><span class="pill" id="bnUid">${esc(d.binanceUid)}</span><button class="mini" onclick="copyBn('bnUid')">📋 Copy</button></span></div>
+        <div id="bnEmailBox" class="binance-row hidden" style="border-bottom:0"><span class="muted">Binance Email</span><span style="display:flex;gap:6px;align-items:center"><span class="pill" id="bnEmail">${esc(d.binanceEmail)}</span><button class="mini" onclick="copyBn('bnEmail')">📋 Copy</button></span></div>
         <div class="hint" id="bnMethodHint" style="margin-top:10px;text-align:center">Send <b style="color:#fff">$${esc(d.usdAmount)} USDT</b> to Binance ID above</div>
       </div>
       <input type="file" id="bnReceipt" accept="image/*" class="hidden">
-      <button class="btn binance full" id="bnUploadBtn" onclick="document.getElementById('bnReceipt').click()" style="margin-top:14px">⬆️ Verify Payment — Upload Receipt</button>
-      <div class="hint" style="text-align:center;margin-top:8px">📷 Upload Binance screenshot after sending • Approval never expires</div>
+      <div id="bnUploadWrap"><button class="btn binance full" id="bnUploadBtn" onclick="document.getElementById('bnReceipt').click()" style="margin-top:14px">⬆️ Upload Receipt</button><div class="hint" style="text-align:center;margin-top:8px">📷 Upload Binance screenshot after sending</div></div>
+      <div id="bnUploadedWrap" class="hidden" style="margin-top:14px;background:rgba(34,197,94,.12);border:1px solid #22C55E;padding:14px;border-radius:14px;text-align:center"><div style="font-size:22px">✅</div><b style="color:#4ADE80">Receipt Uploaded Successfully</b><div class="hint" style="margin-top:4px">Your receipt was received. No need to upload again.</div></div>
+      <div id="bnPendingWrap" class="hidden" style="margin-top:12px;background:rgba(251,191,36,.15);border:1px solid #FBBF24;padding:12px;border-radius:12px;text-align:center">⏳ <b>Pending Verification</b><br><span class="hint">Your payment is being verified. Coins will be added after verification.</span></div>
     </div>
   `);
   document.getElementById('bnReceipt').addEventListener('change', uploadBinanceReceipt);
   chooseBinanceMethod('id');
+  if(isAlreadyUploaded){ showUploadedState(); }
+  if(isRejected){ const st = $('binanceStatus'); if(st) st.innerHTML = `<div style="background:rgba(248,113,113,.15);border:1px solid #F87171;padding:12px;border-radius:12px;margin-top:12px;text-align:center">❌ <b>Not verified.</b> Please create a new payment and try again.</div>`; }
   startBinancePolling(d.reference);
 }
 function chooseBinanceMethod(method){
@@ -217,15 +209,25 @@ function copyBn(id){
 }
 async function uploadBinanceReceipt(e){
   const file = e.target.files[0]; if(!file) return;
+  const btn = $('bnUploadBtn');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Uploading...'; }
   const reader = new FileReader();
   reader.onload = async ()=>{
     try{
-      const r = await api('/api/binance-pay/upload-receipt',{method:'POST',body:JSON.stringify({reference:currentBinanceRef, receiptImage:reader.result})});
-      toast('Receipt sent. Pending - Waiting for Approval.');
-      const st = $('binanceStatus'); if(st) st.innerHTML = `<div style="background:rgba(251,191,36,.15);border:1px solid #FBBF24;padding:12px;border-radius:12px;margin-top:12px;text-align:center">⏳ <b>Pending - Waiting for Approval</b><br><span class="hint">Your receipt was sent to admin. Coins will be added after approval. This never expires.</span></div>`;
-      const btn = $('bnUploadBtn'); if(btn) btn.textContent = '⏳ Pending - Waiting for Approval';
+      await api('/api/binance-pay/upload-receipt',{method:'POST',body:JSON.stringify({reference:currentBinanceRef, receiptImage:reader.result})});
+      showUploadedState();
+      const st = $('binanceStatus'); if(st) st.innerHTML = ``;
+      toast('✅ Receipt Uploaded Successfully. Pending Verification.');
       loadWallet();
-    }catch(err){ toast(err.message); }
+    }catch(err){
+      if(String(err.message||'').toLowerCase().includes('already sent') || String(err.message||'').toLowerCase().includes('pending')){
+        showUploadedState();
+        toast('Receipt already uploaded. Pending Verification.');
+      } else {
+        toast(err.message);
+        if(btn){ btn.disabled = false; btn.textContent = '⬆️ Upload Receipt'; }
+      }
+    }
   };
   reader.readAsDataURL(file);
 }
@@ -237,15 +239,19 @@ function startBinancePolling(ref){
       if(d.credited || d.status === 'success'){
         clearInterval(binancePollTimer);
         updateCoins(d.currentBalance);
-        const st = $('binanceStatus'); if(st) st.innerHTML = `<div style="background:rgba(34,197,94,.15);border:1px solid #22C55E;padding:12px;border-radius:12px;margin-top:12px;text-align:center">✅ <b>Approved! ${d.coins} coins added.</b><br>New balance: ${d.currentBalance} coins</div>`;
-        toast(`Approved! ${d.coins} coins added.`);
+        const uploadWrap = $('bnUploadWrap'); if(uploadWrap) uploadWrap.classList.add('hidden');
+        const uploadedWrap = $('bnUploadedWrap'); if(uploadedWrap) uploadedWrap.classList.remove('hidden');
+        const pendingWrap = $('bnPendingWrap'); if(pendingWrap) pendingWrap.classList.add('hidden');
+        const st = $('binanceStatus'); if(st) st.innerHTML = `<div style="background:rgba(34,197,94,.15);border:1px solid #22C55E;padding:12px;border-radius:12px;margin-top:12px;text-align:center">✅ <b>Verified! ${d.coins} coins added.</b><br>New balance: ${d.currentBalance} coins</div>`;
+        toast(`Verified! ${d.coins} coins added.`);
         loadWallet();
       } else if(d.status === 'rejected'){
         clearInterval(binancePollTimer);
-        const st = $('binanceStatus'); if(st) st.innerHTML = `<div style="background:rgba(248,113,113,.15);border:1px solid #F87171;padding:12px;border-radius:12px;margin-top:12px;text-align:center">❌ <b>Rejected:</b> ${esc(d.adminNote||'Receipt not valid.')}</div>`;
+        const st = $('binanceStatus'); if(st) st.innerHTML = `<div style="background:rgba(248,113,113,.15);border:1px solid #F87171;padding:12px;border-radius:12px;margin-top:12px;text-align:center">❌ <b>Not verified:</b> ${esc(d.adminNote||'Receipt not valid. Please try again.')}</div>`;
         loadWallet();
       } else if(d.status === 'awaiting_verification'){
-        const st = $('binanceStatus'); if(st && !st.innerHTML) st.innerHTML = `<div style="background:rgba(251,191,36,.15);border:1px solid #FBBF24;padding:12px;border-radius:12px;margin-top:12px;text-align:center">⏳ <b>Pending - Waiting for Approval</b></div>`;
+        showUploadedState();
+        const st = $('binanceStatus'); if(st) st.innerHTML = ``;
       }
     }catch(e){}
   }, 5000);

@@ -10,7 +10,7 @@ A multi-user Heroku bot deployment portal with Teddy Coins, MongoDB Atlas, Payst
 - Coin pricing: **10 coins = KSh 50**. KES packs can be purchased through Paystack.
 - USD checkout is card-only and starts at Paystack's **$2 minimum**. Default configured rate is $0.40 per 10 coins, so USD checkout starts at 50 coins ($2). Change `USD_PER_10_COINS` only after checking Paystack minimums and your intended price.
 - Paystack payments are verified server-side before coins are credited. Callback and signed webhook processing are idempotent.
-- Users can see and manage only apps they deployed. Admin can see every Heroku app and all users/payments/deployments.
+- Regular users can see and manage only deployments owned by their account. Admin accounts retain global visibility for support and administration.
 - The built-in catalogue contains TEDDY-XMD ULTRA, JUNE ULTRA and CYPHERX BOT. Their GitHub repositories are configured by the administrator; customers do not enter repository URLs. Each bot has a **Get SESSION_ID** link that opens the pairing website. A SESSION_ID is required for every deployment.
 - Heroku setup/build logs, runtime logs, restart, redeploy and delete actions.
 - Failed Heroku setup/build automatically refunds the 10-coin deployment charge.
@@ -24,7 +24,9 @@ Set these in **Heroku Dashboard → your app → Settings → Config Vars** (do 
 - `SESSION_SECRET` — unique random secret, at least 32 characters.
 - `PUBLIC_URL` — this panel's complete HTTPS URL, e.g. `https://your-panel.herokuapp.com`.
 - `PAYSTACK_SECRET_KEY` — only needed for Paystack top-ups.
-- `TELEGRAM_BOT_TOKEN` and `TELEGRAM_ADMIN_CHAT_ID` — only needed for Telegram receipt notifications/approval.
+- `TELEGRAM_BOT_TOKEN` and `TELEGRAM_ADMIN_CHAT_ID` — needed for Telegram receipt notifications/approval. Start a private chat with the bot using `/start` first.
+- `TELEGRAM_ADMIN_USER_ID` — your numeric Telegram user ID allowed to approve/reject receipts. Set this when `TELEGRAM_ADMIN_CHAT_ID` is a group chat; it is safest to set it for private chats too.
+- `TELEGRAM_WEBHOOK_SECRET` — optional random secret used to validate Telegram webhook requests. The app registers `/api/telegram/webhook` automatically on startup when `PUBLIC_URL` and `TELEGRAM_BOT_TOKEN` are set.
 - `BINANCE_PAY_UID` and/or `BINANCE_PAY_EMAIL` — manual Binance Pay receiving details.
 - `PROTECTED_APP_NAMES` — comma-separated names of this panel and any apps customers must not manage.
 
@@ -82,3 +84,13 @@ These links are configured per bot; the deployer does not send every bot to the 
 
 ## Health check
 The panel exposes `GET /health` (HTTP 200 JSON) for basic uptime checks. Heroku routes traffic to the process listening on its assigned `PORT`; do not hardcode a production port.
+
+
+## Telegram Binance receipt approval
+1. Set `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ADMIN_CHAT_ID`, `TELEGRAM_ADMIN_USER_ID`, and `PUBLIC_URL` in Heroku Config Vars.
+2. Open the Telegram bot and send `/start` so it can message you. For a group destination, add the bot and use the group's numeric chat ID, while `TELEGRAM_ADMIN_USER_ID` must be your personal numeric Telegram user ID.
+3. Optionally set `TELEGRAM_WEBHOOK_SECRET` to a long random string.
+4. Restart/redeploy the panel. It registers the Telegram webhook automatically. Check Heroku logs for `Telegram webhook registered`.
+5. Submit a test Binance receipt. The Telegram message should include APPROVE and REJECT buttons. Only the configured Telegram admin user can use them.
+
+Telegram delivery errors are now returned to the dashboard instead of silently reporting that a receipt was sent. If the Telegram settings are missing or invalid, fix them in Heroku Config Vars and retry the receipt upload.

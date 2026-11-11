@@ -171,9 +171,24 @@ async function paystackRequest(pathname,options={}){
   return data.data;
 }
 function isBinancePayConfigured(){ return Boolean(BINANCE_PAY_UID || BINANCE_PAY_EMAIL); }
+async function telegramApi(method, body, formData){
+  if(!TELEGRAM_BOT_TOKEN) throw Object.assign(new Error('Telegram is not configured. Set TELEGRAM_BOT_TOKEN in Heroku Config Vars.'),{status:503});
+  const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/${method}`, {
+    method:'POST',
+    headers: formData ? undefined : {'Content-Type':'application/json'},
+    body: formData || JSON.stringify(body || {})
+  });
+  const result = await response.json().catch(()=>({}));
+  if(!response.ok || result.ok !== true){
+    const message = result.description || `Telegram ${method} failed (HTTP ${response.status}).`;
+    console.error('Telegram API error:', method, message);
+    throw Object.assign(new Error(message),{status:502});
+  }
+  return result.result;
+}
 async function sendTelegramMessage(chatId, text, replyMarkup){
-  if(!TELEGRAM_BOT_TOKEN || !chatId) return;
-  try{ await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chat_id: chatId, text, parse_mode:'HTML', reply_markup: replyMarkup})}); }catch(e){ console.error('Telegram send failed:', e.message); }
+  if(!chatId) throw Object.assign(new Error('Set TELEGRAM_ADMIN_CHAT_ID in Heroku Config Vars.'),{status:503});
+  return telegramApi('sendMessage',{chat_id:chatId,text,parse_mode:'HTML',...(replyMarkup?{reply_markup:replyMarkup}:{})});
 }
 async function sendBinanceReceiptToTelegram(payment, user){
   if(!TELEGRAM_BOT_TOKEN || !TELEGRAM_ADMIN_CHAT_ID) return;
@@ -192,11 +207,11 @@ async function sendBinanceReceiptToTelegram(payment, user){
       form.append('parse_mode', 'HTML');
       form.append('reply_markup', JSON.stringify(replyMarkup));
       form.append('photo', new Blob([imgBuffer], {type:'image/jpeg'}), 'receipt.jpg');
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`,{method:'POST', body: form});
+      await telegramApi('sendPhoto',null,form);
     } else {
       await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, caption, replyMarkup);
     }
-  }catch(e){ console.error('Telegram receipt failed:', e.message); }
+  }catch(e){ console.error('Telegram receipt failed:', e.message); throw e; }
 }
 async function addWalletCredit(paymentId,paystackData){
   const payment=await Payment.findById(paymentId); if(!payment||payment.credited) return false;
@@ -353,7 +368,7 @@ app.post('/api/payments/initialize',requireAuth,asyncRoute(async(req,res)=>{
   const reference=`Teddy${Date.now()}${crypto.randomBytes(5).toString('hex')}`; const payment=await Payment.create({userId:req.user._id,reference,coins,amountMinor,currency,provider:'paystack',status:'pending'}); const cb=`${getPublicBase(req)}/api/payments/callback`;
   try{ const data=await paystackRequest('/transaction/initialize',{method:'POST',body:JSON.stringify({email:req.user.email,amount:amountMinor,currency,reference,callback_url:cb,channels:currency==='USD'?['card']:['card','mobile_money','bank_transfer'],metadata:{user_id:String(req.user._id),coins,currency}})}); payment.authorizationUrl=data.authorization_url; await payment.save(); res.json({ok:true,authorizationUrl:data.authorization_url,reference,coins,amountMinor,currency}); }catch(e){ payment.status='initialization_failed'; await payment.save(); throw e; }
 }));
-app.get('/api/payments/callback',asyncRoute(async(req,res)=>{ const ref=String(req.query.reference||''); if(!ref) return res.redirect('/?payment=missing'); try{ const p=await verifyPaystackReference(ref); return res.redirect(p.credited?'/?payment=success':'/?payment=pending'); }catch(e){ console.error('Paystack callback verification failed:',e.message); return res.redirect('/?payment=failed'); } }));
+app.get('/api/payments/callback',asyncRoute(async(req,res)=>{ const ref=String(req.query.reference||req.query.trxref||''); if(!ref) return res.redirect('/?payment=missing'); try{ const p=await verifyPaystackReference(ref); return res.redirect(p.credited?'/?payment=success':'/?payment=pending'); }catch(e){ console.error('Paystack callback verification failed:',e.message); return res.redirect('/?payment=failed'); } }));
 app.post('/api/payments/webhook',asyncRoute(async(req,res)=>{
   if(!config.PAYSTACK_SECRET_KEY) return res.sendStatus(503); const sig=String(req.headers['x-paystack-signature']||''); const raw=req.rawBody||Buffer.from(JSON.stringify(req.body||{})); const exp=crypto.createHmac('sha512',config.PAYSTACK_SECRET_KEY).update(raw).digest('hex');
   const a=Buffer.from(sig); const b=Buffer.from(exp); if(a.length!==b.length||!crypto.timingSafeEqual(a,b)) return res.sendStatus(401);
@@ -389,36 +404,49 @@ app.post('/api/binance-pay/upload-receipt', requireAuth, asyncRoute(async(req,re
   if(!p) return res.status(404).json({error:'Payment not found.'});
   if(p.credited) return res.status(400).json({error:'This payment was already credited.'});
   if(p.status === 'awaiting_verification') return res.status(400).json({error:'Receipt already sent. Pending - Waiting for Approval.'});
+  if(!TELEGRAM_BOT_TOKEN || !TELEGRAM_ADMIN_CHAT_ID) return res.status(503).json({error:'Telegram notifications are not configured. Set TELEGRAM_BOT_TOKEN and TELEGRAM_ADMIN_CHAT_ID in Heroku Config Vars.'});
   p.receiptImage = receiptImage; p.receiptUploadedAt = new Date(); p.status = 'awaiting_verification'; p.adminNote = '';
   await p.save();
-  const user = await User.findById(req.user._id).select('name email');
-  await sendBinanceReceiptToTelegram(p, user);
-  res.json({ok:true, message:'Receipt sent. Pending - Waiting for Approval.', status:p.status});
+  try{
+    const user = await User.findById(req.user._id).select('name email');
+    await sendBinanceReceiptToTelegram(p, user);
+  }catch(e){
+    p.status='pending_receipt'; await p.save();
+    return res.status(502).json({error:`Receipt saved but Telegram could not be notified: ${e.message}. Check the Telegram bot token, admin chat ID and bot permissions, then try again.`});
+  }
+  res.json({ok:true, message:'Receipt sent to Telegram. Pending - Waiting for Approval.', status:p.status});
 }));
 app.post('/api/telegram/webhook', asyncRoute(async(req,res)=>{
+  const secret = String(config.TELEGRAM_WEBHOOK_SECRET||'');
+  if(secret && req.get('X-Telegram-Bot-Api-Secret-Token') !== secret) return res.sendStatus(401);
+  const cb = req.body?.callback_query;
+  if(!cb || !cb.data) return res.sendStatus(200);
+  const allowedAdminId = String(config.TELEGRAM_ADMIN_USER_ID||TELEGRAM_ADMIN_CHAT_ID||'');
+  if(!allowedAdminId || String(cb.from?.id) !== allowedAdminId){
+    await telegramApi('answerCallbackQuery',{callback_query_id:cb.id,text:'You are not authorized to approve payments.'}).catch(()=>{});
+    return res.sendStatus(200);
+  }
+  const [action, reference] = String(cb.data).split(':');
+  if(!['bn_approve','bn_reject'].includes(action) || !reference) return res.sendStatus(200);
+  // Acknowledge immediately so Telegram does not leave the button spinning.
+  await telegramApi('answerCallbackQuery',{callback_query_id:cb.id,text:action==='bn_approve'?'Processing approval…':'Processing rejection…'}).catch(()=>{});
   res.sendStatus(200);
   try{
-    const cb = req.body?.callback_query;
-    if(!cb || !cb.data) return;
-    if(String(cb.from?.id) !== String(TELEGRAM_ADMIN_CHAT_ID)) return;
-    const [action, reference] = String(cb.data).split(':');
-    if(!['bn_approve','bn_reject'].includes(action) || !reference) return;
     const payment = await Payment.findOne({reference});
-    if(!payment) return;
+    if(!payment || payment.provider!=='binance-pay') return;
     if(action === 'bn_approve'){
       if(payment.credited) return;
       await creditPaymentByReference(reference, 'Binance Pay (Telegram Manual)');
       const u = await User.findById(payment.userId).select('coins');
       await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, `✅ Approved <code>${reference}</code> - ${payment.coins} coins added. New balance: ${u?.coins}`);
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageReplyMarkup`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cb.message.chat.id, message_id:cb.message.message_id, reply_markup:{inline_keyboard:[[{text:'✅ APPROVED', callback_data:'done'}]]}})});
+      await telegramApi('editMessageReplyMarkup',{chat_id:cb.message.chat.id,message_id:cb.message.message_id,reply_markup:{inline_keyboard:[[{text:'✅ APPROVED',callback_data:'done'}]]}}).catch(()=>{});
     } else {
       if(payment.credited) return;
       payment.status = 'rejected'; payment.adminNote = 'Receipt not valid. Send correct payment and upload again.'; await payment.save();
       await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, `❌ Rejected <code>${reference}</code>`);
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageReplyMarkup`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:cb.message.chat.id, message_id:cb.message.message_id, reply_markup:{inline_keyboard:[[{text:'❌ REJECTED', callback_data:'done'}]]}})});
+      await telegramApi('editMessageReplyMarkup',{chat_id:cb.message.chat.id,message_id:cb.message.message_id,reply_markup:{inline_keyboard:[[{text:'❌ REJECTED',callback_data:'done'}]]}}).catch(()=>{});
     }
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerCallbackQuery`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({callback_query_id:cb.id, text: action==='bn_approve' ? 'Approved!' : 'Rejected!'})});
-  }catch(e){ console.error('Telegram webhook error:', e.message); }
+  }catch(e){ console.error('Telegram webhook processing error:', e.message); }
 }));
 app.post('/api/binance-pay/webhook', asyncRoute(async(req,res)=>{ return res.json({ok:true, message:'Binance Pay is manual. Use Telegram approve.'}); }));
 app.get('/api/binance-pay/callback', asyncRoute(async(req,res)=>{ return res.redirect('/?payment=pending&provider=binance-pay'); }));
@@ -452,6 +480,16 @@ app.get('/api/admin/payments',requireAuth,requireAdmin,asyncRoute(async(req,res)
 app.get('/downloads/TEDDY-XMD.apk',(req,res)=>{ const apkPath=path.join(__dirname,'public','downloads','TEDDY-XMD.apk'); if(!fs.existsSync(apkPath)) return res.status(404).type('text/plain').send('TEDDY-XMD Android APK is not available yet.'); res.setHeader('Content-Type','application/vnd.android.package-archive'); res.setHeader('Content-Disposition','attachment; filename="TEDDY-XMD.apk"'); return res.sendFile(apkPath); });
 app.use(express.static(path.join(__dirname,'public')));
 app.get('/{*splat}',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
+async function registerTelegramWebhook(){
+  if(!TELEGRAM_BOT_TOKEN || !config.PUBLIC_URL) return;
+  const webhookUrl = `${String(config.PUBLIC_URL).replace(/\/$/,'')}/api/telegram/webhook`;
+  const body = {url:webhookUrl,allowed_updates:['callback_query']};
+  if(config.TELEGRAM_WEBHOOK_SECRET) body.secret_token=config.TELEGRAM_WEBHOOK_SECRET;
+  try{
+    await telegramApi('setWebhook',body);
+    console.log('Telegram webhook registered:',webhookUrl);
+  }catch(e){ console.error('Telegram webhook registration failed:',e.message); }
+}
 async function start(){
   if(!config.MONGODB_URI||String(config.MONGODB_URI).includes('PASTE_YOUR_')){ console.error('Set MONGODB_URI in Heroku Settings > Config Vars.'); process.exit(1); }
   if(!config.SESSION_SECRET||String(config.SESSION_SECRET).length<32||String(config.SESSION_SECRET).startsWith('REPLACE_WITH_')){ console.error('Set SESSION_SECRET in Heroku Config Vars to a unique random value of at least 32 characters.'); process.exit(1); }
@@ -460,7 +498,7 @@ async function start(){
   try{ const idx=await User.collection.indexes(); for(const name of ['username_1','referralCode_1','number_1']){ if(idx.some(i=>i.name===name)){ await User.collection.dropIndex(name); console.log(`Removed obsolete MongoDB users.${name} index.`); } } }catch(e){ if(![26,27].includes(e.code)&&!/not found|ns does not exist/i.test(e.message||'')) throw e; }
   const adminEmail=String(config.ADMIN.EMAIL||'').trim().toLowerCase(); const adminPassword=String(config.ADMIN.PASSWORD||''); if(!adminEmail||adminPassword.length<8) throw new Error('Set ADMIN_EMAIL and ADMIN_PASSWORD (at least 8 characters).');
   let admin=await User.findOne({email:adminEmail}); if(!admin){ admin=await User.create({name:'Teddy Tech Admin',email:adminEmail,passwordHash:await bcrypt.hash(adminPassword,12),role:'admin',coins:0}); console.log(`Created administrator account: ${adminEmail}`); } else if(admin.role!=='admin'){ admin.role='admin'; await admin.save(); }
-  const server = app.listen(PORT,()=>console.log(`TEDDY TECH BOT DEPLOYER listening on ${PORT}`));
+  const server = app.listen(PORT,()=>{ console.log(`TEDDY TECH BOT DEPLOYER listening on ${PORT}`); registerTelegramWebhook(); });
   // Heroku sends SIGTERM during dyno replacement/deployments; drain cleanly.
   const shutdown = signal => {
     console.log(`${signal} received; closing HTTP server...`);

@@ -24,3 +24,11 @@ If a deployment still fails after these code fixes, check the Heroku API respons
 
 ## Heroku Config Vars (required)
 Set `MONGODB_URI`, `SESSION_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `HEROKU_API_KEY`, and (if using top-ups) `PAYSTACK_SECRET_KEY` in Heroku Settings > Config Vars. The application no longer contains fallback database credentials or default admin credentials in `config.js`. Rotate the MongoDB database user's password because the previous connection string was embedded in an earlier project ZIP.
+
+
+## Additional fixes in this package
+- Paystack callback accepts both `reference` and `trxref`; successful verification refreshes the wallet and displays an explicit success message.
+- Normal accounts remain restricted to their own deployments and app-management routes. Admin global visibility remains intentional.
+- Telegram Binance notifications now check Telegram API responses and surface delivery errors. The Telegram webhook is registered automatically when `PUBLIC_URL` and the bot token are configured.
+- Telegram approval callbacks are restricted to `TELEGRAM_ADMIN_USER_ID` (recommended), which supports approvals from a group notification chat without confusing the group chat ID with the approving user's ID.
+- Set `TELEGRAM_ADMIN_USER_ID` and optionally `TELEGRAM_WEBHOOK_SECRET` in Heroku Config Vars before testing Binance receipts.

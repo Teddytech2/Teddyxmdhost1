@@ -24,6 +24,9 @@ const BINANCE_PAY_ENABLED = true;
 const BINANCE_PAY_COMING_SOON = false;
 const BINANCE_PAY_UID = config.BINANCE_PAY_UID || config.BINANCE_PAY_ID || '';
 const BINANCE_PAY_EMAIL = config.BINANCE_PAY_EMAIL || '';
+const MPESA_MANUAL_ENABLED = true;
+const MPESA_RECEIVER_PHONE = config.MPESA_RECEIVER_PHONE || '254799963583';
+const MPESA_RECEIVER_NAME = config.MPESA_RECEIVER_NAME || 'Wycliffe Kibet';
 const TELEGRAM_BOT_TOKEN = config.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_ADMIN_CHAT_ID = config.TELEGRAM_ADMIN_CHAT_ID || '';
 
@@ -83,11 +86,11 @@ const paymentSchema = new mongoose.Schema({
   reference: { type: String, required: true, unique: true },
   coins: { type: Number, required: true }, amountMinor: { type: Number, required: true },
   currency: { type: String, enum: ['KES', 'USD', 'BINANCE_USD'], required: true },
-  provider: { type: String, enum: ['paystack', 'binance-pay'], default: 'paystack' },
+  provider: { type: String, enum: ['paystack', 'binance-pay', 'mpesa-manual'], default: 'paystack' },
   status: { type: String, default: 'pending' }, credited: { type: Boolean, default: false },
   authorizationUrl: String,
   receiptImage: String, receiptUploadedAt: Date, adminNote: String,
-  binanceUid: String, binanceEmail: String,
+  binanceUid: String, binanceEmail: String, country: String, customerPaymentRef: String,
   createdAt: { type: Date, default: Date.now }, paidAt: Date
 }, { versionKey: false });
 const walletTransactionSchema = new mongoose.Schema({
@@ -213,6 +216,28 @@ async function sendBinanceReceiptToTelegram(payment, user){
     }
   }catch(e){ console.error('Telegram receipt failed:', e.message); throw e; }
 }
+
+async function sendMpesaReceiptToTelegram(payment, user){
+  if(!TELEGRAM_BOT_TOKEN || !TELEGRAM_ADMIN_CHAT_ID) return;
+  const caption = `📱 <b>New M-Pesa Manual Payment</b>\n\n👤 User: ${user.name} (${user.email})\n🌍 Country: ${payment.country || 'Not specified'}\n💰 Coins: ${payment.coins}\n💵 Amount: KSh ${(payment.amountMinor/100).toFixed(2)}\n📞 Paid to: ${MPESA_RECEIVER_PHONE} (${MPESA_RECEIVER_NAME})\n🔖 Ref: <code>${payment.reference}</code>\n🧾 Customer transaction: <code>${payment.customerPaymentRef || 'Not provided'}</code>\n⏳ Pending manual verification.\n\nVerify the money in your M-Pesa statement before approving.`;
+  const replyMarkup = { inline_keyboard: [[ { text:'✅ APPROVE', callback_data:`mp_approve:${payment.reference}` }, { text:'❌ REJECT', callback_data:`mp_reject:${payment.reference}` } ]]};
+  try{
+    if(payment.receiptImage && payment.receiptImage.startsWith('data:image')){
+      const base64 = payment.receiptImage.split(',')[1];
+      const imgBuffer = Buffer.from(base64, 'base64');
+      const form = new FormData();
+      form.append('chat_id', TELEGRAM_ADMIN_CHAT_ID);
+      form.append('caption', caption);
+      form.append('parse_mode', 'HTML');
+      form.append('reply_markup', JSON.stringify(replyMarkup));
+      form.append('photo', new Blob([imgBuffer], {type:'image/jpeg'}), 'mpesa-receipt.jpg');
+      await telegramApi('sendPhoto',null,form);
+    } else {
+      await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, caption, replyMarkup);
+    }
+  }catch(e){ console.error('Telegram M-Pesa receipt failed:', e.message); throw e; }
+}
+
 async function addWalletCredit(paymentId,paystackData){
   const payment=await Payment.findById(paymentId); if(!payment||payment.credited) return false;
   if(paystackData.status!=='success') throw Object.assign(new Error('Payment has not been completed.'),{status:400});
@@ -377,6 +402,43 @@ app.post('/api/payments/webhook',asyncRoute(async(req,res)=>{
   res.sendStatus(200);
 }));
 
+
+// ================= M-PESA MANUAL PAYMENT =================
+app.post('/api/mpesa-manual/initialize', requireAuth, asyncRoute(async(req,res)=>{
+  const coins = Number(req.body.coins);
+  const country = String(req.body.country || '').trim().slice(0,60);
+  if(!Number.isInteger(coins) || coins < 10 || coins % 10 !== 0 || coins > 100000)
+    return res.status(400).json({error:'Choose coins in multiples of 10 (minimum 10).'});
+  if(!country) return res.status(400).json({error:'Select your country.'});
+  const amountMinor = Math.round((coins / 10) * KES_PER_10_COINS * 100);
+  const reference = `THP-MP-${Date.now()}${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+  await Payment.create({userId:req.user._id,reference,coins,amountMinor,currency:'KES',provider:'mpesa-manual',status:'pending_receipt',country});
+  res.json({ok:true,reference,coins,amountKes:(amountMinor/100).toFixed(2),currency:'KES',country,phone:MPESA_RECEIVER_PHONE,accountName:MPESA_RECEIVER_NAME,status:'pending_receipt'});
+}));
+app.get('/api/mpesa-manual/order/:reference', requireAuth, asyncRoute(async(req,res)=>{
+  const p = await Payment.findOne({reference:req.params.reference,userId:req.user._id,provider:'mpesa-manual'});
+  if(!p) return res.status(404).json({error:'Payment not found.'});
+  const user = await User.findById(req.user._id).select('coins');
+  res.json({ok:true,reference:p.reference,coins:p.coins,amountKes:(p.amountMinor/100).toFixed(2),status:p.status,credited:p.credited,adminNote:p.adminNote||'',currentBalance:user?.coins||0});
+}));
+app.post('/api/mpesa-manual/upload-receipt', requireAuth, asyncRoute(async(req,res)=>{
+  const {reference,receiptImage,customerPaymentRef} = req.body;
+  if(!reference || !receiptImage || !String(receiptImage).startsWith('data:image/')) return res.status(400).json({error:'Payment screenshot is required.'});
+  if(receiptImage.length > 8*1024*1024) return res.status(413).json({error:'Screenshot is too large. Please upload an image under 6 MB.'});
+  const p = await Payment.findOne({reference,userId:req.user._id,provider:'mpesa-manual'});
+  if(!p) return res.status(404).json({error:'Payment not found.'});
+  if(p.credited) return res.status(400).json({error:'This payment was already credited.'});
+  if(p.status === 'awaiting_verification') return res.status(400).json({error:'Receipt already sent. Pending approval.'});
+  if(!TELEGRAM_BOT_TOKEN || !TELEGRAM_ADMIN_CHAT_ID) return res.status(503).json({error:'Telegram notifications are not configured. Set TELEGRAM_BOT_TOKEN and TELEGRAM_ADMIN_CHAT_ID.'});
+  p.receiptImage=receiptImage; p.customerPaymentRef=String(customerPaymentRef||'').trim().slice(0,100); p.receiptUploadedAt=new Date(); p.status='awaiting_verification'; p.adminNote='';
+  await p.save();
+  try{
+    const user=await User.findById(req.user._id).select('name email');
+    await sendMpesaReceiptToTelegram(p,user);
+  }catch(e){p.status='pending_receipt';await p.save();return res.status(502).json({error:`Screenshot saved but Telegram notification failed: ${e.message}`});}
+  res.json({ok:true,message:'M-Pesa screenshot sent. Pending manual verification.',status:p.status});
+}));
+
 // ================= BINANCE PAY MANUAL =================
 app.post('/api/binance-pay/initialize', requireAuth, asyncRoute(async(req,res)=>{
   const coins = Number(req.body.coins);
@@ -427,16 +489,16 @@ app.post('/api/telegram/webhook', asyncRoute(async(req,res)=>{
     return res.sendStatus(200);
   }
   const [action, reference] = String(cb.data).split(':');
-  if(!['bn_approve','bn_reject'].includes(action) || !reference) return res.sendStatus(200);
+  if(!['bn_approve','bn_reject','mp_approve','mp_reject'].includes(action) || !reference) return res.sendStatus(200);
   // Acknowledge immediately so Telegram does not leave the button spinning.
-  await telegramApi('answerCallbackQuery',{callback_query_id:cb.id,text:action==='bn_approve'?'Processing approval…':'Processing rejection…'}).catch(()=>{});
+  await telegramApi('answerCallbackQuery',{callback_query_id:cb.id,text:action.endsWith('_approve')?'Processing approval…':'Processing rejection…'}).catch(()=>{});
   res.sendStatus(200);
   try{
     const payment = await Payment.findOne({reference});
-    if(!payment || payment.provider!=='binance-pay') return;
-    if(action === 'bn_approve'){
+    if(!payment || !(['bn_approve','bn_reject'].includes(action) ? payment.provider==='binance-pay' : payment.provider==='mpesa-manual')) return;
+    if(action === 'bn_approve' || action === 'mp_approve'){
       if(payment.credited) return;
-      await creditPaymentByReference(reference, 'Binance Pay (Telegram Manual)');
+      await creditPaymentByReference(reference, payment.provider==='mpesa-manual' ? 'M-Pesa (Manual)' : 'Binance Pay (Telegram Manual)');
       const u = await User.findById(payment.userId).select('coins');
       await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID, `✅ Approved <code>${reference}</code> - ${payment.coins} coins added. New balance: ${u?.coins}`);
       await telegramApi('editMessageReplyMarkup',{chat_id:cb.message.chat.id,message_id:cb.message.message_id,reply_markup:{inline_keyboard:[[{text:'✅ APPROVED',callback_data:'done'}]]}}).catch(()=>{});

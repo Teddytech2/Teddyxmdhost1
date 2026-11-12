@@ -61,6 +61,19 @@
 <section id="walletPage" class="hidden">
 <div class="card wallet-hero"><div><div class="eyebrow">AVAILABLE BALANCE</div><div class="wallet-balance"><span id="walletCoins">0</span> <span style="font-size:15px">COINS</span></div><div class="hint">Each deployment costs 10 coins.</div></div><span class="tag">10 COINS = KSH 50 · $0.40</span></div>
 <div class="grid2"><div class="card"><div class="eyebrow">KES CHECKOUT</div><h2 style="margin:8px 0">Pay in Kenyan Shillings</h2><div class="hint">Paystack checkout can show the payment methods enabled for your account, including card and supported local methods.</div><div class="field"><label>Choose coins</label><select id="kesCoins"><option value="10">10 coins — KSh 50</option><option value="20">20 coins — KSh 100</option><option value="50">50 coins — KSh 250</option><option value="100">100 coins — KSh 500</option><option value="200">200 coins — KSh 1,000</option><option value="500">500 coins — KSh 2,500</option></select></div><button class="btn primary full" onclick="buyCoins('KES')">Pay with KES →</button></div><div class="card"><div class="eyebrow">USD CARD CHECKOUT</div><h2 style="margin:8px 0">Pay in US Dollars</h2><div class="hint">USD payments are card-only. Minimum card top-up is 10 coins for $0.40. Rate: 1 coin = $0.04.</div><div class="field"><label>Choose coins</label><select id="usdCoins"><option value="10">10 coins — $0.40</option><option value="20">20 coins — $0.80</option><option value="50">50 coins — $2.00</option><option value="100">100 coins — $4.00</option><option value="200">200 coins — $8.00</option><option value="500">500 coins — $20.00</option></select></div><button class="btn primary full" onclick="buyCoins('USD')">Pay by card in USD →</button></div></div>
+<!-- M-PESA MANUAL INTERNATIONAL -->
+<div class="card" style="margin-top:18px;border-color:rgba(34,197,94,.45);background:linear-gradient(145deg,rgba(34,197,94,.10),rgba(255,255,255,.04))">
+ <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
+  <div style="display:flex;gap:14px;align-items:flex-start"><span class="binance-icon" style="background:linear-gradient(135deg,#16A34A,#22C55E);color:#fff">M</span><div><div class="eyebrow" style="color:#86EFAC">SAFARICOM M-PESA · MANUAL</div><h2 style="margin:8px 0 4px">Pay with M-Pesa</h2><div class="hint">Customers outside Kenya can use a supported international money-transfer service to send to this Kenyan M-Pesa number. Availability depends on the sender's country and provider.</div></div></div><span class="tag live">● AVAILABLE</span>
+ </div>
+ <div class="form-grid">
+  <div class="field"><label>Choose coins</label><select id="mpesaCoins"><option value="10">10 coins — KSh 50</option><option value="20">20 coins — KSh 100</option><option value="50">50 coins — KSh 250</option><option value="100">100 coins — KSh 500</option><option value="200">200 coins — KSh 1,000</option><option value="500">500 coins — KSh 2,500</option></select></div>
+  <div class="field"><label>Your country</label><select id="mpesaCountry"><option value="">Select country</option><option>Uganda</option><option>Tanzania</option><option>Zambia</option><option>Zimbabwe</option><option>Democratic Republic of the Congo</option><option>Rwanda</option><option>Ghana</option><option>South Africa</option><option>Nigeria</option><option>Other</option></select></div>
+  <div class="field"><label>Your mobile-money network</label><select id="mpesaNetwork"><option value="">Select network</option></select><div class="hint">Choose the SIM/network you will use to send the international transfer.</div></div>
+ </div>
+ <button class="btn primary full" onclick="startMpesaPayment()">Continue with M-Pesa →</button>
+ <div class="hint" style="margin-top:10px;text-align:center">Get recipient details → Send exact amount → Upload payment screenshot → Admin verifies on Telegram</div>
+</div>
 <!-- BINANCE PAY LIVE -->
 <div class="card binance-card" style="margin-top:18px"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start"><div style="display:flex;gap:14px;align-items:flex-start"><span class="binance-icon">₿</span><div><div class="eyebrow" style="color:#FDE68A">BINANCE PAY</div><h2 style="margin:8px 0 4px">Pay with Binance Pay</h2><div class="hint">Pay with USDT via Binance. Send to Binance ID or Email, upload receipt. Same rate — 10 coins = $0.40. Approval never expires.</div></div></div><span class="tag live">● LIVE</span></div><div class="form-grid"><div class="field"><label>Choose coins</label><select id="binanceCoins"><option value="10">10 coins — $0.40</option><option value="20">20 coins — $0.80</option><option value="50">50 coins — $2.00</option><option value="100">100 coins — $4.00</option><option value="200">200 coins — $8.00</option><option value="500">500 coins — $20.00</option></select></div><div class="field"><label>Method</label><input value="Binance ID or Email — you choose" disabled style="opacity:.9"></div></div><button class="btn binance full" onclick="buyBinancePay()">Pay with Binance Pay →</button><div class="hint" style="margin-top:10px;text-align:center">Send USDT → Upload screenshot → Admin approves on Telegram → Coins added</div></div>
 <div class="section-head"><h2>Wallet transactions</h2><button class="btn secondary" onclick="loadWallet()">↻ Refresh</button></div><div class="card"><div id="walletHistory" class="history-list"><div class="empty">Loading transactions…</div></div></div>
@@ -73,6 +86,17 @@
 <script>
 const $=id=>document.getElementById(id);let currentUser=null,selectedBot='teddy-xmd-ultra',manifestData=null,appsCache=[],buildLogAbortController=null,buildLogRetryTimer=null;
 let currentBinanceRef=null, binancePollTimer=null, selectedBinanceMethod='id';
+let currentMpesaRef=null, mpesaPollTimer=null;
+const MPESA_INTL_GUIDES={
+ 'Uganda':{'MTN MoMo':{code:'*165#',steps:['Dial *165# on your MTN line.','Choose Send Money / International transfer (menu wording may vary).','Choose Kenya, then M-Pesa/mobile money if shown.','Enter 254799963583 and confirm the displayed recipient name Wycliffe Kibet.','Enter the amount shown by MTN in UGX, review fees and exchange rate, then confirm with your MoMo PIN.']}},
+ 'Tanzania':{'Vodacom M-Pesa':{code:'*150*00#',steps:['Dial *150*00# on your Vodacom line.','Open Send Money / International transfer.','Choose Kenya / M-Pesa Kenya if available.','Enter 254799963583 and verify the recipient details.','Enter the amount shown by the provider in TZS, review fees and exchange rate, then confirm with your PIN.']}},
+ 'Rwanda':{'MTN MoMo':{code:'*830#',steps:['Dial *830# on your MTN line.','Choose international transfer / send to Kenya if available.','Choose M-Pesa/mobile money in Kenya.','Enter 254799963583 and verify recipient details.','Enter the amount shown by MTN in RWF, review fees and exchange rate, then confirm with your PIN.']}}
+};
+const MPESA_NETWORKS={'Uganda':['MTN MoMo','Airtel Money'],'Tanzania':['Vodacom M-Pesa','Mixx by Yas','Airtel Money'],'Rwanda':['MTN MoMo','Airtel Money'],'Zambia':['MTN MoMo','Airtel Money','Zamtel Kwacha'],'Zimbabwe':['EcoCash'],'Democratic Republic of the Congo':['M-Pesa','Airtel Money','Orange Money'],'Ghana':['MTN MoMo','Telecel Cash','AT Money'],'South Africa':['MTN','Vodacom','Other bank/remittance app'],'Nigeria':['Paga / bank transfer','Other bank/remittance app'],'Other':['International remittance app']};
+function updateMpesaNetworks(){const c=$('mpesaCountry')?.value,sel=$('mpesaNetwork');if(!sel)return;sel.innerHTML='<option value=>Select network</option>'+(MPESA_NETWORKS[c]||[]).map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');}
+$('mpesaCountry')?.addEventListener('change',updateMpesaNetworks);
+function mpesaGuide(country,network){const g=MPESA_INTL_GUIDES[country]?.[network];if(g)return `<b>Dial ${esc(g.code)}</b><ol class="hint" style="padding-left:20px;line-height:1.8">${g.steps.map(x=>`<li>${esc(x)}</li>`).join('')}</ol><div class="hint">If the Kenya/M-Pesa option is not present in your operator menu, stop and use a supported international remittance provider instead. Never send to a different number.</div>`;return `<div class="hint">No verified USSD code is published here for ${esc(network||'this provider')} in ${esc(country)}. Open your operator's official app or contact its support and choose an international transfer to Kenya → Safaricom M-Pesa. Proceed only if Kenya M-Pesa payout is explicitly offered. Do not guess a USSD code or choose an unrelated wallet.</div><ol class="hint" style="padding-left:20px;line-height:1.8"><li>Open the official app or supported remittance service.</li><li>Select Send internationally → Kenya → Mobile Money / M-Pesa.</li><li>Enter 254799963583 and verify Wycliffe Kibet before paying.</li><li>Check the displayed local-currency amount, exchange rate and fees.</li><li>Confirm only when the recipient and payout method are correct.</li></ol>`;}
+
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 async function api(url,options={}){const r=await fetch(url,{credentials:'same-origin',...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...(options.headers||{})}});const t=r.headers.get('content-type')||'';let d;if(t.includes('application/json'))d=await r.json();else d=await r.text();if(!r.ok)throw new Error(typeof d==='string'?d:(d.error||`Request failed (${r.status})`));return d;}
 async function loadSupportContact(){try{const cfg=await api('/api/public-config');const digits=String(cfg.supportWhatsApp||'').replace(/\D/g,'');if(digits){const url=`https://wa.me/${digits}?text=${encodeURIComponent('Hello Teddy Tech Support, I need help with the bot deployer.')}`;['supportFab','loginSupportLink'].forEach(id=>{const l=$(id);if(l)l.href=url;});}}catch(e){}}
@@ -114,6 +138,67 @@ function appRow(app){return `<tr><td><b>${esc(app.name)}</b><div class="sub">${e
 async function loadApps(){try{const apps=await api('/api/apps');appsCache=apps;$('statApps').textContent=apps.length;$('statRunning').textContent=apps.filter(a=>a.status==='running').length;$('statOffline').textContent=apps.filter(a=>['offline','failed','scaled-down'].includes(a.status)).length;$('overviewApps').innerHTML=apps.map(appCard).join('')||'<div class="empty">No bots deployed yet. Choose Deploy a bot to get started.</div>';$('appsList').innerHTML=apps.map(appCard).join('')||'<div class="empty">No applications found.</div>';$('appsTable').innerHTML=apps.map(appRow).join('')||'<tr><td colspan="5" class="empty">No applications found.</td></tr>';$('appsHeading').textContent=currentUser.role==='admin'?'All Heroku applications':'Your applications';}catch(e){toast(e.message);$('overviewApps').innerHTML=`<div class="empty">${esc(e.message)}</div>`;}}
 async function loadWallet(){try{const d=await api('/api/wallet');updateCoins(d.coins);$('walletHistory').innerHTML=(d.transactions||[]).map(t=>`<div class="history-row"><div><b>${esc(t.description||t.type)}</b><div class="sub">${new Date(t.createdAt).toLocaleString()}</div></div><div style="text-align:right"><b class="${t.delta>=0?'positive':'negative'}">${t.delta>0?'+':''}${t.delta} coins</b><div class="sub">Balance: ${t.balanceAfter}</div></div></div>`).join('')||'<div class="empty">No wallet transactions yet.</div>';}catch(e){toast(e.message);}}
 async function buyCoins(currency){const coins=Number($(currency==='KES'?'kesCoins':'usdCoins').value);try{const d=await api('/api/payments/initialize',{method:'POST',body:JSON.stringify({coins,currency})});location.href=d.authorizationUrl;}catch(e){toast(e.message);}}
+
+// ================= M-PESA MANUAL PAYMENT =================
+async function startMpesaPayment(){
+ const coins=Number($('mpesaCoins').value), country=$('mpesaCountry').value, network=$('mpesaNetwork').value;
+ if(!country) return toast('Please select your country.');
+ if(!network) return toast('Please select your mobile-money network.');
+ try{
+  const d=await api('/api/mpesa-manual/initialize',{method:'POST',body:JSON.stringify({coins,country,network})});
+  currentMpesaRef=d.reference; openMpesaModal(d);
+ }catch(e){toast(e.message);}
+}
+function openMpesaModal(d){
+ modal('Safaricom M-Pesa Payment',`
+  <div class="binance-pay-box">
+   <div style="display:flex;gap:12px;align-items:center"><span class="binance-icon" style="background:#16A34A;color:#fff">M</span><div><b>Pay to Kenyan M-Pesa</b><div class="hint">Order: ${esc(d.reference)} · ${esc(d.country)} · ${esc($('mpesaNetwork').value)}</div></div></div>
+   <div class="binance-amount" style="border-color:#22C55E;background:rgba(34,197,94,.07)"><div class="hint">EXACT AMOUNT TO SEND</div><b>KSh ${esc(d.amountKes)}</b><div class="hint">For ${d.coins} Teddy Coins</div></div>
+   <div class="binance-row"><span class="muted">Recipient phone</span><span style="display:flex;gap:6px;align-items:center"><span class="pill" id="mpesaRecipient">${esc(d.phone)}</span><button class="mini" onclick="copyBn('mpesaRecipient')">📋 Copy</button></span></div>
+   <div class="binance-row"><span class="muted">Account name</span><b>${esc(d.accountName)}</b></div>
+   <div class="card" style="padding:14px;margin-top:14px">
+    <b>International transfer instructions — ${esc($('mpesaNetwork').value)}</b>
+    ${mpesaGuide(d.country,$('mpesaNetwork').value)}
+    <div class="hint" style="margin-top:10px">Your order is priced at <b>KSh ${esc(d.amountKes)}</b>. Your provider will show the equivalent local-currency amount, exchange rate and fees before confirmation. Use the provider's displayed amount; do not manually convert or send an estimate.</div>
+   </div>
+   <div class="field"><label>Sender transaction code / reference</label><input id="mpesaTxnRef" placeholder="Enter transaction code"></div>
+   <input type="file" id="mpesaReceipt" accept="image/*" class="hidden">
+   <button class="btn primary full" id="mpesaUploadBtn" onclick="document.getElementById('mpesaReceipt').click()">📷 Upload payment screenshot</button>
+   <div id="mpesaStatus" class="hint" style="margin-top:12px;text-align:center">Upload the successful payment screenshot. Admin will verify the funds before adding coins.</div>
+  </div>`);
+ document.getElementById('mpesaReceipt').addEventListener('change',uploadMpesaReceipt);
+ startMpesaPolling(d.reference);
+}
+async function uploadMpesaReceipt(e){
+ const file=e.target.files[0]; if(!file)return;
+ if(file.size>6*1024*1024){toast('Choose an image under 6 MB.');return;}
+ const reader=new FileReader();
+ reader.onload=async()=>{
+  try{
+   await api('/api/mpesa-manual/upload-receipt',{method:'POST',body:JSON.stringify({reference:currentMpesaRef,receiptImage:reader.result,customerPaymentRef:$('mpesaTxnRef').value.trim()})});
+   const st=$('mpesaStatus');if(st)st.innerHTML='<b>⏳ Screenshot submitted. Pending admin verification.</b>';
+   const btn=$('mpesaUploadBtn');if(btn)btn.textContent='⏳ Submitted — awaiting approval';
+  }catch(err){toast(err.message);}
+ };
+ reader.readAsDataURL(file);
+}
+function startMpesaPolling(ref){
+ if(mpesaPollTimer)clearInterval(mpesaPollTimer);
+ mpesaPollTimer=setInterval(async()=>{
+  try{
+   const d=await api(`/api/mpesa-manual/order/${ref}`);
+   if(d.credited||d.status==='success'){
+    clearInterval(mpesaPollTimer);updateCoins(d.currentBalance);
+    const st=$('mpesaStatus');if(st)st.innerHTML=`<b class="positive">✅ Approved! ${d.coins} coins added. New balance: ${d.currentBalance} coins.</b>`;
+    loadWallet();
+   }else if(d.status==='rejected'){
+    clearInterval(mpesaPollTimer);const st=$('mpesaStatus');if(st)st.innerHTML=`<b class="negative">❌ Rejected:</b> ${esc(d.adminNote||'Receipt not valid.')}`;
+   }else if(d.status==='awaiting_verification'){
+    const st=$('mpesaStatus');if(st&&!st.innerHTML.includes('submitted'))st.innerHTML='<b>⏳ Pending admin verification.</b>';
+   }
+  }catch(e){}
+ },5000);
+}
 // ================= BINANCE PAY MANUAL =================
 async function buyBinancePay(){
   const coins = Number($('binanceCoins').value);
@@ -236,7 +321,7 @@ async function viewLogs(name){modal(`${name} · Runtime logs`,'<p class="muted">
 async function watchSetup(id){if(buildLogAbortController)buildLogAbortController.abort();if(buildLogRetryTimer)clearTimeout(buildLogRetryTimer);modal('Deployment status',`<div id="setupStatus">Checking Heroku…</div><h3>Build logs</h3><p class="hint" id="buildLogState">Connecting to Heroku…</p><pre class="logbox" id="buildLogOutput">Waiting for build output…</pre><div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Close</button><button class="btn primary" onclick="watchSetup('${esc(id)}')">Refresh status and logs</button></div>`);try{const d=await api(`/api/setups/${encodeURIComponent(id)}`);const s=d.setup,b=d.setup.build||{};$('setupStatus').innerHTML=`<p><b>App:</b> ${esc(s.app?.name||'Preparing app')}</p><p><b>Setup:</b> ${esc(s.status||'pending')}</p><p><b>Build:</b> ${esc(b.status||'waiting')}</p>${s.failure_message?`<p class="error">${esc(s.failure_message)}</p>`:''}${d.deployment?.refunded?'<p class="positive"><b>10 coins refunded to your wallet.</b></p>':''}`;streamBuildLogs(id);}catch(e){$('setupStatus').textContent=e.message;}}
 async function streamBuildLogs(id){const o=$('buildLogOutput'),s=$('buildLogState');if(!o||!s)return;buildLogAbortController=new AbortController();const c=buildLogAbortController;try{const r=await fetch(`/api/setups/${encodeURIComponent(id)}/build-logs`,{credentials:'same-origin',headers:{Accept:'text/plain'},signal:c.signal});if(r.status===202){const t=await r.text();s.textContent='Heroku is preparing the build. Checking again shortly…';o.textContent=t;buildLogRetryTimer=setTimeout(()=>streamBuildLogs(id),4000);return;}if(!r.ok)throw new Error(await r.text());s.textContent='Live build logs · connected to Heroku';o.textContent='';if(!r.body){o.textContent=await r.text();return;}const reader=r.body.getReader(),dec=new TextDecoder();while(true){const {done,value}=await reader.read();if(done)break;o.textContent+=dec.decode(value,{stream:true}).replace(/\u0000/g,'');o.scrollTop=o.scrollHeight;}s.textContent='Build log stream finished.';}catch(e){if(e.name!=='AbortError'&&$('buildLogState'))$('buildLogState').textContent='Could not load build logs: '+e.message;}}
 function modal(title,content){$('modalRoot').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal"><h2>${esc(title)}</h2><div id="modalContent">${content}</div></div></div>`;}
-function closeModal(){if(buildLogAbortController)buildLogAbortController.abort();if(buildLogRetryTimer)clearTimeout(buildLogRetryTimer);if(binancePollTimer)clearInterval(binancePollTimer);$('modalRoot').innerHTML='';}
+function closeModal(){if(buildLogAbortController)buildLogAbortController.abort();if(buildLogRetryTimer)clearTimeout(buildLogRetryTimer);if(binancePollTimer)clearInterval(binancePollTimer);if(mpesaPollTimer)clearInterval(mpesaPollTimer);$('modalRoot').innerHTML='';}
 checkAuth();
 </script>
 </body>

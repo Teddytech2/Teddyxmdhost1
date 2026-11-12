@@ -32,3 +32,16 @@ Set `MONGODB_URI`, `SESSION_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `HEROKU_AP
 - Telegram Binance notifications now check Telegram API responses and surface delivery errors. The Telegram webhook is registered automatically when `PUBLIC_URL` and the bot token are configured.
 - Telegram approval callbacks are restricted to `TELEGRAM_ADMIN_USER_ID` (recommended), which supports approvals from a group notification chat without confusing the group chat ID with the approving user's ID.
 - Set `TELEGRAM_ADMIN_USER_ID` and optionally `TELEGRAM_WEBHOOK_SECRET` in Heroku Config Vars before testing Binance receipts.
+
+
+## Manual international M-Pesa payment option
+- Added a separate M-Pesa manual payment method; Binance Pay remains unchanged.
+- Recipient defaults: `254799963583`, account name `Wycliffe Kibet`.
+- Optional Heroku Config Vars: `MPESA_RECEIVER_PHONE`, `MPESA_RECEIVER_NAME`.
+- Customers choose their country, see the KES amount and recipient instructions, enter their transfer reference, and upload a payment screenshot.
+- The screenshot and order details are sent to the configured Telegram admin chat with Approve / Reject buttons. Coins are credited only after an authorized admin approves.
+- This is manual verification, not a direct mobile-money API. International send-to-M-Pesa availability depends on each sender's country and transfer provider. The UI intentionally does not invent universal USSD codes or promise unsupported country routes.
+
+
+## International M-Pesa transfer instructions
+The M-Pesa manual payment screen now asks customers to choose their country and mobile-money network. It shows a USSD guide only for selected routes currently documented in the code (Uganda MTN MoMo `*165#`, Tanzania Vodacom `*150*00#`, Rwanda MTN MoMo `*830#`). Other country/network combinations show app-based instructions and explicitly require the provider to support Kenya Safaricom M-Pesa payout. These routes depend on the sender's operator menu and current service availability; customers must stop if Kenya/M-Pesa is not offered. The amount to send is the KES order amount converted by the provider at its displayed rate, plus any provider fees.

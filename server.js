@@ -106,7 +106,7 @@ const WalletTransaction = mongoose.model('WalletTransaction', walletTransactionS
 const supportTicketSchema = new mongoose.Schema({
   ticketNumber:{type:String,required:true,unique:true,index:true}, userId:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true,index:true},
   subject:{type:String,required:true,trim:true,maxlength:120}, status:{type:String,enum:['open','waiting_user','closed','pending','resolved'],default:'open',index:true},
-  messages:[{sender:{type:String,enum:['user','admin','system'],required:true},body:{type:String,required:true,maxlength:4000},createdAt:{type:Date,default:Date.now},broadcastId:{type:String},clientMessageId:{type:String},readByAdmin:{type:Boolean,default:false},readByCustomer:{type:Boolean,default:false}}],
+  messages:[{sender:{type:String,enum:['user','admin','system'],required:true},body:{type:String,required:true,maxlength:4000},createdAt:{type:Date,default:Date.now},broadcastId:{type:String},clientMessageId:{type:String},replyToMessageId:{type:String},readByAdmin:{type:Boolean,default:false},readByCustomer:{type:Boolean,default:false}}],
   createdAt:{type:Date,default:Date.now},updatedAt:{type:Date,default:Date.now}
 },{versionKey:false});
 const SupportTicket=mongoose.model('SupportTicket',supportTicketSchema);
@@ -556,7 +556,7 @@ app.get('/api/wallet',requireAuth,asyncRoute(async(req,res)=>{ const [user,trans
 // Dedicated, role-scoped support APIs. Customer queries are always pinned to req.user._id.
 app.get('/api/admin/support/conversations',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{
  const q={}; const status=String(req.query.status||'').trim();
- if(['open','pending','resolved'].includes(status)) q.status=status==='pending'?'waiting_user':status==='resolved'?'closed':'open';
+ if(status==='open')q.status='open';else if(status==='pending')q.status={$in:['waiting_user','pending']};else if(status==='resolved')q.status={$in:['closed','resolved']};
  const rows=await SupportTicket.find(q).sort({updatedAt:-1}).limit(500).populate('userId','name email');
  res.json(rows.map(t=>{const o=t.toObject();o.unreadCount=(t.messages||[]).filter(m=>m.sender==='user'&&!m.readByAdmin).length;o.status=o.status==='closed'?'resolved':o.status==='waiting_user'?'pending':o.status;return o;}));
 }));
@@ -565,11 +565,11 @@ app.get('/api/admin/support/conversations/:id',requireAuth,requireAdmin,asyncRou
  t.messages.forEach(m=>{if(m.sender==='user')m.readByAdmin=true;});await t.save();res.json(t);
 }));
 app.post('/api/admin/support/conversations/:id/reply',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{
- const body=String(req.body.message||'').trim(),clientMessageId=String(req.body.clientMessageId||'').trim();if(!body||body.length>4000)return res.status(400).json({error:'Reply must contain 1–4000 characters.'});
+ const body=String(req.body.message||'').trim(),clientMessageId=String(req.body.clientMessageId||'').trim(),replyToMessageId=String(req.body.replyToMessageId||'').trim();if(!body||body.length>4000)return res.status(400).json({error:'Reply must contain 1–4000 characters.'});
  if(!/^[A-Za-z0-9_-]{8,100}$/.test(clientMessageId))return res.status(400).json({error:'A valid message submission ID is required.'});
  const t=await SupportTicket.findById(req.params.id);if(!t)return res.status(404).json({error:'Conversation not found.'});
  if(t.messages.some(m=>m.clientMessageId===clientMessageId))return res.json({ok:true,duplicate:true,ticket:t});
- t.messages.push({sender:'admin',body,clientMessageId,readByCustomer:false});t.status='waiting_user';t.updatedAt=new Date();await t.save();res.status(201).json({ok:true,ticket:t});
+ if(replyToMessageId&&!t.messages.id(replyToMessageId))return res.status(400).json({error:'The message you selected no longer exists.'});t.messages.push({sender:'admin',body,clientMessageId,replyToMessageId:replyToMessageId||undefined,readByCustomer:false});t.status='waiting_user';t.updatedAt=new Date();await t.save();res.status(201).json({ok:true,ticket:t});
 }));
 app.patch('/api/admin/support/conversations/:id/status',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{
  const status=String(req.body.status||'');const map={open:'open',pending:'waiting_user',resolved:'closed'};if(!map[status])return res.status(400).json({error:'Status must be open, pending, or resolved.'});

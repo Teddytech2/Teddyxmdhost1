@@ -105,8 +105,8 @@ const Payment = mongoose.model('Payment', paymentSchema);
 const WalletTransaction = mongoose.model('WalletTransaction', walletTransactionSchema);
 const supportTicketSchema = new mongoose.Schema({
   ticketNumber:{type:String,required:true,unique:true,index:true}, userId:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true,index:true},
-  subject:{type:String,required:true,trim:true,maxlength:120}, status:{type:String,enum:['open','waiting_user','closed'],default:'open',index:true},
-  messages:[{sender:{type:String,enum:['user','admin','system'],required:true},body:{type:String,required:true,maxlength:4000},createdAt:{type:Date,default:Date.now}}],
+  subject:{type:String,required:true,trim:true,maxlength:120}, status:{type:String,enum:['open','waiting_user','closed','pending','resolved'],default:'open',index:true},
+  messages:[{sender:{type:String,enum:['user','admin','system'],required:true},body:{type:String,required:true,maxlength:4000},createdAt:{type:Date,default:Date.now},broadcastId:{type:String}}],
   createdAt:{type:Date,default:Date.now},updatedAt:{type:Date,default:Date.now}
 },{versionKey:false});
 const SupportTicket=mongoose.model('SupportTicket',supportTicketSchema);
@@ -572,7 +572,36 @@ app.post('/api/support/tickets/:id/replies',requireAuth,asyncRoute(async(req,res
  if(ticket.status==='closed'&&req.user.role!=='admin')return res.status(400).json({error:'This ticket is closed.'});
  ticket.messages.push({sender:req.user.role==='admin'?'admin':'user',body});ticket.status=req.user.role==='admin'?'waiting_user':'open';ticket.updatedAt=new Date();await ticket.save();if(req.user.role!=='admin'){try{await notifySupportTicket(ticket,req.user);}catch(e){console.error('Support Telegram notification failed:',e.message);}}res.json({ok:true,ticket});
 }));
-app.patch('/api/support/tickets/:id/status',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{const status=String(req.body.status||'');if(!['open','waiting_user','closed'].includes(status))return res.status(400).json({error:'Invalid ticket status.'});const ticket=await SupportTicket.findByIdAndUpdate(req.params.id,{status,updatedAt:new Date()},{new:true});if(!ticket)return res.status(404).json({error:'Ticket not found.'});res.json({ok:true,ticket});}));
+app.patch('/api/support/tickets/:id/status',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{let status=String(req.body.status||'');if(status==='pending')status='waiting_user';if(status==='resolved')status='closed';if(!['open','waiting_user','closed'].includes(status))return res.status(400).json({error:'Invalid ticket status.'});const ticket=await SupportTicket.findByIdAndUpdate(req.params.id,{status,updatedAt:new Date()},{new:true});if(!ticket)return res.status(404).json({error:'Ticket not found.'});res.json({ok:true,ticket});}));
+
+// Continuous support chat: reuse the customer's latest non-resolved conversation.
+app.post('/api/support/chat/message',requireAuth,asyncRoute(async(req,res)=>{
+ const body=String(req.body.message||'').trim();
+ if(!body||body.length>4000)return res.status(400).json({error:'Message must contain 1–4000 characters.'});
+ let ticket=await SupportTicket.findOne({userId:req.user._id,status:{$ne:'closed'}}).sort({updatedAt:-1});
+ if(!ticket){
+  ticket=await SupportTicket.create({ticketNumber:'TKT-'+String(Date.now()).slice(-8)+'-'+crypto.randomBytes(2).toString('hex').toUpperCase(),userId:req.user._id,subject:'Website support chat',messages:[{sender:'system',body:'Hello, this is TEDDY-XMD assistant. How can I help you?'}]});
+ }
+ ticket.messages.push({sender:'user',body});ticket.status='open';ticket.updatedAt=new Date();await ticket.save();
+ try{await notifySupportTicket(ticket,req.user);}catch(e){console.error('Support Telegram notification failed:',e.message);}
+ res.status(201).json({ok:true,ticket});
+}));
+app.post('/api/admin/support/broadcast',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{
+ const message=String(req.body.message||'').trim();
+ const broadcastId=String(req.body.broadcastId||'').trim();
+ if(!message||message.length>4000)return res.status(400).json({error:'Message must contain 1–4000 characters.'});
+ if(!broadcastId||broadcastId.length>100)return res.status(400).json({error:'A broadcast confirmation ID is required.'});
+ // Idempotency: a broadcast id can be applied only once.
+ const existing=await SupportTicket.findOne({'messages.broadcastId':broadcastId});
+ if(existing)return res.status(409).json({error:'This broadcast was already sent.'});
+ const tickets=await SupportTicket.find().sort({updatedAt:-1}).select('_id userId ticketNumber messages');
+ const latestByUser=new Map();for(const t of tickets){const k=String(t.userId);if(!latestByUser.has(k))latestByUser.set(k,t);}
+ let sent=0;
+ for(const t of latestByUser.values()){
+  t.messages.push({sender:'admin',body:message,broadcastId});t.status='waiting_user';t.updatedAt=new Date();await t.save();sent++;
+ }
+ res.json({ok:true,sent,broadcastId});
+}));
 app.get('/api/admin/summary',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{ const [users,deployments,payments,coins]=await Promise.all([User.countDocuments({role:'user'}),Deployment.countDocuments({status:{$ne:'deleted'}}),Payment.countDocuments({status:'success'}),User.aggregate([{$group:{_id:null,total:{$sum:'$coins'}}}])]); res.json({users,deployments,successfulPayments:payments,coinsInWallets:coins[0]?.total||0}); }));
 app.get('/api/admin/users',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{ const users=await User.find({role:'user'}).select('-passwordHash').sort({createdAt:-1}).limit(500); res.json(users); }));
 app.post('/api/admin/users/:id/coins',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{

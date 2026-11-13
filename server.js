@@ -498,9 +498,9 @@ app.post('/api/telegram/webhook', asyncRoute(async(req,res)=>{
   if(incoming?.text){
     if(!allowedAdminChatId||String(incoming.chat?.id)!==allowedAdminChatId)return res.sendStatus(200);
     const raw=String(incoming.text).trim(); let ticketNumber='',replyText='';
-    const cmd=raw.match(/^\/reply\s+(TKT-\d{8})\s+([\s\S]+)$/i);
+    const cmd=raw.match(/^\/reply\s+(TKT-\d{8}(?:-[A-Z0-9]+)?)\s+([\s\S]+)$/i);
     if(cmd){ticketNumber=cmd[1].toUpperCase();replyText=cmd[2].trim();}
-    else if(incoming.reply_to_message?.text){const m=String(incoming.reply_to_message.text).match(/support ticket (TKT-\d{8})/i);if(m){ticketNumber=m[1].toUpperCase();replyText=raw;}}
+    else if(incoming.reply_to_message?.text){const m=String(incoming.reply_to_message.text).match(/support ticket (TKT-\d{8}(?:-[A-Z0-9]+)?)/i);if(m){ticketNumber=m[1].toUpperCase();replyText=raw;}}
     if(ticketNumber&&replyText){const t=await SupportTicket.findOne({ticketNumber});if(t&&t.status!=='closed'){t.messages.push({sender:'admin',body:replyText.slice(0,4000)});t.status='waiting_user';t.updatedAt=new Date();await t.save();await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID,`✅ Reply delivered to ${ticketNumber}.`);}}
     return res.sendStatus(200);
   }
@@ -555,12 +555,14 @@ app.get('/api/wallet',requireAuth,asyncRoute(async(req,res)=>{ const [user,trans
 
 // Dedicated, role-scoped support APIs. Customer queries are always pinned to req.user._id.
 app.get('/api/admin/support/conversations',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{
+ res.set('Cache-Control','no-store, no-cache, must-revalidate, private');
  const q={}; const status=String(req.query.status||'').trim();
  if(status==='open')q.status='open';else if(status==='pending')q.status={$in:['waiting_user','pending']};else if(status==='resolved')q.status={$in:['closed','resolved']};
  const rows=await SupportTicket.find(q).sort({updatedAt:-1}).limit(500).populate('userId','name email');
  res.json(rows.map(t=>{const o=t.toObject();o.unreadCount=(t.messages||[]).filter(m=>m.sender==='user'&&!m.readByAdmin).length;o.status=o.status==='closed'?'resolved':o.status==='waiting_user'?'pending':o.status;return o;}));
 }));
 app.get('/api/admin/support/conversations/:id',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{
+ res.set('Cache-Control','no-store, no-cache, must-revalidate, private');
  const t=await SupportTicket.findById(req.params.id).populate('userId','name email');if(!t)return res.status(404).json({error:'Conversation not found.'});
  t.messages.forEach(m=>{if(m.sender==='user')m.readByAdmin=true;});await t.save();res.json(t);
 }));
@@ -576,6 +578,7 @@ app.patch('/api/admin/support/conversations/:id/status',requireAuth,requireAdmin
  const t=await SupportTicket.findByIdAndUpdate(req.params.id,{status:map[status],updatedAt:new Date()},{new:true});if(!t)return res.status(404).json({error:'Conversation not found.'});res.json({ok:true,ticket:t});
 }));
 app.get('/api/support/conversations',requireAuth,asyncRoute(async(req,res)=>{
+ res.set('Cache-Control','no-store, no-cache, must-revalidate, private');
  const rows=await SupportTicket.find({userId:req.user._id}).sort({updatedAt:-1}).limit(100);
  // The customer chat displays the latest active conversation (or the latest
  // closed one when no active ticket exists). Only mark messages in that

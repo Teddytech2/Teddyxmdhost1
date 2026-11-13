@@ -3,13 +3,17 @@ module.exports = {
   NODE_ENV: process.env.NODE_ENV || 'production',
 
   ADMIN: {
-    EMAIL: process.env.ADMIN_EMAIL || 'teddyxmd@admin.com',
-    PASSWORD: process.env.ADMIN_PASSWORD || 'teddyxmd'
+    EMAIL: process.env.ADMIN_EMAIL || '',
+    PASSWORD: process.env.ADMIN_PASSWORD || ''
   },
 
   HEROKU_API_KEY: process.env.HEROKU_API_KEY || '',
   MONGODB_URI: process.env.MONGODB_URI || '',
   PAYSTACK_SECRET_KEY: process.env.PAYSTACK_SECRET_KEY || '',
+
+  // Manual international M-Pesa collection destination
+  MPESA_RECEIVER_PHONE: process.env.MPESA_RECEIVER_PHONE || '254799963583',
+  MPESA_RECEIVER_NAME: process.env.MPESA_RECEIVER_NAME || 'Wycliffe Kibet',
 
   // ---------------- Binance Pay — MANUAL + LIVE ----------------
   // NO Binance API. User sends USDT to your ID / Email, uploads receipt,
@@ -21,8 +25,8 @@ module.exports = {
 
   // Your Binance ID and Email to receive USDT
   // Set these in Heroku Config Vars
-  BINANCE_PAY_UID: process.env.BINANCE_PAY_UID || '1176021082',
-  BINANCE_PAY_EMAIL: process.env.BINANCE_PAY_EMAIL || 'kibetwycliffe093@gmail.com',
+  BINANCE_PAY_UID: process.env.BINANCE_PAY_UID || '',
+  BINANCE_PAY_EMAIL: process.env.BINANCE_PAY_EMAIL || '',
   BINANCE_PAY_ID: process.env.BINANCE_PAY_UID || '',
 
   BINANCE_PAY_MINIMUM_USD: Number(process.env.BINANCE_PAY_MINIMUM_USD || 0.4),
@@ -33,18 +37,23 @@ module.exports = {
 
   // ---------------- Telegram — Admin Approval ----------------
   TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '',
-  TELEGRAM_ADMIN_CHAT_ID: process.env.TELEGRAM_ADMIN_CHAT_ID || '6815918612',
+  TELEGRAM_ADMIN_CHAT_ID: process.env.TELEGRAM_ADMIN_CHAT_ID || '',
+  // Telegram user ID allowed to press payment approval buttons.
+  // Set separately when notifications are sent to a group chat.
+  TELEGRAM_ADMIN_USER_ID: process.env.TELEGRAM_ADMIN_USER_ID || '',
+  TELEGRAM_WEBHOOK_SECRET: process.env.TELEGRAM_WEBHOOK_SECRET || '',
   TELEGRAM_ENABLED: true,
 
-  PUBLIC_URL: process.env.PUBLIC_URL || 'https://teddyxmd.new.tg',
+  PUBLIC_URL: process.env.PUBLIC_URL || '',
   SESSION_SECRET: process.env.SESSION_SECRET || '',
 
   DEPLOY_COST_COINS: Number(process.env.DEPLOY_COST_COINS || 10),
   KES_PER_10_COINS: Number(process.env.KES_PER_10_COINS || 50),
   USD_PER_10_COINS: Number(process.env.USD_PER_10_COINS || 0.4),
-  PAYSTACK_USD_MINIMUM: Number(process.env.PAYSTACK_USD_MINIMUM || 0.4),
+  PAYSTACK_USD_MINIMUM: Number(process.env.PAYSTACK_USD_MINIMUM || 2),
 
   SUPPORT_WHATSAPP: process.env.SUPPORT_WHATSAPP || '254799963583',
+  SUPPORT_WELCOME_MESSAGE: process.env.SUPPORT_WELCOME_MESSAGE || 'Hello, this is TEDDY-XMD assistant. How can I help you?',
 
   PAIRING_WEBSITE_URL:
     process.env.PAIRING_WEBSITE_URL ||

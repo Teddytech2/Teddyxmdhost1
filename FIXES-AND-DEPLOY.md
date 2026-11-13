@@ -30,8 +30,6 @@ Set `MONGODB_URI`, `SESSION_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `HEROKU_AP
 - Paystack callback accepts both `reference` and `trxref`; successful verification refreshes the wallet and displays an explicit success message.
 - Normal accounts remain restricted to their own deployments and app-management routes. Admin global visibility remains intentional.
 - Telegram Binance notifications now check Telegram API responses and surface delivery errors. The Telegram webhook is registered automatically when `PUBLIC_URL` and the bot token are configured.
-- Telegram approval callbacks are restricted to `TELEGRAM_ADMIN_USER_ID` (recommended), which supports approvals from a group notification chat without confusing the group chat ID with the approving user's ID.
-- Set `TELEGRAM_ADMIN_USER_ID` and optionally `TELEGRAM_WEBHOOK_SECRET` in Heroku Config Vars before testing Binance receipts.
 
 
 ## Manual international M-Pesa payment option
@@ -45,3 +43,18 @@ Set `MONGODB_URI`, `SESSION_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `HEROKU_AP
 
 ## International M-Pesa transfer instructions
 The M-Pesa manual payment screen now asks customers to choose their country and mobile-money network. It shows a USSD guide only for selected routes currently documented in the code (Uganda MTN MoMo `*165#`, Tanzania Vodacom `*150*00#`, Rwanda MTN MoMo `*830#`). Other country/network combinations show app-based instructions and explicitly require the provider to support Kenya Safaricom M-Pesa payout. These routes depend on the sender's operator menu and current service availability; customers must stop if Kenya/M-Pesa is not offered. The amount to send is the KES order amount converted by the provider at its displayed rate, plus any provider fees.
+
+
+## Website support inbox audit update
+- Added role-scoped `/api/admin/support/conversations` inbox/detail/reply/status endpoints and customer-only `/api/support/conversations` history endpoint.
+- Admin inbox now has customer identity, conversation ID, latest message/time, unread count, search, status filter, full history viewer, and a dedicated Send Reply action.
+- Admin replies are stored in the existing `SupportTicket` MongoDB collection and polled into the matching authenticated customer's floating chat.
+- Added Open, Pending, and Resolved status mapping (legacy `waiting_user`/`closed` values remain compatible), with resolved conversations reopenable.
+- Reply to All now targets every registered non-admin customer, including customers who have not opened support before; it confirms in the browser and rejects repeated broadcast IDs.
+- Customer chat history is queried by the authenticated user ID only. Admin inbox and reply/status endpoints require admin role.
+- Customer and admin message submission IDs are checked to prevent duplicate message writes on retries.
+- Telegram support notifications use `TELEGRAM_BOT_TOKEN` and `TELEGRAM_ADMIN_CHAT_ID`; website replies do not call Telegram.
+- Removed the `TELEGRAM_ADMIN_USER_ID` and `TELEGRAM_WEBHOOK_SECRET` configuration dependencies.
+
+## Verification boundary
+`node --check server.js`, `node --check config.js`, and the extracted inline browser JavaScript syntax check pass. The uploaded archive does not include installed dependencies or a test database; dependency installation timed out in this environment. MongoDB-backed API authorization, two-customer isolation, live polling, Telegram delivery, and production startup therefore still require deployment-environment verification.

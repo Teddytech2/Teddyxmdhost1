@@ -577,7 +577,11 @@ app.patch('/api/admin/support/conversations/:id/status',requireAuth,requireAdmin
 }));
 app.get('/api/support/conversations',requireAuth,asyncRoute(async(req,res)=>{
  const rows=await SupportTicket.find({userId:req.user._id}).sort({updatedAt:-1}).limit(100);
- for(const t of rows){let changed=false;t.messages.forEach(m=>{if(m.sender==='admin'&&!m.readByCustomer){m.readByCustomer=true;changed=true;}});if(changed)await t.save();}
+ // The customer chat displays the latest active conversation (or the latest
+ // closed one when no active ticket exists). Only mark messages in that
+ // conversation as read; opening chat must not silently read other tickets.
+ const visibleConversation=rows.find(t=>t.status!=='closed')||rows[0];
+ if(visibleConversation){let changed=false;visibleConversation.messages.forEach(m=>{if(m.sender==='admin'&&!m.readByCustomer){m.readByCustomer=true;changed=true;}});if(changed)await visibleConversation.save();}
  res.json(rows);
 }));
 app.get('/api/support/tickets',requireAuth,asyncRoute(async(req,res)=>{const q=req.user.role==='admin'?{}:{userId:req.user._id};const rows=await SupportTicket.find(q).sort({updatedAt:-1}).limit(100).populate('userId','name email');res.json(rows);}));
@@ -620,7 +624,7 @@ app.post('/api/admin/support/broadcast',requireAuth,requireAdmin,asyncRoute(asyn
  if(await SupportTicket.exists({'messages.broadcastId':broadcastId}))return res.status(409).json({error:'This broadcast was already sent.'});
  const users=await User.find({role:'user'}).select('_id');let sent=0,failed=[];
  for(const user of users){try{
-  let t=await SupportTicket.findOne({userId:user._id}).sort({updatedAt:-1});
+  let t=await SupportTicket.findOne({userId:user._id,status:{$ne:'closed'}}).sort({updatedAt:-1});
   if(!t)t=await SupportTicket.create({ticketNumber:'TKT-'+Date.now().toString().slice(-8)+'-'+crypto.randomBytes(3).toString('hex').toUpperCase(),userId:user._id,subject:'TEDDY-XMD announcement',messages:[]});
   t.messages.push({sender:'admin',body:message,broadcastId,readByCustomer:false});t.status='waiting_user';t.updatedAt=new Date();await t.save();sent++;
  }catch(e){failed.push({userId:String(user._id),error:e.message});}}

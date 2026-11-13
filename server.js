@@ -103,6 +103,14 @@ const User = mongoose.model('User', userSchema);
 const Deployment = mongoose.model('Deployment', deploymentSchema);
 const Payment = mongoose.model('Payment', paymentSchema);
 const WalletTransaction = mongoose.model('WalletTransaction', walletTransactionSchema);
+const supportTicketSchema = new mongoose.Schema({
+  ticketNumber:{type:String,required:true,unique:true,index:true}, userId:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true,index:true},
+  subject:{type:String,required:true,trim:true,maxlength:120}, status:{type:String,enum:['open','waiting_user','closed'],default:'open',index:true},
+  messages:[{sender:{type:String,enum:['user','admin','system'],required:true},body:{type:String,required:true,maxlength:4000},createdAt:{type:Date,default:Date.now}}],
+  createdAt:{type:Date,default:Date.now},updatedAt:{type:Date,default:Date.now}
+},{versionKey:false});
+const SupportTicket=mongoose.model('SupportTicket',supportTicketSchema);
+
 
 app.set('trust proxy', 1);
 // Lightweight health check for Heroku/router monitoring.
@@ -478,13 +486,30 @@ app.post('/api/binance-pay/upload-receipt', requireAuth, asyncRoute(async(req,re
   }
   res.json({ok:true, message:'Receipt sent to Telegram. Pending - Waiting for Approval.', status:p.status});
 }));
+async function notifySupportTicket(ticket,user){
+  if(!TELEGRAM_BOT_TOKEN||!TELEGRAM_ADMIN_CHAT_ID)return;
+  const escHtml=v=>String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const msg=ticket.messages[ticket.messages.length-1];
+  await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID,`🎫 <b>Support ticket ${escHtml(ticket.ticketNumber)}</b>\nSubject: ${escHtml(ticket.subject)}\nUser: ${escHtml(user.name)} (${escHtml(user.email)})\n\n${escHtml(msg?.body)}\n\nReply to this message in Telegram, or send:\n<code>/reply ${escHtml(ticket.ticketNumber)} Your message</code>`);
+}
 app.post('/api/telegram/webhook', asyncRoute(async(req,res)=>{
   const secret = String(config.TELEGRAM_WEBHOOK_SECRET||'');
   if(secret && req.get('X-Telegram-Bot-Api-Secret-Token') !== secret) return res.sendStatus(401);
+  const allowedAdminChatId = String(TELEGRAM_ADMIN_CHAT_ID||'');
+  const incoming=req.body?.message;
+  if(incoming?.text){
+    if(!allowedAdminChatId||String(incoming.chat?.id)!==allowedAdminChatId)return res.sendStatus(200);
+    const raw=String(incoming.text).trim(); let ticketNumber='',replyText='';
+    const cmd=raw.match(/^\/reply\s+(TKT-\d{8})\s+([\s\S]+)$/i);
+    if(cmd){ticketNumber=cmd[1].toUpperCase();replyText=cmd[2].trim();}
+    else if(incoming.reply_to_message?.text){const m=String(incoming.reply_to_message.text).match(/support ticket (TKT-\d{8})/i);if(m){ticketNumber=m[1].toUpperCase();replyText=raw;}}
+    if(ticketNumber&&replyText){const t=await SupportTicket.findOne({ticketNumber});if(t&&t.status!=='closed'){t.messages.push({sender:'admin',body:replyText.slice(0,4000)});t.status='waiting_user';t.updatedAt=new Date();await t.save();await sendTelegramMessage(TELEGRAM_ADMIN_CHAT_ID,`✅ Reply delivered to ${ticketNumber}.`);}}
+    return res.sendStatus(200);
+  }
   const cb = req.body?.callback_query;
   if(!cb || !cb.data) return res.sendStatus(200);
-  const allowedAdminId = String(config.TELEGRAM_ADMIN_USER_ID||TELEGRAM_ADMIN_CHAT_ID||'');
-  if(!allowedAdminId || String(cb.from?.id) !== allowedAdminId){
+  const callbackAdminChatId = String(TELEGRAM_ADMIN_CHAT_ID||'');
+  if(!callbackAdminChatId || String(cb.message?.chat?.id) !== callbackAdminChatId){
     await telegramApi('answerCallbackQuery',{callback_query_id:cb.id,text:'You are not authorized to approve payments.'}).catch(()=>{});
     return res.sendStatus(200);
   }
@@ -529,6 +554,25 @@ app.post('/api/admin/binance-pay/:reference/reject', requireAuth, requireAdmin, 
 }));
 
 app.get('/api/wallet',requireAuth,asyncRoute(async(req,res)=>{ const [user,transactions,payments]=await Promise.all([User.findById(req.user._id).select('coins'),WalletTransaction.find({userId:req.user._id}).sort({createdAt:-1}).limit(50),Payment.find({userId:req.user._id}).sort({createdAt:-1}).limit(20).select('-authorizationUrl')]); res.json({coins:user.coins,transactions,payments,pricing:{kesPer10Coins:KES_PER_10_COINS,usdPer10Coins:USD_PER_10_COINS,usdMinimum:USD_MINIMUM,usdMinimumCoins:Math.ceil(USD_MINIMUM/USD_PER_10_COINS)*10},binancePay:{enabled:BINANCE_PAY_ENABLED,comingSoon:BINANCE_PAY_COMING_SOON,configured:isBinancePayConfigured(),usdPer10Coins:USD_PER_10_COINS}}); }));
+
+app.get('/api/support/tickets',requireAuth,asyncRoute(async(req,res)=>{const q=req.user.role==='admin'?{}:{userId:req.user._id};const rows=await SupportTicket.find(q).sort({updatedAt:-1}).limit(100).populate('userId','name email');res.json(rows);}));
+app.post('/api/support/tickets',requireAuth,asyncRoute(async(req,res)=>{
+ const subject=String(req.body.subject||'Support request').trim().slice(0,120),body=String(req.body.message||'').trim().slice(0,4000);
+ if(!body)return res.status(400).json({error:'Write a message before submitting.'});
+ const ticketNumber='TKT-'+String(Date.now()).slice(-8);
+ const welcome=String(config.SUPPORT_WELCOME_MESSAGE||'Hello, this is TEDDY-XMD assistant. How can I help you?').trim().slice(0,500);
+ const ticket=await SupportTicket.create({ticketNumber,userId:req.user._id,subject,messages:[{sender:'system',body:welcome},{sender:'user',body}]});
+ try{await notifySupportTicket(ticket,req.user);}catch(e){console.error('Support Telegram notification failed:',e.message);}
+ res.status(201).json({ok:true,ticket});
+}));
+app.post('/api/support/tickets/:id/replies',requireAuth,asyncRoute(async(req,res)=>{
+ const body=String(req.body.message||'').trim().slice(0,4000);if(!body)return res.status(400).json({error:'Reply cannot be empty.'});
+ const ticket=await SupportTicket.findById(req.params.id);if(!ticket)return res.status(404).json({error:'Ticket not found.'});
+ if(req.user.role!=='admin'&&String(ticket.userId)!==String(req.user._id))return res.status(403).json({error:'You cannot access this ticket.'});
+ if(ticket.status==='closed'&&req.user.role!=='admin')return res.status(400).json({error:'This ticket is closed.'});
+ ticket.messages.push({sender:req.user.role==='admin'?'admin':'user',body});ticket.status=req.user.role==='admin'?'waiting_user':'open';ticket.updatedAt=new Date();await ticket.save();if(req.user.role!=='admin'){try{await notifySupportTicket(ticket,req.user);}catch(e){console.error('Support Telegram notification failed:',e.message);}}res.json({ok:true,ticket});
+}));
+app.patch('/api/support/tickets/:id/status',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{const status=String(req.body.status||'');if(!['open','waiting_user','closed'].includes(status))return res.status(400).json({error:'Invalid ticket status.'});const ticket=await SupportTicket.findByIdAndUpdate(req.params.id,{status,updatedAt:new Date()},{new:true});if(!ticket)return res.status(404).json({error:'Ticket not found.'});res.json({ok:true,ticket});}));
 app.get('/api/admin/summary',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{ const [users,deployments,payments,coins]=await Promise.all([User.countDocuments({role:'user'}),Deployment.countDocuments({status:{$ne:'deleted'}}),Payment.countDocuments({status:'success'}),User.aggregate([{$group:{_id:null,total:{$sum:'$coins'}}}])]); res.json({users,deployments,successfulPayments:payments,coinsInWallets:coins[0]?.total||0}); }));
 app.get('/api/admin/users',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{ const users=await User.find({role:'user'}).select('-passwordHash').sort({createdAt:-1}).limit(500); res.json(users); }));
 app.post('/api/admin/users/:id/coins',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{
@@ -545,7 +589,7 @@ app.get('/{*splat}',(req,res)=>res.sendFile(path.join(__dirname,'public','index.
 async function registerTelegramWebhook(){
   if(!TELEGRAM_BOT_TOKEN || !config.PUBLIC_URL) return;
   const webhookUrl = `${String(config.PUBLIC_URL).replace(/\/$/,'')}/api/telegram/webhook`;
-  const body = {url:webhookUrl,allowed_updates:['callback_query']};
+  const body = {url:webhookUrl,allowed_updates:['message','callback_query']};
   if(config.TELEGRAM_WEBHOOK_SECRET) body.secret_token=config.TELEGRAM_WEBHOOK_SECRET;
   try{
     await telegramApi('setWebhook',body);

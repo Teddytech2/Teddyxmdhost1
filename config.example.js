@@ -15,6 +15,7 @@ module.exports = {
   PAYSTACK_USD_MINIMUM: Number(process.env.PAYSTACK_USD_MINIMUM || 2),
   DEFAULT_HEROKU_APP_PREFIX: process.env.DEFAULT_HEROKU_APP_PREFIX || 'teddyxhost',
   SUPPORT_WHATSAPP: process.env.SUPPORT_WHATSAPP || '254799963583',
+  SUPPORT_WELCOME_MESSAGE: process.env.SUPPORT_WELCOME_MESSAGE || 'Hello, this is TEDDY-XMD assistant. How can I help you?',
   PAIRING_WEBSITE_URL: process.env.PAIRING_WEBSITE_URL || 'https://teddyxmdpair-60b69f1c4cee.herokuapp.com/',
   PROTECTED_APP_NAMES: (process.env.PROTECTED_APP_NAMES || '').split(',').map(x => x.trim()).filter(Boolean)
 };

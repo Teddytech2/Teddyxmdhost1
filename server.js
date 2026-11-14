@@ -103,6 +103,17 @@ const User = mongoose.model('User', userSchema);
 const Deployment = mongoose.model('Deployment', deploymentSchema);
 const Payment = mongoose.model('Payment', paymentSchema);
 const WalletTransaction = mongoose.model('WalletTransaction', walletTransactionSchema);
+const promoCodeSchema = new mongoose.Schema({
+  code: { type: String, required: true, unique: true, uppercase: true, trim: true, index: true },
+  coins: { type: Number, required: true, min: 1, max: 1000000 },
+  status: { type: String, enum: ['active', 'claimed', 'revoked'], default: 'active', index: true },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  claimedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  claimedAt: { type: Date, default: null },
+  revokedAt: { type: Date, default: null },
+  createdAt: { type: Date, default: Date.now }
+}, { versionKey: false });
+const PromoCode = mongoose.model('PromoCode', promoCodeSchema);
 const supportTicketSchema = new mongoose.Schema({
   ticketNumber:{type:String,required:true,unique:true,index:true}, userId:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true,index:true},
   subject:{type:String,required:true,trim:true,maxlength:120}, status:{type:String,enum:['open','waiting_user','closed','pending','resolved'],default:'open',index:true},
@@ -552,6 +563,38 @@ app.post('/api/admin/binance-pay/:reference/reject', requireAuth, requireAdmin, 
 }));
 
 app.get('/api/wallet',requireAuth,asyncRoute(async(req,res)=>{ const [user,transactions,payments]=await Promise.all([User.findById(req.user._id).select('coins'),WalletTransaction.find({userId:req.user._id}).sort({createdAt:-1}).limit(50),Payment.find({userId:req.user._id}).sort({createdAt:-1}).limit(20).select('-authorizationUrl')]); res.json({coins:user.coins,transactions,payments,pricing:{kesPer10Coins:KES_PER_10_COINS,usdPer10Coins:USD_PER_10_COINS,usdMinimum:USD_MINIMUM,usdMinimumCoins:Math.ceil(USD_MINIMUM/USD_PER_10_COINS)*10},binancePay:{enabled:BINANCE_PAY_ENABLED,comingSoon:BINANCE_PAY_COMING_SOON,configured:isBinancePayConfigured(),usdPer10Coins:USD_PER_10_COINS}}); }));
+
+// Promo codes are globally single-use: one code can credit exactly one account.
+app.post('/api/promo-codes/claim',requireAuth,asyncRoute(async(req,res)=>{
+  const code=String(req.body.code||'').trim().toUpperCase();
+  if(!/^[A-Z0-9][A-Z0-9-]{3,31}$/.test(code)) return res.status(400).json({error:'Enter a valid promo code (4–32 letters, numbers or hyphens).'});
+  const session=await mongoose.startSession(); let result;
+  try{ await session.withTransaction(async()=>{
+    const promo=await PromoCode.findOneAndUpdate({code,status:'active',claimedAt:null},{$set:{status:'claimed',claimedBy:req.user._id,claimedAt:new Date()}},{new:true,session});
+    if(!promo) { const existing=await PromoCode.findOne({code}).session(session); const message=!existing?'Promo code not found.':existing.status==='revoked'?'This promo code has been revoked.':'This promo code has already been claimed.'; throw Object.assign(new Error(message),{status:400}); }
+    const user=await User.findByIdAndUpdate(req.user._id,{$inc:{coins:promo.coins}},{new:true,session});
+    if(!user) throw Object.assign(new Error('Your wallet account could not be found.'),{status:404});
+    await WalletTransaction.create([{userId:user._id,type:'promo_code',delta:promo.coins,balanceAfter:user.coins,reference:promo.code,description:`Claimed promo code ${promo.code} (+${promo.coins} coins)`}],{session});
+    result={coins:promo.coins,balance:user.coins,code:promo.code};
+  }); } finally { await session.endSession(); }
+  res.json({ok:true,...result,message:`Success! ${result.coins} Teddy Coins have been added to your wallet.`});
+}));
+app.post('/api/admin/promo-codes',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{
+  const code=String(req.body.code||'').trim().toUpperCase(); const coins=Number(req.body.coins);
+  if(!/^[A-Z0-9][A-Z0-9-]{3,31}$/.test(code)) return res.status(400).json({error:'Code must be 4–32 characters using letters, numbers or hyphens.'});
+  if(!Number.isSafeInteger(coins)||coins<1||coins>1000000) return res.status(400).json({error:'Coins must be a whole number from 1 to 1,000,000.'});
+  try{ const promo=await PromoCode.create({code,coins,createdBy:req.user._id}); res.status(201).json({ok:true,promo}); }
+  catch(e){ if(e?.code===11000) return res.status(409).json({error:'That promo code already exists.'}); throw e; }
+}));
+app.get('/api/admin/promo-codes',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{
+  const rows=await PromoCode.find().populate('claimedBy','name email').sort({createdAt:-1}).limit(300);
+  res.json(rows.map(p=>({_id:p._id,code:p.code,coins:p.coins,status:p.status,createdAt:p.createdAt,claimedAt:p.claimedAt,claimedBy:p.claimedBy?{name:p.claimedBy.name,email:p.claimedBy.email}:null,revokedAt:p.revokedAt})));
+}));
+app.post('/api/admin/promo-codes/:id/revoke',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{
+  const promo=await PromoCode.findOneAndUpdate({_id:req.params.id,status:'active'},{$set:{status:'revoked',revokedAt:new Date()}},{new:true});
+  if(!promo){const existing=await PromoCode.findById(req.params.id);if(!existing)return res.status(404).json({error:'Promo code not found.'});return res.status(409).json({error:existing.status==='claimed'?'This code has already been claimed and cannot be revoked.':'This promo code is already revoked.'});}
+  res.json({ok:true,promo:{id:promo._id,code:promo.code,status:promo.status}});
+}));
 
 // Dedicated, role-scoped support APIs. Customer queries are always pinned to req.user._id.
 app.get('/api/admin/support/conversations',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{

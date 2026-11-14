@@ -89,3 +89,7 @@ The panel exposes `GET /health` (HTTP 200 JSON) for basic uptime checks. Heroku 
 5. Submit a test Binance receipt. The Telegram message should include APPROVE and REJECT buttons. Only the configured Telegram admin user can use them.
 
 Telegram delivery errors are now returned to the dashboard instead of silently reporting that a receipt was sent. If the Telegram settings are missing or invalid, fix them in Heroku Config Vars and retry the receipt upload.
+
+## Login-gated dashboard and one-time promo codes
+
+The dashboard (including Deploy) remains hidden until `/api/me` confirms a signed-in session. The deployment and wallet APIs remain authenticated. Admins can create coin promo codes in **Admin panel → Promo codes**, review their state, and revoke codes that have not yet been claimed. Customers redeem codes in **Wallet → Have a promo code?**. Each code is globally single-use; successful redemption credits the wallet and creates a wallet transaction in the same MongoDB transaction. See `PROMO-CODES.md` for the redemption flow and deployment checks.

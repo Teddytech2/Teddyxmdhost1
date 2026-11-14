@@ -14,3 +14,15 @@ Keep the existing `MONGODB_URI`, session/authentication configuration and other 
 
 ## Verification limitation
 Static syntax checks are included in the handoff. Live MongoDB, production authentication, customer isolation and browser-based end-to-end delivery must still be verified against the deployed environment with real test accounts.
+
+## What was corrected in this build
+- The inbox conversation list now has a Support-Inbox-specific display rule, so the generic `.mobile-list { display:none }` rule no longer hides it on desktop or tablet. The inbox uses a two-pane layout on wide screens and stacks the list and viewer on narrow screens.
+- The frontend explicitly validates that `/api/admin/support/conversations` returned a JSON array, safely handles populated `userId` objects and message arrays, and sorts messages chronologically before selecting the latest preview.
+- Customer, admin and system messages have distinct visual treatments. The selected ticket is refreshed automatically by the existing polling loop, and replies continue to POST to the existing ticket-ID-specific admin reply endpoint.
+- API failures are shown in the inbox with a retry action. Existing API routes, authentication middleware, MongoDB schema and Telegram webhook/notification code were not replaced.
+
+## Verification performed for this handoff
+- `node --check server.js` passed.
+- The complete inline browser JavaScript extracted from `public/index.html` passed `node --check`.
+- The inbox layout rules and responsive breakpoints were checked in the delivered stylesheet.
+- A live authenticated MongoDB/Telegram round-trip was not possible in this build environment because production credentials and the deployed customer ticket are not available here. No dummy conversations or messages were added. Before going live, sign in as an admin and verify the existing ticket `TKT-92434963`, then send a reply and confirm it appears in the customer's existing support chat.

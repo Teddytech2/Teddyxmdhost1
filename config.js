@@ -25,8 +25,8 @@ module.exports = {
 
   // Your Binance ID and Email to receive USDT
   // Set these in Heroku Config Vars
-  BINANCE_PAY_UID: process.env.BINANCE_PAY_UID || '',
-  BINANCE_PAY_EMAIL: process.env.BINANCE_PAY_EMAIL || '',
+  BINANCE_PAY_UID: process.env.BINANCE_PAY_UID || '1176021082',
+  BINANCE_PAY_EMAIL: process.env.BINANCE_PAY_EMAIL || 'kibetwycliffe093@gmail.com',
   BINANCE_PAY_ID: process.env.BINANCE_PAY_UID || '',
 
   BINANCE_PAY_MINIMUM_USD: Number(process.env.BINANCE_PAY_MINIMUM_USD || 0.4),
@@ -37,7 +37,7 @@ module.exports = {
 
   // ---------------- Telegram — Admin Approval ----------------
   TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '',
-  TELEGRAM_ADMIN_CHAT_ID: process.env.TELEGRAM_ADMIN_CHAT_ID || '',
+  TELEGRAM_ADMIN_CHAT_ID: process.env.TELEGRAM_ADMIN_CHAT_ID || '6815918612',
   TELEGRAM_ENABLED: true,
 
   PUBLIC_URL: process.env.PUBLIC_URL || '',

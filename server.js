@@ -114,6 +114,17 @@ const promoCodeSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 }, { versionKey: false });
 const PromoCode = mongoose.model('PromoCode', promoCodeSchema);
+// A shared promo code may be redeemed by many customers, but only once per normalized email.
+// The compound unique index is the final concurrency guard against duplicate credits.
+const promoRedemptionSchema = new mongoose.Schema({
+  promoCodeId: { type: mongoose.Schema.Types.ObjectId, ref: 'PromoCode', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  email: { type: String, required: true, lowercase: true, trim: true },
+  coins: { type: Number, required: true, min: 1 },
+  redeemedAt: { type: Date, default: Date.now }
+}, { versionKey: false });
+promoRedemptionSchema.index({ promoCodeId: 1, email: 1 }, { unique: true });
+const PromoRedemption = mongoose.model('PromoRedemption', promoRedemptionSchema);
 const supportTicketSchema = new mongoose.Schema({
   ticketNumber:{type:String,required:true,unique:true,index:true}, userId:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true,index:true},
   subject:{type:String,required:true,trim:true,maxlength:120}, status:{type:String,enum:['open','waiting_user','closed','pending','resolved'],default:'open',index:true},
@@ -564,19 +575,38 @@ app.post('/api/admin/binance-pay/:reference/reject', requireAuth, requireAdmin, 
 
 app.get('/api/wallet',requireAuth,asyncRoute(async(req,res)=>{ const [user,transactions,payments]=await Promise.all([User.findById(req.user._id).select('coins'),WalletTransaction.find({userId:req.user._id}).sort({createdAt:-1}).limit(50),Payment.find({userId:req.user._id}).sort({createdAt:-1}).limit(20).select('-authorizationUrl')]); res.json({coins:user.coins,transactions,payments,pricing:{kesPer10Coins:KES_PER_10_COINS,usdPer10Coins:USD_PER_10_COINS,usdMinimum:USD_MINIMUM,usdMinimumCoins:Math.ceil(USD_MINIMUM/USD_PER_10_COINS)*10},binancePay:{enabled:BINANCE_PAY_ENABLED,comingSoon:BINANCE_PAY_COMING_SOON,configured:isBinancePayConfigured(),usdPer10Coins:USD_PER_10_COINS}}); }));
 
-// Promo codes are globally single-use: one code can credit exactly one account.
+// Shared promo codes: every distinct email can redeem once; the same email cannot redeem twice.
 app.post('/api/promo-codes/claim',requireAuth,asyncRoute(async(req,res)=>{
   const code=String(req.body.code||'').trim().toUpperCase();
   if(!/^[A-Z0-9][A-Z0-9-]{3,31}$/.test(code)) return res.status(400).json({error:'Enter a valid promo code (4–32 letters, numbers or hyphens).'});
+  const email=String(req.user.email||'').trim().toLowerCase();
+  if(!email) return res.status(400).json({error:'Your account must have a valid email address to claim a promo code.'});
   const session=await mongoose.startSession(); let result;
-  try{ await session.withTransaction(async()=>{
-    const promo=await PromoCode.findOneAndUpdate({code,status:'active',claimedAt:null},{$set:{status:'claimed',claimedBy:req.user._id,claimedAt:new Date()}},{new:true,session});
-    if(!promo) { const existing=await PromoCode.findOne({code}).session(session); const message=!existing?'Promo code not found.':existing.status==='revoked'?'This promo code has been revoked.':'This promo code has already been claimed.'; throw Object.assign(new Error(message),{status:400}); }
-    const user=await User.findByIdAndUpdate(req.user._id,{$inc:{coins:promo.coins}},{new:true,session});
-    if(!user) throw Object.assign(new Error('Your wallet account could not be found.'),{status:404});
-    await WalletTransaction.create([{userId:user._id,type:'promo_code',delta:promo.coins,balanceAfter:user.coins,reference:promo.code,description:`Claimed promo code ${promo.code} (+${promo.coins} coins)`}],{session});
-    result={coins:promo.coins,balance:user.coins,code:promo.code};
-  }); } finally { await session.endSession(); }
+  try{
+    await session.withTransaction(async()=>{
+      const promo=await PromoCode.findOne({code,status:{$ne:'revoked'}}).session(session);
+      if(!promo) {
+        const existing=await PromoCode.findOne({code}).session(session);
+        throw Object.assign(new Error(!existing?'Promo code not found.':'This promo code has been revoked.'),{status:400});
+      }
+      // Backward compatibility: block the original claimant of a code redeemed under
+      // the old globally-single-use implementation, while allowing other emails to use it.
+      if(promo.claimedBy && String(promo.claimedBy)===String(req.user._id)) {
+        throw Object.assign(new Error('This email has already claimed this promo code.'),{status:409});
+      }
+      const prior=await PromoRedemption.findOne({promoCodeId:promo._id,email}).session(session);
+      if(prior) throw Object.assign(new Error('This email has already claimed this promo code.'),{status:409});
+      const user=await User.findByIdAndUpdate(req.user._id,{$inc:{coins:promo.coins}},{new:true,session});
+      if(!user) throw Object.assign(new Error('Your wallet account could not be found.'),{status:404});
+      await PromoRedemption.create([{promoCodeId:promo._id,userId:user._id,email,coins:promo.coins}],{session});
+      await WalletTransaction.create([{userId:user._id,type:'promo_code',delta:promo.coins,balanceAfter:user.coins,reference:promo.code,description:`Claimed promo code ${promo.code} (+${promo.coins} coins)`}],{session});
+      result={coins:promo.coins,balance:user.coins,code:promo.code};
+    });
+  } catch(e) {
+    if(e?.code===11000) return res.status(409).json({error:'This email has already claimed this promo code.'});
+    if(e?.status) return res.status(e.status).json({error:e.message});
+    throw e;
+  } finally { await session.endSession(); }
   res.json({ok:true,...result,message:`Success! ${result.coins} Teddy Coins have been added to your wallet.`});
 }));
 app.post('/api/admin/promo-codes',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{
@@ -587,12 +617,15 @@ app.post('/api/admin/promo-codes',requireAuth,requireAdmin,asyncRoute(async(req,
   catch(e){ if(e?.code===11000) return res.status(409).json({error:'That promo code already exists.'}); throw e; }
 }));
 app.get('/api/admin/promo-codes',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{
-  const rows=await PromoCode.find().populate('claimedBy','name email').sort({createdAt:-1}).limit(300);
-  res.json(rows.map(p=>({_id:p._id,code:p.code,coins:p.coins,status:p.status,createdAt:p.createdAt,claimedAt:p.claimedAt,claimedBy:p.claimedBy?{name:p.claimedBy.name,email:p.claimedBy.email}:null,revokedAt:p.revokedAt})));
+  const rows=await PromoCode.find().sort({createdAt:-1}).limit(300).lean();
+  const ids=rows.map(p=>p._id);
+  const counts=await PromoRedemption.aggregate([{$match:{promoCodeId:{$in:ids}}},{$group:{_id:'$promoCodeId',count:{$sum:1}}}]);
+  const countMap=new Map(counts.map(x=>[String(x._id),x.count]));
+  res.json(rows.map(p=>({ _id:p._id,code:p.code,coins:p.coins,status:p.status==='revoked'?'revoked':'active',claimCount:(countMap.get(String(p._id))||0)+(p.claimedBy?1:0),createdAt:p.createdAt,claimedAt:p.claimedAt,claimedBy:null,revokedAt:p.revokedAt })));
 }));
 app.post('/api/admin/promo-codes/:id/revoke',requireAuth,requireAdmin,asyncRoute(async(req,res)=>{
-  const promo=await PromoCode.findOneAndUpdate({_id:req.params.id,status:'active'},{$set:{status:'revoked',revokedAt:new Date()}},{new:true});
-  if(!promo){const existing=await PromoCode.findById(req.params.id);if(!existing)return res.status(404).json({error:'Promo code not found.'});return res.status(409).json({error:existing.status==='claimed'?'This code has already been claimed and cannot be revoked.':'This promo code is already revoked.'});}
+  const promo=await PromoCode.findOneAndUpdate({_id:req.params.id,status:{$ne:'revoked'}},{$set:{status:'revoked',revokedAt:new Date()}},{new:true});
+  if(!promo){const existing=await PromoCode.findById(req.params.id);if(!existing)return res.status(404).json({error:'Promo code not found.'});return res.status(409).json({error:'This promo code is already revoked.'});}
   res.json({ok:true,promo:{id:promo._id,code:promo.code,status:promo.status}});
 }));
 

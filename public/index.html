@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0A0A12">
+<meta name="theme-color" content="#05090a">
 <title>TEDDY TECH BOT DEPLOYER</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -145,6 +145,50 @@ body{line-height:1.5}::selection{background:#6366f1;color:#fff}
 #scForm{display:flex;gap:8px;padding:12px;border-top:1px solid #343447}#scInput{flex:1;min-width:0;background:#202130;color:white;border:1px solid #45455b;border-radius:12px;padding:11px}#scForm button{border:0;border-radius:12px;background:#8052ed;color:white;padding:0 15px;font-weight:800}
 @media(max-width:600px){#supportChat{right:12px;bottom:78px;width:calc(100vw - 24px);height:calc(100dvh - 100px);border-radius:18px}}
 </style>
+
+<style id="teddy-cyberpunk-theme">
+:root{--bg:#05090a;--line:rgba(34,255,126,.18);--line2:rgba(34,255,126,.32);--cyan:#22e7ff;--green:#39ff88;--red:#ff5577;--yellow:#ffd166;--shadow:0 24px 70px rgba(0,0,0,.72);--grad:linear-gradient(120deg,#39ff88,#22e7ff);--grad-btn:linear-gradient(110deg,#19d96b,#00bcd4);--grad-binance:linear-gradient(135deg,#f0b90b,#f8d33a)}
+html,body{background:radial-gradient(ellipse at 8% 0%,rgba(0,255,128,.13),transparent 38%),radial-gradient(ellipse at 92% 16%,rgba(0,210,255,.12),transparent 36%),linear-gradient(180deg,#05090a,#080e12 58%,#05090a);background-attachment:fixed}
+body{color:#eafff3}::selection{background:#39ff8870;color:#fff}
+.eyebrow{color:var(--green);text-shadow:0 0 14px #39ff8850}
+.brand span,.coin{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.btn{border-radius:12px;letter-spacing:.015em}.primary{background:var(--grad-btn);color:#03120b;box-shadow:0 0 0 1px #39ff8860,0 0 22px #20ed8b35}.primary:hover{box-shadow:0 0 0 1px #39ff88,0 0 28px #20ed8b65}
+.secondary,.mini{background:rgba(10,28,25,.82);border:1px solid var(--line2);color:#cffff0}.secondary:hover,.mini:hover{border-color:var(--green);box-shadow:0 0 18px #39ff8825}
+.field input,.field select,.field textarea,#adminReplyInput{background:rgba(2,12,12,.78);border:1px solid rgba(34,255,126,.22);color:#eafff3;border-radius:11px}.field input:focus,.field select:focus,.field textarea:focus,#adminReplyInput:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #22e7ff20,0 0 18px #22e7ff16}
+.field label{color:#b9e8d2}.hint,.muted{color:#91ad9f}
+.side{background:rgba(4,12,12,.94);border-right:1px solid var(--line);box-shadow:12px 0 40px #0005;backdrop-filter:blur(18px)}
+.nav{border-radius:10px;color:#9bb9aa}.nav.active,.nav:hover{background:linear-gradient(100deg,rgba(57,255,136,.15),rgba(34,231,255,.07));border-color:rgba(57,255,136,.42);color:#eafff3;box-shadow:inset 3px 0 0 var(--green),0 0 18px #39ff8810}.nav b{color:var(--cyan)}
+.top{background:linear-gradient(110deg,rgba(12,60,39,.75),rgba(4,42,48,.72));border-color:var(--line2);box-shadow:0 12px 45px #0006,inset 0 1px #ffffff08}.top h1,.section-head h2{color:#f0fff7;text-shadow:0 0 20px #39ff8815}
+.user-chip,.wallet-chip{background:rgba(2,14,14,.75);border-color:var(--line)}
+.stat,.card,.app-card,.login-card{background:linear-gradient(145deg,rgba(13,28,25,.94),rgba(7,17,20,.96));border:1px solid var(--line);box-shadow:0 14px 38px #0005,inset 0 1px #ffffff08}
+.stat:before,.card:before{content:"";position:absolute;left:0;top:0;width:34%;height:1px;background:linear-gradient(90deg,var(--green),transparent);opacity:.55;pointer-events:none}
+.wallet-hero{background:linear-gradient(120deg,#073d2a,#07505a 70%,#062e36)!important;border:1px solid #39ff8855!important;box-shadow:0 0 32px #00ed8b18!important}
+.tag{background:rgba(4,24,20,.86);border-color:rgba(57,255,136,.28);color:#baffd8}.tag.live{color:var(--green);border-color:#39ff8870}
+.app-card{border-radius:14px}.app-card:hover{border-color:#39ff8870;box-shadow:0 0 22px #39ff8818}
+#authView .auth-showcase{background:radial-gradient(circle at 82% 15%,#22e7ff22,transparent 34%),linear-gradient(145deg,rgba(5,56,34,.94),rgba(4,27,31,.96));border-color:var(--line2);box-shadow:0 30px 90px #0009,0 0 42px #39ff8810}
+#authView .auth-brand-mark,#authView .auth-feature i{background:var(--grad);color:#04120b;box-shadow:0 0 20px #39ff8840}
+#authView .auth-kicker{color:var(--cyan)}#authView .auth-showcase h2 span,#authView .login-card h1 span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+#authView .login-card{background:rgba(6,17,17,.94);border-color:var(--line2)}#authView .tabs{background:#030d0d;border-color:var(--line)}#authView .tab.active{background:var(--grad-btn);color:#03120b;box-shadow:0 0 18px #39ff8830}
+#authView .auth-feature{background:rgba(0,12,12,.48);border-color:var(--line)}#authView .login-support{background:#071714;border-color:var(--line2)}
+#supportPage #adminSupportTickets .app-card{background:linear-gradient(145deg,rgba(8,31,24,.98),rgba(7,18,21,.98));border-color:rgba(57,255,136,.2);transition:border-color .18s,box-shadow .18s,transform .18s}
+#supportPage #adminSupportTickets .app-card:hover{transform:translateY(-1px);border-color:#39ff8880!important;box-shadow:0 0 22px #39ff8818}
+#supportPage #adminSupportTickets .app-card[style*="139,92,246"]{border-color:var(--green)!important;box-shadow:inset 3px 0 0 var(--green),0 0 22px #39ff8820}
+#supportPage #adminSupportViewer{background:linear-gradient(145deg,rgba(8,24,22,.98),rgba(6,15,19,.98));border-color:var(--line2)}
+#supportPage .support-message.customer{background:rgba(0,174,215,.12);border-color:rgba(34,231,255,.34)}
+#supportPage .support-message.admin{background:rgba(26,174,94,.13);border-color:rgba(57,255,136,.38)}
+#supportPage .support-message.system{background:rgba(148,163,184,.08);border-color:rgba(148,163,184,.28)}
+#supportPage #adminConversationMessages{scrollbar-color:#1b9361 #071411}
+.bottom-nav{background:rgba(3,12,12,.96);border-top:1px solid var(--line2);backdrop-filter:blur(20px)}.bottom-nav a.active,.bottom-nav a:hover{color:var(--green);text-shadow:0 0 12px #39ff8855}
+.support-fab{background:var(--grad-btn)!important;color:#03120b!important;box-shadow:0 0 0 1px #39ff8870,0 0 24px #39ff8845!important}
+.toast{border:1px solid var(--line2);background:#071714;color:#eafff3;box-shadow:0 10px 35px #0008}
+.table-wrap{border-color:var(--line)}th{color:var(--green)}tr{border-color:var(--line)}
+#supportChat{background:#061311;border-color:rgba(57,255,136,.4);box-shadow:0 24px 80px #000b,0 0 28px #39ff8817}
+#scHead{background:linear-gradient(110deg,#07502f,#07515b)}.sc-bubble{background:#102521;border:1px solid #39ff8824}.sc-bubble.user{background:#073e3c;border-color:#22e7ff55}#scForm{border-color:#174336}#scInput{background:#06100f;border-color:#28634e}#scForm button{background:var(--grad-btn);color:#03120b}
+@media(max-width:900px){.side{background:rgba(3,13,13,.97);border-color:var(--line2)}}
+@media(max-width:650px){.top{background:linear-gradient(110deg,rgba(8,47,32,.94),rgba(5,35,40,.94))}.card,.stat{background:linear-gradient(145deg,rgba(12,29,25,.98),rgba(7,17,20,.98))}.bottom-nav{box-shadow:0 -8px 30px #0006}}
+@media(prefers-reduced-motion:no-preference){.nav,.btn,.app-card,.support-fab{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.auth-live-dot{animation:cyber-pulse 1.8s infinite}@keyframes cyber-pulse{0%,100%{box-shadow:0 0 7px #39ff88}50%{box-shadow:0 0 18px #39ff88,0 0 28px #22e7ff55}}}
+</style>
+
 <div id="supportChat" aria-label="TEDDY-XMD support chat">
  <div id="scHead"><div><b>TEDDY-XMD Support</b><div style="font-size:11px;opacity:.8">Website live chat</div></div><button type="button" onclick="closeSupportChat()" style="background:transparent;border:0;color:white;font-size:22px">×</button></div>
  <div id="scMessages"><div class="sc-bubble">Hello, this is TEDDY-XMD assistant. How can I help you?<div class="sc-meta">Assistant</div></div></div>
